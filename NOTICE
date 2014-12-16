@@ -1,0 +1,10 @@
+Apache MongoDB-Java-Driver-Reactivestreams
+Copyright 2008-2014 MongoDB, Inc.
+
+This product includes software developed at the open source RatPack project.
+The code is licensed under the apache license to the original authors.
+    http://www.ratpack.io
+
+The test code includes software developed for by Reactive Streams open source effort (reactive streams) and
+all copyright was relinquished under the Licensed under Public Domain (CC0).
+    http://www.reactive-streams.org/

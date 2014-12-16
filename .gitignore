@@ -1,6 +1,7 @@
 *~
 .#*
 .git
+.java-version
 *#
 *.sh
 
