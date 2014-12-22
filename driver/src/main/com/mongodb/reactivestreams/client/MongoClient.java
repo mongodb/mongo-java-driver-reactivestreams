@@ -28,7 +28,6 @@ import java.io.Closeable;
  * <p>
  * Instance of this class server as factories for {@code MongoDatabase} instances.
  * </p>
- * @since 3.0
  */
 @Immutable
 public interface MongoClient extends Closeable {

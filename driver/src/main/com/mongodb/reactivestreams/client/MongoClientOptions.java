@@ -36,7 +36,6 @@ import static com.mongodb.assertions.Assertions.notNull;
 /**
  * Various settings to control the behavior of a {@code MongoClient}.
  *
- * @since 3.0
  */
 @Immutable
 public final class MongoClientOptions {

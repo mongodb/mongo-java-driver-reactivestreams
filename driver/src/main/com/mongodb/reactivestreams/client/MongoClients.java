@@ -32,7 +32,6 @@ import com.mongodb.management.JMXConnectionPoolListener;
 /**
  * A factory for MongoClient instances.
  *
- * @since 3.0
  */
 public final class MongoClients {
     /**

@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
  * Fluent interface for find.
  *
  * @param <T> The type of the result.
- * @since 3.0
  */
 public interface FluentFindPublisher<T> extends MongoPublisher<T> {
 

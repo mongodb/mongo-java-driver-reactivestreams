@@ -45,7 +45,6 @@ import java.util.List;
  * <p>Note: Additions to this interface will not be considered to break binary compatibility.</p>
  *
  * @param <T> The type that this collection will encode documents from and decode documents to.
- * @since 3.0
  */
 @ThreadSafe
 public interface MongoCollection<T> {
