@@ -24,7 +24,7 @@ import org.reactivestreams.Publisher;
  *
  * @param <T> the type of item emitted by this publisher
  */
-public interface MongoPublisher<T> extends Publisher<T> {
+interface MongoPublisher<T> extends Publisher<T> {
 
     /**
      * See {@link Publishers#map(Publisher, Function)}.

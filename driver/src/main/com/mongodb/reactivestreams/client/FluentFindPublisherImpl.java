@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.CursorType;
-import com.mongodb.Function;
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.model.FindOptions;
 import com.mongodb.client.options.OperationOptions;
@@ -26,6 +25,7 @@ import com.mongodb.operation.FindOperation;
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentWrapper;
 import org.bson.codecs.Codec;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -52,7 +52,7 @@ class FluentFindPublisherImpl<T> implements FluentFindPublisher<T> {
     }
 
     @Override
-    public MongoPublisher<T> first() {
+    public Publisher<T> first() {
         return Publishers.flattenCursor(createQueryOperation().batchSize(0).limit(-1), options.getReadPreference(), executor);
     }
 
@@ -154,18 +154,12 @@ class FluentFindPublisherImpl<T> implements FluentFindPublisher<T> {
         return BsonDocumentWrapper.asBsonDocument(document, options.getCodecRegistry());
     }
 
-
     @Override
     public void subscribe(final Subscriber<? super T> s) {
         publish().subscribe(s);
     }
 
-    @Override
-    public <O> MongoPublisher<O> map(final Function<? super T, ? extends O> function) {
-        return Publishers.map(publish(), function);
-    }
-
-    MongoPublisher<T> publish() {
+    Publisher<T> publish() {
         return Publishers.flattenCursor(createQueryOperation(), options.getReadPreference(), executor);
     }
 }

@@ -32,6 +32,7 @@ import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DocumentCodecProvider;
 import org.bson.codecs.ValueCodecProvider;
 import org.bson.codecs.configuration.RootCodecRegistry;
+import org.reactivestreams.Publisher;
 
 import static com.mongodb.ReadPreference.primary;
 import static com.mongodb.assertions.Assertions.notNull;
@@ -101,7 +102,7 @@ class MongoClientImpl implements MongoClient {
     }
 
     @Override
-    public MongoPublisher<String> getDatabaseNames() {
+    public Publisher<String> getDatabaseNames() {
         return Publishers.flatten(new GetDatabaseNamesOperation(), primary(), executor);
     }
 

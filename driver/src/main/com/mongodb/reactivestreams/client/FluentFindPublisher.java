@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.CursorType;
+import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
 
@@ -25,14 +26,14 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T> The type of the result.
  */
-public interface FluentFindPublisher<T> extends MongoPublisher<T> {
+public interface FluentFindPublisher<T> extends Publisher<T> {
 
     /**
      * Helper to return a publisher limited first from the query.
      *
-     * @return a MongoPublisher which will
+     * @return a Publisher which will
      */
-    MongoPublisher<T> first();
+    Publisher<T> first();
 
     /**
      * Sets the query filter to apply to the query.

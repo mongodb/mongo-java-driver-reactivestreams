@@ -16,15 +16,15 @@
 
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.Function;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.operation.AsyncOperationExecutor;
 import com.mongodb.operation.AsyncWriteOperation;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class WriteOperationPublisher<T> implements MongoPublisher<T> {
+class WriteOperationPublisher<T> implements Publisher<T> {
     private final AsyncWriteOperation<T> writeOperation;
     private final AsyncOperationExecutor executor;
 
@@ -36,11 +36,6 @@ class WriteOperationPublisher<T> implements MongoPublisher<T> {
     @Override
     public void subscribe(final Subscriber<? super T> subscriber) {
         new WriteSubscription(subscriber).start();
-    }
-
-    @Override
-    public <O> MongoPublisher<O> map(final Function<? super T, ? extends O> function) {
-        return Publishers.map(this, function);
     }
 
     private class WriteSubscription extends SubscriptionSupport<T> {
@@ -62,8 +57,8 @@ class WriteOperationPublisher<T> implements MongoPublisher<T> {
                             onError(t);
                         } else {
                             onNext(result);
+                            onComplete();
                         }
-                        onComplete();
                     }
                 });
             }

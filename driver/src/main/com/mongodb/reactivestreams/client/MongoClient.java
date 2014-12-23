@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.annotations.Immutable;
 import com.mongodb.client.options.OperationOptions;
+import org.reactivestreams.Publisher;
 
 import java.io.Closeable;
 
@@ -69,6 +70,6 @@ public interface MongoClient extends Closeable {
      * @return a publisher emitting the sequence of database names
      * @mongodb.driver.manual reference/commands/listDatabases List Databases
      */
-    MongoPublisher<String> getDatabaseNames();
+    Publisher<String> getDatabaseNames();
 
 }

@@ -36,6 +36,7 @@ import com.mongodb.client.options.OperationOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
+import org.reactivestreams.Publisher;
 
 import java.util.List;
 
@@ -68,7 +69,7 @@ public interface MongoCollection<T> {
      *
      * @return a publisher with a single element indicating the number of documents
      */
-    MongoPublisher<Long> count();
+    Publisher<Long> count();
 
     /**
      * Counts the number of documents in the collection according to the given options.
@@ -76,7 +77,7 @@ public interface MongoCollection<T> {
      * @param filter the query filter
      * @return a publisher with a single element indicating the number of documents
      */
-    MongoPublisher<Long> count(Object filter);
+    Publisher<Long> count(Object filter);
 
     /**
      * Counts the number of documents in the collection according to the given options.
@@ -85,7 +86,7 @@ public interface MongoCollection<T> {
      * @param options the options describing the count
      * @return a publisher with a single element indicating the number of documents
      */
-    MongoPublisher<Long> count(Object filter, CountOptions options);
+    Publisher<Long> count(Object filter, CountOptions options);
 
     /**
      * Gets the distinct values of the specified field name.
@@ -95,7 +96,7 @@ public interface MongoCollection<T> {
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    MongoPublisher<Object> distinct(String fieldName, Object filter);
+    Publisher<Object> distinct(String fieldName, Object filter);
 
     /**
      * Gets the distinct values of the specified field name.
@@ -106,7 +107,7 @@ public interface MongoCollection<T> {
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    MongoPublisher<Object> distinct(String fieldName, Object filter, DistinctOptions options);
+    Publisher<Object> distinct(String fieldName, Object filter, DistinctOptions options);
 
     /**
      * Finds all documents in the collection.
@@ -153,7 +154,7 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the aggregation operation
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    MongoPublisher<Document> aggregate(List<?> pipeline);
+    Publisher<Document> aggregate(List<?> pipeline);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -164,7 +165,7 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the aggregation operation
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    <C> MongoPublisher<C> aggregate(List<?> pipeline, Class<C> clazz);
+    <C> Publisher<C> aggregate(List<?> pipeline, Class<C> clazz);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -174,7 +175,7 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the aggregation operation
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    MongoPublisher<Document> aggregate(List<?> pipeline, AggregateOptions options);
+    Publisher<Document> aggregate(List<?> pipeline, AggregateOptions options);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -186,7 +187,7 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the aggregation operation
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    <C> MongoPublisher<C> aggregate(List<?> pipeline, AggregateOptions options, Class<C> clazz);
+    <C> Publisher<C> aggregate(List<?> pipeline, AggregateOptions options, Class<C> clazz);
 
     /**
      * Aggregates documents according to the specified map-reduce function.
@@ -196,7 +197,7 @@ public interface MongoCollection<T> {
      * @return an publisher containing the result of the map-reduce operation
      * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
      */
-    MongoPublisher<Document> mapReduce(String mapFunction, String reduceFunction);
+    Publisher<Document> mapReduce(String mapFunction, String reduceFunction);
 
     /**
      * Aggregates documents according to the specified map-reduce function.
@@ -207,7 +208,7 @@ public interface MongoCollection<T> {
      * @return an iterable containing the result of the map-reduce operation
      * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
      */
-    MongoPublisher<Document> mapReduce(String mapFunction, String reduceFunction, MapReduceOptions options);
+    Publisher<Document> mapReduce(String mapFunction, String reduceFunction, MapReduceOptions options);
 
     /**
      * Aggregates documents according to the specified map-reduce function.
@@ -219,7 +220,7 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the map-reduce operation
      * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
      */
-    <C> MongoPublisher<C> mapReduce(String mapFunction, String reduceFunction, Class<C> clazz);
+    <C> Publisher<C> mapReduce(String mapFunction, String reduceFunction, Class<C> clazz);
 
     /**
      * Aggregates documents according to the specified map-reduce function.
@@ -232,7 +233,7 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the map-reduce operation
      * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
      */
-    <C> MongoPublisher<C> mapReduce(String mapFunction, String reduceFunction, MapReduceOptions options, Class<C> clazz);
+    <C> Publisher<C> mapReduce(String mapFunction, String reduceFunction, MapReduceOptions options, Class<C> clazz);
 
     /**
      * Executes a mix of inserts, updates, replaces, and deletes.
@@ -240,7 +241,7 @@ public interface MongoCollection<T> {
      * @param requests the writes to execute
      * @return a publisher with a single element the BulkWriteResult
      */
-    MongoPublisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests);
+    Publisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests);
 
     /**
      * Executes a mix of inserts, updates, replaces, and deletes.
@@ -249,7 +250,7 @@ public interface MongoCollection<T> {
      * @param options  the options to apply to the bulk write operation
      * @return a publisher with a single element the BulkWriteResult
      */
-    MongoPublisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests, BulkWriteOptions options);
+    Publisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests, BulkWriteOptions options);
 
     /**
      * Inserts the provided document. If the document is missing an identifier, the driver should generate one.
@@ -258,7 +259,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    MongoPublisher<Void> insertOne(T document);
+    Publisher<Void> insertOne(T document);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a
@@ -268,7 +269,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    MongoPublisher<Void> insertMany(List<? extends T> documents);
+    Publisher<Void> insertMany(List<? extends T> documents);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a
@@ -279,7 +280,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    MongoPublisher<Void> insertMany(List<? extends T> documents, InsertManyOptions options);
+    Publisher<Void> insertMany(List<? extends T> documents, InsertManyOptions options);
 
     /**
      * Removes at most one document from the collection that matches the given filter.  If no documents match, the collection is not
@@ -288,7 +289,7 @@ public interface MongoCollection<T> {
      * @param filter the query filter to apply the the delete operation
      * @return a publisher with a single element the DeleteResult or with an com.mongodb.MongoException
      */
-    MongoPublisher<DeleteResult> deleteOne(Object filter);
+    Publisher<DeleteResult> deleteOne(Object filter);
 
     /**
      * Removes all documents from the collection that match the given query filter.  If no documents match, the collection is not modified.
@@ -296,7 +297,7 @@ public interface MongoCollection<T> {
      * @param filter the query filter to apply the the delete operation
      * @return a publisher with a single element the DeleteResult or with an com.mongodb.MongoException
      */
-    MongoPublisher<DeleteResult> deleteMany(Object filter);
+    Publisher<DeleteResult> deleteMany(Object filter);
 
     /**
      * Replace a document in the collection according to the specified arguments.
@@ -306,7 +307,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
      */
-    MongoPublisher<UpdateResult> replaceOne(Object filter, T replacement);
+    Publisher<UpdateResult> replaceOne(Object filter, T replacement);
 
     /**
      * Replace a document in the collection according to the specified arguments.
@@ -317,7 +318,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
      */
-    MongoPublisher<UpdateResult> replaceOne(Object filter, T replacement, UpdateOptions options);
+    Publisher<UpdateResult> replaceOne(Object filter, T replacement, UpdateOptions options);
 
     /**
      * Update a single document in the collection according to the specified arguments.
@@ -330,7 +331,7 @@ public interface MongoCollection<T> {
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    MongoPublisher<UpdateResult> updateOne(Object filter, Object update);
+    Publisher<UpdateResult> updateOne(Object filter, Object update);
 
     /**
      * Update a single document in the collection according to the specified arguments.
@@ -344,7 +345,7 @@ public interface MongoCollection<T> {
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    MongoPublisher<UpdateResult> updateOne(Object filter, Object update, UpdateOptions options);
+    Publisher<UpdateResult> updateOne(Object filter, Object update, UpdateOptions options);
 
     /**
      * Update a single document in the collection according to the specified arguments.
@@ -357,7 +358,7 @@ public interface MongoCollection<T> {
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    MongoPublisher<UpdateResult> updateMany(Object filter, Object update);
+    Publisher<UpdateResult> updateMany(Object filter, Object update);
 
     /**
      * Update a single document in the collection according to the specified arguments.
@@ -371,7 +372,7 @@ public interface MongoCollection<T> {
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    MongoPublisher<UpdateResult> updateMany(Object filter, Object update, UpdateOptions options);
+    Publisher<UpdateResult> updateMany(Object filter, Object update, UpdateOptions options);
 
     /**
      * Atomically find a document and remove it.
@@ -380,7 +381,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the document that was removed.  If no documents matched the query filter, then null will be
      * returned
      */
-    MongoPublisher<T> findOneAndDelete(Object filter);
+    Publisher<T> findOneAndDelete(Object filter);
 
     /**
      * Atomically find a document and remove it.
@@ -390,7 +391,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the document that was removed.  If no documents matched the query filter, then null will be
      * returned
      */
-    MongoPublisher<T> findOneAndDelete(Object filter, FindOneAndDeleteOptions options);
+    Publisher<T> findOneAndDelete(Object filter, FindOneAndDeleteOptions options);
 
     /**
      * Atomically find a document and replace it.
@@ -401,7 +402,7 @@ public interface MongoCollection<T> {
      * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
      * query filter, then null will be returned
      */
-    MongoPublisher<T> findOneAndReplace(Object filter, T replacement);
+    Publisher<T> findOneAndReplace(Object filter, T replacement);
 
     /**
      * Atomically find a document and replace it.
@@ -413,7 +414,7 @@ public interface MongoCollection<T> {
      * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
      * query filter, then null will be returned
      */
-    MongoPublisher<T> findOneAndReplace(Object filter, T replacement, FindOneAndReplaceOptions options);
+    Publisher<T> findOneAndReplace(Object filter, T replacement, FindOneAndReplaceOptions options);
 
     /**
      * Atomically find a document and update it.
@@ -425,7 +426,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the document that was updated before the update was applied.  If no documents matched the
      * query filter, then null will be returned
      */
-    MongoPublisher<T> findOneAndUpdate(Object filter, Object update);
+    Publisher<T> findOneAndUpdate(Object filter, Object update);
 
     /**
      * Atomically find a document and update it.
@@ -439,7 +440,7 @@ public interface MongoCollection<T> {
      * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
      * query filter, then null will be returned
      */
-    MongoPublisher<T> findOneAndUpdate(Object filter, Object update, FindOneAndUpdateOptions options);
+    Publisher<T> findOneAndUpdate(Object filter, Object update, FindOneAndUpdateOptions options);
 
     /**
      * Drops this collection from the Database.
@@ -447,7 +448,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/drop/ Drop Collection
      */
-    MongoPublisher<Void> dropCollection();
+    Publisher<Void> dropCollection();
 
     /**
      * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
@@ -455,7 +456,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    MongoPublisher<Void> createIndex(Object key);
+    Publisher<Void> createIndex(Object key);
 
     /**
      * @param key     an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
@@ -464,13 +465,13 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    MongoPublisher<Void> createIndex(Object key, CreateIndexOptions options);
+    Publisher<Void> createIndex(Object key, CreateIndexOptions options);
 
     /**
      * @return a publisher emitting the sequence of the indexes
      * @mongodb.driver.manual reference/method/db.collection.getIndexes/ getIndexes
      */
-    MongoPublisher<Document> getIndexes();
+    Publisher<Document> getIndexes();
 
     /**
      * @param clazz the class to decode each document into
@@ -478,7 +479,7 @@ public interface MongoCollection<T> {
      * @return a publisher emitting the sequence of the indexes
      * @mongodb.driver.manual reference/method/db.collection.getIndexes/ getIndexes
      */
-    <C> MongoPublisher<C> getIndexes(Class<C> clazz);
+    <C> Publisher<C> getIndexes(Class<C> clazz);
 
     /**
      * Drops the given index.
@@ -487,7 +488,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/dropIndexes/ Drop Indexes
      */
-    MongoPublisher<Void> dropIndex(String indexName);
+    Publisher<Void> dropIndex(String indexName);
 
     /**
      * Drop all the indexes on this collection, except for the default on _id.
@@ -495,7 +496,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/dropIndexes/ Drop Indexes
      */
-    MongoPublisher<Void> dropIndexes();
+    Publisher<Void> dropIndexes();
 
     /**
      * Rename the collection with oldCollectionName to the newCollectionName.
@@ -504,7 +505,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/commands/renameCollection Rename collection
      */
-    MongoPublisher<Void> renameCollection(MongoNamespace newCollectionNamespace);
+    Publisher<Void> renameCollection(MongoNamespace newCollectionNamespace);
 
     /**
      * Rename the collection with oldCollectionName to the newCollectionName.
@@ -514,6 +515,6 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/commands/renameCollection Rename collection
      */
-    MongoPublisher<Void> renameCollection(MongoNamespace newCollectionNamespace, RenameCollectionOptions options);
+    Publisher<Void> renameCollection(MongoNamespace newCollectionNamespace, RenameCollectionOptions options);
 
 }

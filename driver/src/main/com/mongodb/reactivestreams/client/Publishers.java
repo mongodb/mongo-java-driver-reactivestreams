@@ -28,30 +28,42 @@ import java.util.List;
 
 final class Publishers {
 
-    static <I, O> MongoPublisher<O> map(final Publisher<I> input, final Function<? super I, ? extends O> function) {
-        return new MapPublisher<I, O>(input, function);
-    }
 
-    static <T> MongoPublisher<T> flatten(final Publisher<List<T>> publisher) {
-        return new FlattenPublisher<T>(publisher);
-    }
-
-    static <T> MongoPublisher<T> flatten(final AsyncReadOperation<List<T>> operation, final ReadPreference readPreference,
-                                         final AsyncOperationExecutor executor) {
-        return new FlattenPublisher<T>(publish(operation, readPreference, executor));
-    }
-
-    static <T> MongoPublisher<T> publish(final AsyncReadOperation<T> operation, final ReadPreference readPreference,
-                                         final AsyncOperationExecutor executor) {
+    static <T> Publisher<T> publish(final AsyncReadOperation<T> operation, final ReadPreference readPreference,
+                                    final AsyncOperationExecutor executor) {
         return new ReadOperationPublisher<T>(operation, readPreference, executor);
     }
 
-    static <T> MongoPublisher<T> publish(final AsyncWriteOperation<T> operation, final AsyncOperationExecutor executor) {
+    static <T> Publisher<T> publish(final AsyncWriteOperation<T> operation, final AsyncOperationExecutor executor) {
         return new WriteOperationPublisher<T>(operation, executor);
     }
 
-    static <T> MongoPublisher<T> flattenCursor(final AsyncReadOperation<? extends AsyncBatchCursor<T>> operation,
-                                               final ReadPreference readPreference, final AsyncOperationExecutor executor) {
+    static <T> Publisher<T> flatten(final Publisher<List<T>> publisher) {
+        return new FlattenPublisher<T>(publisher);
+    }
+
+    static <T> Publisher<T> flatten(final AsyncReadOperation<List<T>> operation, final ReadPreference readPreference,
+                                    final AsyncOperationExecutor executor) {
+        return new FlattenPublisher<T>(publish(operation, readPreference, executor));
+    }
+
+    static <I, O> Publisher<O> map(final Publisher<I> input, final Function<? super I, ? extends O> function) {
+        return new MapPublisher<I, O>(input, function);
+    }
+
+    static <I, O> Publisher<O> map(final AsyncReadOperation<I> operation, final ReadPreference readPreference,
+                                   final AsyncOperationExecutor executor,
+                                   final Function<? super I, ? extends O> function) {
+        return map(publish(operation, readPreference, executor), function);
+    }
+
+    static <I, O> Publisher<O> map(final AsyncWriteOperation<I> operation, final AsyncOperationExecutor executor,
+                                   final Function<? super I, ? extends O> function) {
+        return map(publish(operation, executor), function);
+    }
+
+    static <T> Publisher<T> flattenCursor(final AsyncReadOperation<? extends AsyncBatchCursor<T>> operation,
+                                          final ReadPreference readPreference, final AsyncOperationExecutor executor) {
         return new FlattenPublisher<T>(Publishers.publishCursor(operation, readPreference, executor));
     }
 

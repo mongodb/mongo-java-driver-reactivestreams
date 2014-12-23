@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Original implementation from RatPack
  */
-class MapPublisher<I, O> implements MongoPublisher<O> {
+class MapPublisher<I, O> implements Publisher<O> {
 
     private final Publisher<I> input;
     private final Function<? super I, ? extends O> function;
@@ -79,10 +79,5 @@ class MapPublisher<I, O> implements MongoPublisher<O> {
                 }
             }
         });
-    }
-
-    @Override
-    public <T> MongoPublisher<T> map(final Function<? super O, ? extends T> function) {
-        return Publishers.map(this, function);
     }
 }

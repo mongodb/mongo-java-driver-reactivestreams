@@ -21,6 +21,7 @@ import com.mongodb.annotations.ThreadSafe;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.options.OperationOptions;
 import org.bson.Document;
+import org.reactivestreams.Publisher;
 
 /**
  * The MongoDatabase interface.
@@ -44,7 +45,7 @@ public interface MongoDatabase {
      * @param command  the command to be run
      * @return a publisher with a single element indicating when the command has completed
      */
-    MongoPublisher<Document> executeCommand(Object command);
+    Publisher<Document> executeCommand(Object command);
 
     /**
      * Executes command in the context of the current database.
@@ -53,7 +54,7 @@ public interface MongoDatabase {
      * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
      * @return a publisher with a single element indicating when the command has completed
      */
-    MongoPublisher<Document> executeCommand(Object command, ReadPreference readPreference);
+    Publisher<Document> executeCommand(Object command, ReadPreference readPreference);
 
     /**
      * Executes command in the context of the current database.
@@ -63,7 +64,7 @@ public interface MongoDatabase {
      * @param <T>      the type of the class to use instead of {@code Document}.
      * @return a publisher with a single element indicating when the command has completed
      */
-    <T> MongoPublisher<T> executeCommand(Object command, Class<T> clazz);
+    <T> Publisher<T> executeCommand(Object command, Class<T> clazz);
 
     /**
      * Executes command in the context of the current database.
@@ -74,7 +75,7 @@ public interface MongoDatabase {
      * @param <T>            the type of the class to use instead of {@code Document}.
      * @return a publisher with a single element indicating when the command has completed
      */
-    <T> MongoPublisher<T> executeCommand(Object command, ReadPreference readPreference, Class<T> clazz);
+    <T> Publisher<T> executeCommand(Object command, ReadPreference readPreference, Class<T> clazz);
 
     /**
      * Gets the options that are used with the database.
@@ -129,14 +130,14 @@ public interface MongoDatabase {
      * @return a publisher with a single element indicating when the drop database has completed
      * @mongodb.driver.manual reference/commands/dropDatabase/#dbcmd.dropDatabase Drop database
      */
-    MongoPublisher<Void> dropDatabase();
+    Publisher<Void> dropDatabase();
 
     /**
      * Gets the names of all the collections in this database.
      *
      * @return a publisher emitting the sequence of collection names
      */
-    MongoPublisher<String> getCollectionNames();
+    Publisher<String> getCollectionNames();
 
     /**
      * Create a new collection with the given name.
@@ -145,7 +146,7 @@ public interface MongoDatabase {
      * @return a publisher with a single element indicating when the collection has been created
      * @mongodb.driver.manual reference/commands/create Create Command
      */
-    MongoPublisher<Void> createCollection(String collectionName);
+    Publisher<Void> createCollection(String collectionName);
 
     /**
      * Create a new collection with the selected options
@@ -155,5 +156,5 @@ public interface MongoDatabase {
      * @return a publisher with a single element indicating when the collection has been created
      * @mongodb.driver.manual reference/commands/create Create Command
      */
-    MongoPublisher<Void> createCollection(String collectionName, CreateCollectionOptions options);
+    Publisher<Void> createCollection(String collectionName, CreateCollectionOptions options);
 }

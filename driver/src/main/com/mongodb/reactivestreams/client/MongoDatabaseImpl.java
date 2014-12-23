@@ -28,6 +28,7 @@ import com.mongodb.operation.DropDatabaseOperation;
 import com.mongodb.operation.ListCollectionNamesOperation;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.reactivestreams.Publisher;
 
 import static com.mongodb.ReadPreference.primary;
 import static com.mongodb.assertions.Assertions.notNull;
@@ -72,22 +73,22 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public MongoPublisher<Void> dropDatabase() {
+    public Publisher<Void> dropDatabase() {
         return Publishers.publish(new DropDatabaseOperation(name), executor);
     }
 
     @Override
-    public MongoPublisher<String> getCollectionNames() {
+    public Publisher<String> getCollectionNames() {
         return Publishers.flatten(new ListCollectionNamesOperation(name), primary(), executor);
     }
 
     @Override
-    public MongoPublisher<Void> createCollection(final String collectionName) {
+    public Publisher<Void> createCollection(final String collectionName) {
         return createCollection(collectionName, new CreateCollectionOptions());
     }
 
     @Override
-    public MongoPublisher<Void> createCollection(final String collectionName, final CreateCollectionOptions createCollectionOptions) {
+    public Publisher<Void> createCollection(final String collectionName, final CreateCollectionOptions createCollectionOptions) {
         return Publishers.publish(new CreateCollectionOperation(name, collectionName)
                                   .capped(createCollectionOptions.isCapped())
                                   .sizeInBytes(createCollectionOptions.getSizeInBytes())
@@ -98,24 +99,24 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public MongoPublisher<Document> executeCommand(final Object command) {
+    public Publisher<Document> executeCommand(final Object command) {
         return executeCommand(command, Document.class);
     }
 
     @Override
-    public MongoPublisher<Document> executeCommand(final Object command, final ReadPreference readPreference) {
+    public Publisher<Document> executeCommand(final Object command, final ReadPreference readPreference) {
         return executeCommand(command, readPreference, Document.class);
     }
 
     @Override
-    public <T> MongoPublisher<T> executeCommand(final Object command, final Class<T> clazz) {
+    public <T> Publisher<T> executeCommand(final Object command, final Class<T> clazz) {
         notNull("command", command);
         return Publishers.publish(new CommandWriteOperation<T>(getName(), asBson(command), options.getCodecRegistry().get(clazz)),
                                   executor);
     }
 
     @Override
-    public <T> MongoPublisher<T> executeCommand(final Object command, final ReadPreference readPreference, final Class<T> clazz) {
+    public <T> Publisher<T> executeCommand(final Object command, final ReadPreference readPreference, final Class<T> clazz) {
         notNull("command", command);
         notNull("readPreference", readPreference);
         return Publishers.publish(new CommandReadOperation<T>(getName(), asBson(command), options.getCodecRegistry().get(clazz)),

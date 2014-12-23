@@ -107,13 +107,14 @@ class AsyncBatchCursorPublisher<T> implements Publisher<List<T>> {
                     cursor.next(new SingleResultCallback<List<T>>() {
                         @Override
                         public void onResult(final List<T> result, final Throwable t) {
-                            getMore.set(false);
                             if (t != null) {
                                 onError(t);
+                                getMore.set(false);
                             } else {
                                 if (result != null) {
                                     buffer.add(result);
                                 }
+                                getMore.set(false);
                                 tryDrain();
                             }
                         }

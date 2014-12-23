@@ -37,21 +37,21 @@ class MapSpecification extends FunctionalSpecification {
     def 'should map source document into target document with into'() {
         expect:
         def subscriber = new ObservableSubscriber<TargetDocument>();
-        collection.find(new Document()).map(new MappingFunction()).subscribe(subscriber)
+        Publishers.map(collection.find(new Document()), new MappingFunction()).subscribe(subscriber)
         subscriber.get(10, SECONDS) == [new TargetDocument(documents[0]), new TargetDocument(documents[1])]
     }
 
     def 'should map when already mapped'() {
         when:
         def subscriber = new ObservableSubscriber<ObjectId>();
-        collection.find(new Document())
-                .map(new MappingFunction())
-                .map(new Function<TargetDocument, ObjectId>() {
-            @Override
-            ObjectId apply(final TargetDocument targetDocument) {
-                targetDocument.getId()
-            }
-        }).subscribe(subscriber)
+        Publishers.map(Publishers.map(collection.find(new Document()),
+                new MappingFunction()),
+                new Function<TargetDocument, ObjectId>() {
+                    @Override
+                    ObjectId apply(final TargetDocument targetDocument) {
+                        targetDocument.getId()
+                    }
+                }).subscribe(subscriber)
 
         then:
         subscriber.get(10, SECONDS) == [new TargetDocument(documents[0]).getId(), new TargetDocument(documents[1]).getId()]

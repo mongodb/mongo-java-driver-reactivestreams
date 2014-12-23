@@ -17,7 +17,6 @@
 
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.Function;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -28,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-class FlattenPublisher<T> implements MongoPublisher<T> {
+class FlattenPublisher<T> implements Publisher<T> {
 
     private final Publisher<List<T>> input;
 
@@ -39,11 +38,6 @@ class FlattenPublisher<T> implements MongoPublisher<T> {
     @Override
     public void subscribe(final Subscriber<? super T> subscriber) {
         new FlattenSubscription(subscriber).start();
-    }
-
-    @Override
-    public <O> MongoPublisher<O> map(final Function<? super T, ? extends O> function) {
-        return Publishers.map(this, function);
     }
 
     private class FlattenSubscription extends SubscriptionSupport<T> {
