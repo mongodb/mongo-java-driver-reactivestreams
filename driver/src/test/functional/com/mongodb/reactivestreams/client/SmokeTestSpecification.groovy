@@ -28,12 +28,9 @@ class SmokeTestSpecification extends FunctionalSpecification {
     private static final LOGGER = Loggers.getLogger('smokeTest')
 
     def 'should handle common scenarios without error'() {
-
         given:
         def mongoClient = getMongoClient()
         def database = mongoClient.getDatabase(databaseName)
-        def collectionName = 'smokeTestSpecification'
-        def collection = database.getCollection(collectionName)
         def document = new Document('_id', 1)
         def updatedDocument = new Document('_id', 1).append('a', 1)
 
@@ -125,6 +122,23 @@ class SmokeTestSpecification extends FunctionalSpecification {
 
         then:
         !run('the collection name is no longer in the collectionNames list', database.&getCollectionNames).contains(collectionName)
+    }
+
+    def 'should visit all documents from a cursor with multiple batches'() {
+        given:
+        def mongoClient = getMongoClient()
+        def database = mongoClient.getDatabase(databaseName)
+        def documents = (1..1000).collect { new Document('_id', it)}
+
+        run("Insert 1000 documents", collection.&insertMany, documents)
+
+        when:
+        def subscriber = new Fixture.ObservableSubscriber<Document>()
+        collection.find(new Document()).sort(new Document('_id', 1)).batchSize(99).subscribe(subscriber)
+        def foundDocuments = subscriber.get(10, SECONDS)
+
+        then:
+        foundDocuments == documents
     }
 
     def run(String log, operation, ... args) {
