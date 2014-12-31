@@ -24,18 +24,31 @@ import static Fixture.getDefaultDatabase
 import static Fixture.initializeCollection
 import static Fixture.dropDatabase
 import static Fixture.getDefaultDatabaseName
+import static com.mongodb.reactivestreams.client.Fixture.drop
 
 class FunctionalSpecification extends Specification {
     protected MongoDatabase database;
     protected MongoCollection<Document> collection;
 
+    def setupSpec() {
+        dropDatabase(getDefaultDatabaseName())
+    }
+
+    def cleanupSpec() {
+        dropDatabase(getDefaultDatabaseName())
+    }
+
     def setup() {
         database = getDefaultDatabase()
         collection = initializeCollection(new MongoNamespace(database.getName(), getClass().getName()))
+        drop(collection.getNamespace())
+
     }
 
     def cleanup() {
-        dropDatabase(getDefaultDatabaseName())
+        if (collection != null) {
+            drop(collection.getNamespace())
+        }
     }
 
     String getDatabaseName() {
