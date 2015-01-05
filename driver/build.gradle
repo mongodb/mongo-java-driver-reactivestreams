@@ -20,9 +20,9 @@ description = "A Reactive Streams implementation of the MongoDB Java driver"
 
 dependencies {
     compile 'org.mongodb:mongo-java-driver-core:3.0.0-SNAPSHOT'
-    compile 'org.reactivestreams:reactive-streams:1.0.0.M3'
+    compile 'org.reactivestreams:reactive-streams:1.0.0.RC1'
 
-    testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0.M3'
+    testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0.RC1'
 }
 
 task uberJar(type: Jar) {
