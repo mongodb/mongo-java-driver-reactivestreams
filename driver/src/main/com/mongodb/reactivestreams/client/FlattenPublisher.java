@@ -112,13 +112,14 @@ class FlattenPublisher<T> implements Publisher<T> {
                         }
                     }
 
-                    if (buffer.peek() != null && wanted.get() > 0) {
-                        tryDrain();
-                    } else if (inputFinished.get() && buffer.peek() == null) {
+                    if (inputFinished.get() && buffer.peek() == null) {
                         onComplete();
                     }
                 } finally {
                     draining.set(false);
+                }
+                if (buffer.peek() != null && wanted.get() > 0) {
+                    tryDrain();
                 }
             }
         }

@@ -97,7 +97,8 @@ class AsyncBatchCursorPublisher<T> implements Publisher<List<T>> {
         }
 
         void getNextBatch() {
-            final AsyncBatchCursor<T> cursor = batchCursor.get();
+            log("getNextBatch");
+            AsyncBatchCursor<T> cursor = batchCursor.get();
             if (cursor != null && getMore.compareAndSet(false, true)) {
                 if (cursor.isClosed()) {
                     inputFinished.set(true);
@@ -123,6 +124,15 @@ class AsyncBatchCursorPublisher<T> implements Publisher<List<T>> {
             }
         }
 
+        @Override
+        protected void handleCancel() {
+            super.handleCancel();
+            AsyncBatchCursor<T> cursor = batchCursor.get();
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
         /**
          * Original implementation from RatPack
          */
@@ -133,24 +143,22 @@ class AsyncBatchCursorPublisher<T> implements Publisher<List<T>> {
                     while (i > 0) {
                         List<T> item = buffer.poll();
                         if (item == null) {
-                            if (inputFinished.get()) {
-                                onComplete();
-                                return;
-                            } else {
-                                break;
-                            }
+                            // Nothing left to process
+                            break;
                         } else {
                             onNext(item);
                             i = wanted.decrementAndGet();
                         }
                     }
-                    if (buffer.peek() != null && wanted.get() > 0) {
-                        tryDrain();
-                    } else if (inputFinished.get() && buffer.peek() == null) {
+                    AsyncBatchCursor<T> cursor = batchCursor.get();
+                    if (cursor != null && cursor.isClosed()) {
                         onComplete();
                     }
                 } finally {
                     draining.set(false);
+                }
+                if (buffer.peek() != null && wanted.get() > 0) {
+                    tryDrain();
                 }
             }
         }

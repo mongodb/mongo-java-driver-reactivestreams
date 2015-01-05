@@ -519,7 +519,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
 
     @Override
     public <C> Publisher<C> getIndexes(final Class<C> clazz) {
-        return Publishers.flatten(new ListIndexesOperation<C>(namespace, getCodec(clazz)), options.getReadPreference(), executor);
+        return Publishers.flattenCursor(new ListIndexesOperation<C>(namespace, getCodec(clazz)), options.getReadPreference(), executor);
     }
 
     @Override

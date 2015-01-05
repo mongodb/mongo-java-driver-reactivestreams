@@ -99,16 +99,18 @@ class MongoCollectionSpecification extends Specification {
     }
     def asyncDocCursor = {
         Stub(AsyncBatchCursor) {
-            def seen = false;
+            def seen = false
+            def closed = false
             next(_) >> { args ->
                 if (seen) {
+                    closed = true
                     args[0].onResult([new Document('c', 1)], null)
                 } else {
                     args[0].onResult([new Document('a', 1), new Document('b', 1)], null)
                     seen = true
                 }
-
             }
+            isClosed() >> { closed }
         }
     }
 
@@ -1305,7 +1307,26 @@ class MongoCollectionSpecification extends Specification {
         given:
         def indexesDocs = [new Document('index', '1'), new Document('index', '2')]
         def indexesBson = [new BsonDocument('index', new BsonString('1')), new BsonDocument('index', new BsonString('2'))]
-        def executor = new TestOperationExecutor([indexesDocs, indexesBson])
+
+        def asyncIndexesDocCursor = Stub(AsyncBatchCursor) {
+            def seen = false;
+            next(_) >> { args ->
+                seen = true
+                args[0].onResult(indexesDocs, null)
+            }
+            isClosed() >> { seen }
+        }
+
+        def asyncIndexesBsonCursor = Stub(AsyncBatchCursor) {
+            def seen = false;
+            next(_) >> { args ->
+                seen = true
+                args[0].onResult(indexesBson, null)
+            }
+            isClosed() >> { seen }
+        }
+
+        def executor = new TestOperationExecutor([asyncIndexesDocCursor, asyncIndexesBsonCursor])
         def collection = new MongoCollectionImpl(namespace, Document, options, executor)
         def subscriber = new ObservableSubscriber<Document>()
 

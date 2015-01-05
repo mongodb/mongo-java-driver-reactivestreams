@@ -19,23 +19,25 @@ package com.mongodb.reactivestreams.client
 import com.mongodb.WriteConcern
 import com.mongodb.client.model.CreateCollectionOptions
 import com.mongodb.client.options.OperationOptions
+import com.mongodb.operation.AsyncBatchCursor
 import com.mongodb.operation.CommandReadOperation
 import com.mongodb.operation.CommandWriteOperation
 import com.mongodb.operation.CreateCollectionOperation
 import com.mongodb.operation.DropDatabaseOperation
-import com.mongodb.operation.ListCollectionNamesOperation
+import com.mongodb.operation.ListCollectionsOperation
 import org.bson.BsonDocument
 import org.bson.BsonInt32
 import org.bson.Document
+import org.bson.codecs.DocumentCodec
 import org.bson.codecs.configuration.RootCodecRegistry
 import spock.lang.Specification
 
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
+import static Fixture.ObservableSubscriber
 import static com.mongodb.ReadPreference.primary
 import static com.mongodb.ReadPreference.primaryPreferred
 import static com.mongodb.ReadPreference.secondary
 import static com.mongodb.ReadPreference.secondaryPreferred
-import static Fixture.ObservableSubscriber
+import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
 class MongoDatabaseSpecification extends Specification {
@@ -161,10 +163,19 @@ class MongoDatabaseSpecification extends Specification {
         subscriber.getErrors().isEmpty()
     }
 
-    def 'should use ListCollectionNamesOperation correctly'() {
+    def 'should use ListCollectionsOperation correctly'() {
         given:
-        List<String> names = (1..50).collect({ 'collection' + it })
-        def executor = new TestOperationExecutor([(1..50).collect({ 'collection' + it })])
+        List<Document> names = (1..50).collect({ new Document('name', 'collection' + it) })
+        def asyncCursor = Stub(AsyncBatchCursor) {
+            def seen = false;
+            next(_) >> { args ->
+                seen = true
+                args[0].onResult(names, null)
+            }
+            isClosed() >> { seen }
+        }
+
+        def executor = new TestOperationExecutor([asyncCursor])
         def subscriber = new ObservableSubscriber<String>();
 
         when:
@@ -185,10 +196,10 @@ class MongoDatabaseSpecification extends Specification {
         !subscriber.isCompleted()
 
         when:
-        def operation = executor.getReadOperation() as ListCollectionNamesOperation
+        def operation = executor.getReadOperation() as ListCollectionsOperation
 
         then:
-        expect operation, isTheSameAs(new ListCollectionNamesOperation(name))
+        expect operation, isTheSameAs(new ListCollectionsOperation(name, new DocumentCodec()))
         executor.getReadPreference() == primary()
 
         when:
@@ -203,7 +214,7 @@ class MongoDatabaseSpecification extends Specification {
         subscriber.getSubscription().request(20)
 
         then:
-        subscriber.getReceived() == names
+        subscriber.getReceived() == names*.getString('name')
         subscriber.getErrors().isEmpty()
         subscriber.isCompleted()
     }

@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.Function;
 import com.mongodb.MongoNamespace;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.model.CreateCollectionOptions;
@@ -25,9 +26,10 @@ import com.mongodb.operation.CommandReadOperation;
 import com.mongodb.operation.CommandWriteOperation;
 import com.mongodb.operation.CreateCollectionOperation;
 import com.mongodb.operation.DropDatabaseOperation;
-import com.mongodb.operation.ListCollectionNamesOperation;
+import com.mongodb.operation.ListCollectionsOperation;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
 import org.reactivestreams.Publisher;
 
 import static com.mongodb.ReadPreference.primary;
@@ -79,7 +81,14 @@ class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public Publisher<String> getCollectionNames() {
-        return Publishers.flatten(new ListCollectionNamesOperation(name), primary(), executor);
+        return Publishers.map(Publishers.flattenCursor(new ListCollectionsOperation<Document>(name, new DocumentCodec()),
+                        primary(), executor),
+                new Function<Document, String>() {
+                    @Override
+                    public String apply(final Document document) {
+                        return document.getString("name");
+                    }
+                });
     }
 
     @Override

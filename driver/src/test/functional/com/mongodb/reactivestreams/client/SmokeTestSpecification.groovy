@@ -126,11 +126,8 @@ class SmokeTestSpecification extends FunctionalSpecification {
 
     def 'should visit all documents from a cursor with multiple batches'() {
         given:
-        def mongoClient = getMongoClient()
-        def database = mongoClient.getDatabase(databaseName)
-        def documents = (1..1000).collect { new Document('_id', it)}
-
-        run("Insert 1000 documents", collection.&insertMany, documents)
+        def documents = (1..1000).collect { new Document('_id', it) }
+        run('Insert 1000 documents', collection.&insertMany, documents)
 
         when:
         def subscriber = new Fixture.ObservableSubscriber<Document>()
@@ -138,6 +135,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         def foundDocuments = subscriber.get(10, SECONDS)
 
         then:
+        foundDocuments.size() == documents.size()
         foundDocuments == documents
     }
 
