@@ -38,7 +38,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public final class Fixture {
     public static final String DEFAULT_URI = "mongodb://localhost:27017";
     public static final String MONGODB_URI_SYSTEM_PROPERTY_NAME = "org.mongodb.test.uri";
-    private static final String DEFAULT_DATABASE_NAME = "JavaDriverTest";
+    private static final String DEFAULT_DATABASE_NAME = "JavaDriverReactiveTest";
 
     private static ConnectionString connectionString;
     private static MongoClientImpl mongoClient;
