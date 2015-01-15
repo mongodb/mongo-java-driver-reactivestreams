@@ -53,7 +53,7 @@ abstract class SubscriptionSupport<T> implements Subscription {
     // We are using this `AtomicBoolean` to make sure that this `Subscription` doesn't run concurrently with itself,
     // which would violate rule 1.3 among others (no concurrent notifications).
     private final AtomicBoolean on = new AtomicBoolean(false);
-    
+
     public SubscriptionSupport(final Subscriber<? super T> subscriber) {
         this(subscriber, DEFAULT_BATCHSIZE);
     }
@@ -149,23 +149,26 @@ abstract class SubscriptionSupport<T> implements Subscription {
     final void next() {
         if (on.compareAndSet(false, true)) { // establishes a happens-before relationship with the end of the previous run
             try {
-                final Signal s = inboundSignals.poll(); // We take a signal off the queue
-                if (!cancelled) { // to make sure that we follow rule 1.8, 3.6 and 3.7
-                    // Below we simply unpack the `Signal`s and invoke the corresponding methods
-                    if (s instanceof Request) {
-                        handleRequest(((Request) s).n);
-                    } else if (s == Send.Instance) {
-                        handleSend();
-                    } else if (s == Cancel.Instance) {
-                        handleCancel();
+                while (!inboundSignals.isEmpty()) {
+                    final Signal s = inboundSignals.poll(); // We take a signal off the queue
+                    if (!cancelled) { // to make sure that we follow rule 1.8, 3.6 and 3.7
+                        // Below we simply unpack the `Signal`s and invoke the corresponding methods
+                        if (s instanceof Request) {
+                            handleRequest(((Request) s).n);
+                        } else if (s == Send.Instance) {
+                            handleSend();
+                        } else if (s == Cancel.Instance) {
+                            handleCancel();
+                        }
                     }
                 }
             } finally {
                 on.set(false); // establishes a happens-before relationship with the beginning of the next run
-                // If we still have signals to process then process them
-                if (!inboundSignals.isEmpty()) {
-                    next();
-                }
+            }
+
+            // If we still have signals to process then process them
+            if (!cancelled && !inboundSignals.isEmpty()) {
+                next();
             }
         }
     }

@@ -19,6 +19,7 @@ package com.mongodb.reactivestreams.client
 import com.mongodb.MongoNamespace
 import com.mongodb.diagnostics.logging.Loggers
 import org.bson.Document
+import spock.lang.IgnoreIf
 
 import static Fixture.getMongoClient
 import static java.util.concurrent.TimeUnit.SECONDS
@@ -126,17 +127,32 @@ class SmokeTestSpecification extends FunctionalSpecification {
 
     def 'should visit all documents from a cursor with multiple batches'() {
         given:
-        def documents = (1..1000).collect { new Document('_id', it) }
-        run('Insert 1000 documents', collection.&insertMany, documents)
+        def documents = (1..10000).collect { new Document('_id', it) }
+        run('Insert 10000 documents', collection.&insertMany, documents)
 
         when:
         def subscriber = new Fixture.ObservableSubscriber<Document>()
         collection.find(new Document()).sort(new Document('_id', 1)).batchSize(99).subscribe(subscriber)
-        def foundDocuments = subscriber.get(10, SECONDS)
+        def foundDocuments = subscriber.get(30, SECONDS)
 
         then:
         foundDocuments.size() == documents.size()
         foundDocuments == documents
+    }
+
+    @IgnoreIf({ true }) // TODO - update event loop so getMore doesn't continually block the loop
+    def 'should visit a large number of documents from a cursor with multiple batches'() {
+        given:
+        def documents = (1..100000).collect { new Document('_id', it) }
+        run('Insert 1000000 documents', collection.&insertMany, documents)
+
+        when:
+        def subscriber = new Fixture.CountingSubscriber<Document>()
+        collection.find(new Document()).sort(new Document('_id', 1)).batchSize(99).subscribe(subscriber)
+        def foundDocuments = subscriber.get(30, SECONDS)
+
+        then:
+        foundDocuments == documents.size()
     }
 
     def run(String log, operation, ... args) {

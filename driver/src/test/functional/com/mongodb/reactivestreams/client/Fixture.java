@@ -200,4 +200,71 @@ public final class Fixture {
         }
     }
 
+    public static class CountingSubscriber<T> implements Subscriber<T> {
+        private int counter = 0;
+        private Throwable error;
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private volatile Subscription subscription;
+        private volatile boolean completed;
+
+        @Override
+        public void onSubscribe(final Subscription s) {
+            subscription = s;
+        }
+
+        @Override
+        public void onNext(final T t) {
+            counter += 1;
+        }
+
+        @Override
+        public void onError(final Throwable t) {
+            error = t;
+            onComplete();
+        }
+
+        @Override
+        public void onComplete() {
+            completed = true;
+            latch.countDown();
+        }
+
+        public Subscription getSubscription() {
+            return subscription;
+        }
+
+        public int getCount() {
+            return counter;
+        }
+
+        public Throwable getError() {
+            return error;
+        }
+
+        public boolean isCompleted() {
+            return completed;
+        }
+
+        public int get(final long timeout, final TimeUnit unit) throws Throwable {
+            return await(timeout, unit).getCount();
+        }
+
+        public CountingSubscriber<T> await(final long timeout, final TimeUnit unit) throws Throwable {
+            subscription.request(Integer.MAX_VALUE);
+            if (!latch.await(timeout, unit)) {
+                if (!isCompleted()) {
+                    subscription.cancel();
+                }
+                throw new MongoTimeoutException("Publisher onComplete timed out");
+            }
+            if (!isCompleted()) {
+                subscription.cancel();
+            }
+            if (error != null) {
+                throw error;
+            }
+            return this;
+        }
+    }
+
 }
