@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,107 +16,67 @@
 
 package com.mongodb.reactivestreams.client
 
-import com.mongodb.WriteConcern
-import com.mongodb.client.options.OperationOptions
-import com.mongodb.connection.Cluster
-import com.mongodb.operation.GetDatabaseNamesOperation
-import org.bson.codecs.configuration.RootCodecRegistry
+import com.mongodb.async.client.MongoClient as WrappedMongoClient
+import org.bson.BsonDocument
+import org.bson.Document
 import spock.lang.Specification
 
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
-import static com.mongodb.ReadPreference.primary
-import static com.mongodb.ReadPreference.secondary
-import static com.mongodb.ReadPreference.secondaryPreferred
+import static com.mongodb.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
 class MongoClientSpecification extends Specification {
 
-    def 'should use GetDatabaseNamesOperation correctly'() {
+    def wrapped = Mock(WrappedMongoClient)
+    def mongoClient = new MongoClientImpl(wrapped)
+
+    def 'should have the same methods as the wrapped MongoClient'() {
         given:
-        List<String> names = (1..50).collect({ 'collection' + it })
-        def options = MongoClientOptions.builder().build()
-        def cluster = Stub(Cluster)
-        def executor = new TestOperationExecutor([(1..50).collect({ 'collection' + it })])
-        def subscriber = new Fixture.ObservableSubscriber<String>();
+        def wrapped = WrappedMongoClient.methods*.name.sort()
+        def local = MongoClient.methods*.name.sort()
 
-        when:
-        new MongoClientImpl(options, cluster, executor).getDatabaseNames().subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(10)
-
-        then:
-        subscriber.getReceived().size() == 10
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as GetDatabaseNamesOperation
-
-        then:
-        expect operation, isTheSameAs(new GetDatabaseNamesOperation())
-        executor.getReadPreference() == primary()
-
-        when:
-        subscriber.getSubscription().request(30)
-
-        then:
-        subscriber.getReceived().size() == 40
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(20)
-
-        then:
-        subscriber.getReceived() == names
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
+        expect:
+        wrapped == local
     }
 
-    def 'should provide the same options'() {
-        given:
-        def options = MongoClientOptions.builder().build()
-
+    def 'should call the underlying getOptions'(){
         when:
-        def clientOptions = new MongoClientImpl(options, Stub(Cluster), new TestOperationExecutor([])).getOptions()
+        mongoClient.getOptions()
 
         then:
-        options == clientOptions
+        1 * wrapped.getOptions()
     }
 
-    def 'should pass the correct options to getDatabase'() {
+    def 'should call the underlying listDatabases'() {
         given:
-        def options = MongoClientOptions.builder()
-                .readPreference(secondary())
-                .writeConcern(WriteConcern.ACKNOWLEDGED)
-                .codecRegistry(codecRegistry)
-                .build()
-        def client = new MongoClientImpl(options, Stub(Cluster), new TestOperationExecutor([]))
+        def wrappedResult = Stub(com.mongodb.async.client.ListDatabasesFluent)
+        def wrapped = Mock(WrappedMongoClient) {
+            1 * listDatabases(Document) >> wrappedResult
+            1 * listDatabases(BsonDocument) >> wrappedResult
+        }
+        def mongoClient = new MongoClientImpl(wrapped)
+
 
         when:
-        def databaseOptions = customOptions ? client.getDatabase('name', customOptions).getOptions() :
-                client.getDatabase('name').getOptions()
+        def fluent = mongoClient.listDatabases()
+
         then:
-        databaseOptions.getReadPreference() == readPreference
-        databaseOptions.getWriteConcern() == writeConcern
-        databaseOptions.getCodecRegistry() == codecRegistry
+        expect fluent, isTheSameAs(new ListDatabasesFluentImpl(wrappedResult))
 
-        where:
-        customOptions                      | readPreference       | writeConcern              | codecRegistry
-        null                               | secondary()          | WriteConcern.ACKNOWLEDGED | new RootCodecRegistry([])
-        OperationOptions.builder().build() | secondary()          | WriteConcern.ACKNOWLEDGED | new RootCodecRegistry([])
-        OperationOptions.builder()
-                .readPreference(secondaryPreferred())
-                .writeConcern(WriteConcern.MAJORITY)
-                .build()                   | secondaryPreferred() | WriteConcern.MAJORITY     | new RootCodecRegistry([])
+        when:
+        fluent = mongoClient.listDatabases(BsonDocument)
 
+        then:
+        expect fluent, isTheSameAs(new ListDatabasesFluentImpl(wrappedResult))
+
+
+    }
+
+    def 'should call the underlying listDatabaseNames'() {
+        when:
+        mongoClient.listDatabaseNames()
+
+        then:
+        1 * wrapped.listDatabaseNames()
     }
 
 }

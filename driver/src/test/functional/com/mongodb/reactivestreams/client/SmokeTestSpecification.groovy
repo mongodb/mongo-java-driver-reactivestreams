@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.mongodb.reactivestreams.client
 import com.mongodb.MongoNamespace
 import com.mongodb.diagnostics.logging.Loggers
 import org.bson.Document
-import spock.lang.IgnoreIf
 
 import static Fixture.getMongoClient
 import static java.util.concurrent.TimeUnit.SECONDS
@@ -37,7 +36,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
 
         when:
         run('clean up old database', mongoClient.getDatabase(databaseName).&dropDatabase) == null
-        def names = run('get database names', mongoClient.&getDatabaseNames)
+        def names = run('get database names', mongoClient.&listDatabaseNames)
 
         then: 'Get Database Names'
         !names.contains(null)
@@ -46,14 +45,14 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('Create a collection and the created database is in the list', database.&createCollection, collectionName)[0] == null
 
         when:
-        def updatedNames = run('get database names', mongoClient.&getDatabaseNames)
+        def updatedNames = run('get database names', mongoClient.&listDatabaseNames)
 
         then: 'The database names should contain the database and be one bigger than before'
         updatedNames.contains(databaseName)
         updatedNames.size() == names.size() + 1
 
         when:
-        def collectionNames = run('The collection name should be in the collection names list', database.&getCollectionNames)
+        def collectionNames = run('The collection name should be in the collection names list', database.&listCollectionNames)
 
         then:
         !collectionNames.contains(null)
@@ -93,7 +92,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('create an index', collection.&createIndex, new Document('test', 1))[0] == null
 
         then:
-        def indexNames = run('has the newly created index', collection.&getIndexes)*.name
+        def indexNames = run('has the newly created index', collection.&listIndexes)*.name
 
         then:
         indexNames.containsAll('_id_', 'test_1')
@@ -102,15 +101,15 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('drop the index', collection.&dropIndex, 'test_1')[0] == null
 
         then:
-        run('has a single index left "_id" ', collection.&getIndexes).size == 1
+        run('has a single index left "_id" ', collection.&listIndexes).size == 1
 
         then:
         def newCollectionName = 'new' + collectionName.capitalize()
         run('can rename the collection', collection.&renameCollection, new MongoNamespace(databaseName, newCollectionName))[0] == null
 
         then:
-        !run('the new collection name is in the collection names list', database.&getCollectionNames).contains(collectionName)
-        run('get collection names', database.&getCollectionNames).contains(newCollectionName)
+        !run('the new collection name is in the collection names list', database.&listCollectionNames).contains(collectionName)
+        run('get collection names', database.&listCollectionNames).contains(newCollectionName)
 
         when:
         collection = database.getCollection(newCollectionName)
@@ -119,10 +118,10 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('drop the collection', collection.&dropCollection)[0] == null
 
         then:
-        run('there are no indexes', collection.&getIndexes).size == 0
+        run('there are no indexes', collection.&listIndexes).size == 0
 
         then:
-        !run('the collection name is no longer in the collectionNames list', database.&getCollectionNames).contains(collectionName)
+        !run('the collection name is no longer in the collectionNames list', database.&listCollectionNames).contains(collectionName)
     }
 
     def 'should visit all documents from a cursor with multiple batches'() {
@@ -140,7 +139,6 @@ class SmokeTestSpecification extends FunctionalSpecification {
         foundDocuments == documents
     }
 
-    @IgnoreIf({ true }) // TODO - update event loop so getMore doesn't continually block the loop
     def 'should visit a large number of documents from a cursor with multiple batches'() {
         given:
         def documents = (1..100000).collect { new Document('_id', it) }

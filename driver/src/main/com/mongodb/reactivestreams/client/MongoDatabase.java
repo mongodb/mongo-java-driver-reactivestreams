@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
 import com.mongodb.client.model.CreateCollectionOptions;
-import com.mongodb.client.options.OperationOptions;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.reactivestreams.Publisher;
 
 /**
@@ -31,7 +32,6 @@ import org.reactivestreams.Publisher;
  */
 @ThreadSafe
 public interface MongoDatabase {
-
     /**
      * Gets the name of the database.
      *
@@ -40,51 +40,49 @@ public interface MongoDatabase {
     String getName();
 
     /**
-     * Executes command in the context of the current database.
+     * Get the codec registry for the MongoDatabase.
      *
-     * @param command  the command to be run
-     * @return a publisher with a single element indicating when the command has completed
+     * @return the {@link org.bson.codecs.configuration.CodecRegistry}
      */
-    Publisher<Document> executeCommand(Object command);
+    CodecRegistry getCodecRegistry();
 
     /**
-     * Executes command in the context of the current database.
+     * Get the read preference for the MongoDatabase.
      *
-     * @param command        the command to be run
-     * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
-     * @return a publisher with a single element indicating when the command has completed
+     * @return the {@link com.mongodb.ReadPreference}
      */
-    Publisher<Document> executeCommand(Object command, ReadPreference readPreference);
+    ReadPreference getReadPreference();
 
     /**
-     * Executes command in the context of the current database.
+     * Get the write concern for the MongoDatabase.
      *
-     * @param command  the command to be run
-     * @param clazz    the default class to cast any documents returned from the database into.
-     * @param <T>      the type of the class to use instead of {@code Document}.
-     * @return a publisher with a single element indicating when the command has completed
+     * @return the {@link com.mongodb.WriteConcern}
      */
-    <T> Publisher<T> executeCommand(Object command, Class<T> clazz);
+    WriteConcern getWriteConcern();
 
     /**
-     * Executes command in the context of the current database.
+     * Create a new MongoDatabase instance with a different codec registry.
      *
-     * @param command        the command to be run
-     * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
-     * @param clazz          the default class to cast any documents returned from the database into.
-     * @param <T>            the type of the class to use instead of {@code Document}.
-     * @return a publisher with a single element indicating when the command has completed
+     * @param codecRegistry the new {@link org.bson.codecs.configuration.CodecRegistry} for the collection
+     * @return a new MongoCollection instance with the different codec registry
      */
-    <T> Publisher<T> executeCommand(Object command, ReadPreference readPreference, Class<T> clazz);
+    MongoDatabase withCodecRegistry(CodecRegistry codecRegistry);
 
     /**
-     * Gets the options that are used with the database.
+     * Create a new MongoDatabase instance with a different read preference.
      *
-     * <p>Note: {@link OperationOptions} is immutable.</p>
-     *
-     * @return the options
+     * @param readPreference the new {@link com.mongodb.ReadPreference} for the collection
+     * @return a new MongoDatabase instance with the different readPreference
      */
-    OperationOptions getOptions();
+    MongoDatabase withReadPreference(ReadPreference readPreference);
+
+    /**
+     * Create a new MongoDatabase instance with a different write concern.
+     *
+     * @param writeConcern the new {@link com.mongodb.WriteConcern} for the collection
+     * @return a new MongoCollection instance with the different writeConcern
+     */
+    MongoDatabase withWriteConcern(WriteConcern writeConcern);
 
     /**
      * Gets a collection.
@@ -95,16 +93,7 @@ public interface MongoDatabase {
     MongoCollection<Document> getCollection(String collectionName);
 
     /**
-     * Gets a collection, with the specific {@code OperationOptions}.
-     *
-     * @param collectionName   the name of the collection to return
-     * @param operationOptions the options to be used with the {@code MongoCollection}
-     * @return the collection
-     */
-    MongoCollection<Document> getCollection(String collectionName, OperationOptions operationOptions);
-
-    /**
-     * Gets a collection, with a specific document class.
+     * Gets a collection, with a specific default document class.
      *
      * @param collectionName the name of the collection to return
      * @param clazz          the default class to cast any documents returned from the database into.
@@ -114,20 +103,47 @@ public interface MongoDatabase {
     <T> MongoCollection<T> getCollection(String collectionName, Class<T> clazz);
 
     /**
-     * Gets a collection, with a specific document class and {@code OperationOptions}.
+     * Executes command in the context of the current database.
      *
-     * @param collectionName the name of the collection to return
-     * @param clazz          the default class to cast any documents returned from the database into
-     * @param options        the options to be used with the {@code MongoCollection}
-     * @param <T>            the type of the class to use instead of {@code Document}
-     * @return the collection
+     * @param command  the command to be run
+     * @return a publisher containing the command result
      */
-    <T> MongoCollection<T> getCollection(String collectionName, Class<T> clazz, OperationOptions options);
+    Publisher<Document> executeCommand(Object command);
+
+    /**
+     * Executes command in the context of the current database.
+     *
+     * @param command        the command to be run
+     * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
+     * @return a publisher containing the command result
+     */
+    Publisher<Document> executeCommand(Object command, ReadPreference readPreference);
+
+    /**
+     * Executes command in the context of the current database.
+     *
+     * @param command  the command to be run
+     * @param clazz    the default class to cast any documents returned from the database into.
+     * @param <T>      the type of the class to use instead of {@code Document}.
+     * @return a publisher containing the command result
+     */
+    <T> Publisher<T> executeCommand(Object command, Class<T> clazz);
+
+    /**
+     * Executes command in the context of the current database.
+     *
+     * @param command        the command to be run
+     * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
+     * @param clazz          the default class to cast any documents returned from the database into.
+     * @param <T>            the type of the class to use instead of {@code Document}.
+     * @return a publisher containing the command result
+     */
+    <T> Publisher<T> executeCommand(Object command, ReadPreference readPreference, Class<T> clazz);
 
     /**
      * Drops this database.
      *
-     * @return a publisher with a single element indicating when the drop database has completed
+     * @return a publisher identifying when the database has been dropped
      * @mongodb.driver.manual reference/commands/dropDatabase/#dbcmd.dropDatabase Drop database
      */
     Publisher<Void> dropDatabase();
@@ -135,15 +151,33 @@ public interface MongoDatabase {
     /**
      * Gets the names of all the collections in this database.
      *
-     * @return a publisher emitting the sequence of collection names
+     * @return a publisher with all the names of all the collections in this database
      */
-    Publisher<String> getCollectionNames();
+    Publisher<String> listCollectionNames();
+
+    /**
+     * Finds all the collections in this database.
+     *
+     * @return the fluent list collections interface
+     * @mongodb.driver.manual reference/command/listCollections listCollections
+     */
+    ListCollectionsFluent<Document> listCollections();
+
+    /**
+     * Finds all the collections in this database.
+     *
+     * @param clazz the class to decode each document into
+     * @param <C>   the target document type of the iterable.
+     * @return the fluent list collections interface
+     * @mongodb.driver.manual reference/command/listCollections listCollections
+     */
+    <C> ListCollectionsFluent<C> listCollections(Class<C> clazz);
 
     /**
      * Create a new collection with the given name.
      *
      * @param collectionName the name for the new collection to create
-     * @return a publisher with a single element indicating when the collection has been created
+     * @return a publisher identifying when the collection has been created
      * @mongodb.driver.manual reference/commands/create Create Command
      */
     Publisher<Void> createCollection(String collectionName);
@@ -153,7 +187,7 @@ public interface MongoDatabase {
      *
      * @param collectionName the name for the new collection to create
      * @param options        various options for creating the collection
-     * @return a publisher with a single element indicating when the collection has been created
+     * @return a publisher identifying when the collection has been created
      * @mongodb.driver.manual reference/commands/create Create Command
      */
     Publisher<Void> createCollection(String collectionName, CreateCollectionOptions options);

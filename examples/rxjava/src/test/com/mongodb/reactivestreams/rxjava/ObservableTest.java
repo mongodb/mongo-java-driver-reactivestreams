@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,12 +36,12 @@ public class ObservableTest {
     public void testInteropWithRxJava() {
 
         MongoDatabase database = Fixture.getDefaultDatabase();
-        
+
         toObservable(database.dropDatabase()).timeout(10, SECONDS).toBlocking().single();
 
         List<Observable<Void>> observers = new ArrayList<Observable<Void>>();
         List<String> uppercaseNames = new ArrayList<String>();
-        
+
         for (int i = 0; i < 25; i++) {
             String name = "collectionNumber" + i;
             observers.add(toObservable(database.createCollection(name)));
@@ -49,7 +49,7 @@ public class ObservableTest {
         }
         assertThat(Observable.merge(observers).timeout(10, SECONDS).toList().toBlocking().single().size(), is(25));
 
-        Observable<String> collectionNames = toObservable(database.getCollectionNames())
+        Observable<String> collectionNames = toObservable(database.listCollectionNames())
                 .filter(new Func1<String, Boolean>() {
                     @Override
                     public Boolean call(final String s) {
@@ -63,6 +63,8 @@ public class ObservableTest {
                 });
 
         assertThat(collectionNames.toList().timeout(10, SECONDS).toBlocking().single(), containsInAnyOrder(uppercaseNames.toArray()));
+
+        toObservable(database.dropDatabase()).timeout(10, SECONDS).toBlocking().single();
     }
 
 

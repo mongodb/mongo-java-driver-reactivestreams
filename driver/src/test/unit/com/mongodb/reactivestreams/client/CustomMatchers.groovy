@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client
+package com.mongodb
 
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
+
 
 class CustomMatchers {
 
@@ -40,9 +41,9 @@ class CustomMatchers {
         if (actual.class.name != expected.class.name) {
             return false
         }
-        actual.class.declaredFields.findAll { !it.synthetic }*.name.collect { it ->
-            if (it == 'decoder') {
-                return actual.decoder.class == expected.decoder.class
+        getFieldNames(actual.class).collect { it ->
+            if (nominallyTheSame(it)) {
+                return actual."$it".class == expected."$it".class
             } else if (actual."$it" != expected."$it") {
                 def (a1, e1) = [actual."$it", expected."$it"]
                 if (List.isCase(a1) && List.isCase(e1) && (a1.size() == e1.size())) {
@@ -67,11 +68,14 @@ class CustomMatchers {
             description.appendText("different classes: ${expected.class.name} != ${actual.class.name}, ")
             return false
         }
-        actual.class.declaredFields.findAll { !it.synthetic }*.name
-                .collect { it ->
-            if (it == 'decoder' && actual.decoder.class != expected.decoder.class) {
-                description.appendText("different decoder classes $it : ${expected.decoder.class.name} != ${actual.decoder.class.name}, ")
-                return false
+
+        getFieldNames(actual.class).collect { it ->
+            if (nominallyTheSame(it)) {
+                if (actual."$it".class != expected."$it".class) {
+                    description.appendText("different classes $it :" +
+                            " ${expected."$it".class.name} != ${actual."$it".class.name}, ")
+                    return false
+                }
             } else if (actual."$it" != expected."$it") {
                 def (a1, e1) = [actual."$it", expected."$it"]
                 if (List.isCase(a1) && List.isCase(e1) && (a1.size() == e1.size())) {
@@ -88,4 +92,20 @@ class CustomMatchers {
             true
         }
     }
+
+    static getFieldNames(Class curClass) {
+        getFieldNames(curClass, [])
+    }
+
+    static getFieldNames(Class curClass, names) {
+        if (curClass != Object) {
+            getFieldNames(curClass.getSuperclass(), names += curClass.declaredFields.findAll { !it.synthetic }*.name)
+        }
+        names
+    }
+
+    static nominallyTheSame(String className ) {
+        className in ['decoder', 'executor']
+    }
+
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2014 the original author or authors.
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

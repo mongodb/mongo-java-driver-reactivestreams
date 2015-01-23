@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,95 +16,67 @@
 
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.Function;
-import com.mongodb.MongoNamespace;
 import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.CreateCollectionOptions;
-import com.mongodb.client.options.OperationOptions;
-import com.mongodb.operation.AsyncOperationExecutor;
-import com.mongodb.operation.CommandReadOperation;
-import com.mongodb.operation.CommandWriteOperation;
-import com.mongodb.operation.CreateCollectionOperation;
-import com.mongodb.operation.DropDatabaseOperation;
-import com.mongodb.operation.ListCollectionsOperation;
-import org.bson.BsonDocument;
 import org.bson.Document;
-import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.reactivestreams.Publisher;
 
-import static com.mongodb.ReadPreference.primary;
 import static com.mongodb.assertions.Assertions.notNull;
-import static org.bson.BsonDocumentWrapper.asBsonDocument;
 
 class MongoDatabaseImpl implements MongoDatabase {
-    private final OperationOptions options;
-    private final String name;
-    private final AsyncOperationExecutor executor;
 
-    MongoDatabaseImpl(final String name, final OperationOptions options, final AsyncOperationExecutor executor) {
-        this.name = name;
-        this.options = options;
-        this.executor = executor;
+    private final com.mongodb.async.client.MongoDatabase wrapped;
+
+    MongoDatabaseImpl(final com.mongodb.async.client.MongoDatabase wrapped) {
+        this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
     public String getName() {
-        return name;
+        return wrapped.getName();
+    }
+
+    @Override
+    public CodecRegistry getCodecRegistry() {
+        return wrapped.getCodecRegistry();
+    }
+
+    @Override
+    public ReadPreference getReadPreference() {
+        return wrapped.getReadPreference();
+    }
+
+    @Override
+    public WriteConcern getWriteConcern() {
+        return wrapped.getWriteConcern();
+    }
+
+    @Override
+    public MongoDatabase withCodecRegistry(final CodecRegistry codecRegistry) {
+        return new MongoDatabaseImpl(wrapped.withCodecRegistry(codecRegistry));
+    }
+
+    @Override
+    public MongoDatabase withReadPreference(final ReadPreference readPreference) {
+        return new MongoDatabaseImpl(wrapped.withReadPreference(readPreference));
+    }
+
+    @Override
+    public MongoDatabase withWriteConcern(final WriteConcern writeConcern) {
+        return new MongoDatabaseImpl(wrapped.withWriteConcern(writeConcern));
     }
 
     @Override
     public MongoCollection<Document> getCollection(final String collectionName) {
-        return getCollection(collectionName, OperationOptions.builder().build());
-    }
-
-    @Override
-    public MongoCollection<Document> getCollection(final String collectionName, final OperationOptions options) {
-        return getCollection(collectionName, Document.class, options);
+        return getCollection(collectionName, Document.class);
     }
 
     @Override
     public <T> MongoCollection<T> getCollection(final String collectionName, final Class<T> clazz) {
-        return getCollection(collectionName, clazz, OperationOptions.builder().build());
-    }
-
-    @Override
-    public <T> MongoCollection<T> getCollection(final String collectionName, final Class<T> clazz,
-                                                final OperationOptions options) {
-        return new MongoCollectionImpl<T>(new MongoNamespace(name, collectionName), clazz, options.withDefaults(this.options),
-                                          executor);
-    }
-
-    @Override
-    public Publisher<Void> dropDatabase() {
-        return Publishers.publish(new DropDatabaseOperation(name), executor);
-    }
-
-    @Override
-    public Publisher<String> getCollectionNames() {
-        return Publishers.map(Publishers.flattenCursor(new ListCollectionsOperation<Document>(name, new DocumentCodec()),
-                        primary(), executor),
-                new Function<Document, String>() {
-                    @Override
-                    public String apply(final Document document) {
-                        return document.getString("name");
-                    }
-                });
-    }
-
-    @Override
-    public Publisher<Void> createCollection(final String collectionName) {
-        return createCollection(collectionName, new CreateCollectionOptions());
-    }
-
-    @Override
-    public Publisher<Void> createCollection(final String collectionName, final CreateCollectionOptions createCollectionOptions) {
-        return Publishers.publish(new CreateCollectionOperation(name, collectionName)
-                                  .capped(createCollectionOptions.isCapped())
-                                  .sizeInBytes(createCollectionOptions.getSizeInBytes())
-                                  .autoIndex(createCollectionOptions.isAutoIndex())
-                                  .maxDocuments(createCollectionOptions.getMaxDocuments())
-                                  .usePowerOf2Sizes(createCollectionOptions.isUsePowerOf2Sizes())
-                                  .storageEngineOptions(asBson(createCollectionOptions.getStorageEngineOptions())), executor);
+        return new MongoCollectionImpl<T>(wrapped.getCollection(collectionName, clazz));
     }
 
     @Override
@@ -119,25 +91,61 @@ class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public <T> Publisher<T> executeCommand(final Object command, final Class<T> clazz) {
-        notNull("command", command);
-        return Publishers.publish(new CommandWriteOperation<T>(getName(), asBson(command), options.getCodecRegistry().get(clazz)),
-                                  executor);
+        return new SingleResultPublisher<T>() {
+            @Override
+            void execute(final SingleResultCallback<T> callback) {
+                wrapped.executeCommand(command, clazz, callback);
+            }
+        };
     }
 
     @Override
     public <T> Publisher<T> executeCommand(final Object command, final ReadPreference readPreference, final Class<T> clazz) {
-        notNull("command", command);
-        notNull("readPreference", readPreference);
-        return Publishers.publish(new CommandReadOperation<T>(getName(), asBson(command), options.getCodecRegistry().get(clazz)),
-                                  readPreference, executor);
+        return new SingleResultPublisher<T>() {
+            @Override
+            void execute(final SingleResultCallback<T> callback) {
+                wrapped.executeCommand(command, readPreference, clazz, callback);
+            }
+        };
     }
 
     @Override
-    public OperationOptions getOptions() {
-        return options;
+    public Publisher<Void> dropDatabase() {
+        return new SingleResultPublisher<Void>() {
+            @Override
+            void execute(final SingleResultCallback<Void> callback) {
+                wrapped.dropDatabase(callback);
+            }
+        };
     }
 
-    private BsonDocument asBson(final Object document) {
-        return asBsonDocument(document, options.getCodecRegistry());
+    @Override
+    public Publisher<String> listCollectionNames() {
+        return new MongoIterablePublisher<String>(wrapped.listCollectionNames());
+    }
+
+    @Override
+    public ListCollectionsFluent<Document> listCollections() {
+        return listCollections(Document.class);
+    }
+
+    @Override
+    public <C> ListCollectionsFluent<C> listCollections(final Class<C> clazz) {
+        return new ListCollectionsFluentImpl<C>(wrapped.listCollections(clazz));
+    }
+
+    @Override
+    public Publisher<Void> createCollection(final String collectionName) {
+        return createCollection(collectionName, new CreateCollectionOptions());
+    }
+
+    @Override
+    public Publisher<Void> createCollection(final String collectionName, final CreateCollectionOptions options) {
+        return new SingleResultPublisher<Void>() {
+            @Override
+            void execute(final SingleResultCallback<Void> callback) {
+                wrapped.createCollection(collectionName, options, callback);
+            }
+        };
     }
 }

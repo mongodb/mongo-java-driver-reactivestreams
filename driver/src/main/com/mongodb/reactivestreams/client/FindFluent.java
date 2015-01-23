@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T> The type of the result.
  */
-public interface FluentFindPublisher<T> extends Publisher<T> {
+public interface FindFluent<T> extends Publisher<T> {
 
     /**
      * Helper to return a publisher limited first from the query.
@@ -42,7 +42,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Filter
      */
-    FluentFindPublisher<T> filter(Object filter);
+    FindFluent<T> filter(Object filter);
 
     /**
      * Sets the limit to apply.
@@ -51,8 +51,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.limit/#cursor.limit Limit
      */
-    FluentFindPublisher<T> limit(int limit);
-
+    FindFluent<T> limit(int limit);
     /**
      * Sets the number of documents to skip.
      *
@@ -60,7 +59,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.skip/#cursor.skip Skip
      */
-    FluentFindPublisher<T> skip(int skip);
+    FindFluent<T> skip(int skip);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -70,7 +69,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.maxTimeMS/#cursor.maxTimeMS Max Time
      */
-    FluentFindPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    FindFluent<T> maxTime(long maxTime, TimeUnit timeUnit);
 
     /**
      * Sets the number of documents to return per batch.
@@ -79,7 +78,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
      */
-    FluentFindPublisher<T> batchSize(int batchSize);
+    FindFluent<T> batchSize(int batchSize);
 
     /**
      * Sets the query modifiers to apply to this operation.
@@ -88,7 +87,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/query-modifier/ Query Modifiers
      */
-    FluentFindPublisher<T> modifiers(Object modifiers);
+    FindFluent<T> modifiers(Object modifiers);
 
     /**
      * Sets a document describing the fields to return for all matching documents.
@@ -97,8 +96,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Projection
      */
-    FluentFindPublisher<T> projection(Object projection);
-
+    FindFluent<T> projection(Object projection);
     /**
      * Sets the sort criteria to apply to the query.
      *
@@ -106,7 +104,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.sort/ Sort
      */
-    FluentFindPublisher<T> sort(Object sort);
+    FindFluent<T> sort(Object sort);
 
     /**
      * The server normally times out idle cursors after an inactivity period (10 minutes)
@@ -115,7 +113,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @param noCursorTimeout true if cursor timeout is disabled
      * @return this
      */
-    FluentFindPublisher<T> noCursorTimeout(boolean noCursorTimeout);
+    FindFluent<T> noCursorTimeout(boolean noCursorTimeout);
 
     /**
      * Users should not set this under normal circumstances.
@@ -123,7 +121,7 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @param oplogReplay if oplog replay is enabled
      * @return this
      */
-    FluentFindPublisher<T> oplogReplay(boolean oplogReplay);
+    FindFluent<T> oplogReplay(boolean oplogReplay);
 
     /**
      * Get partial results from a sharded cluster if one or more shards are unreachable (instead of throwing an error).
@@ -131,7 +129,8 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @param partial if partial results for sharded clusters is enabled
      * @return this
      */
-    FluentFindPublisher<T> partial(boolean partial);
+    FindFluent<T> partial(boolean partial);
+
 
     /**
      * Sets the cursor type.
@@ -139,6 +138,5 @@ public interface FluentFindPublisher<T> extends Publisher<T> {
      * @param cursorType the cursor type
      * @return this
      */
-    FluentFindPublisher<T> cursorType(CursorType cursorType);
-
+    FindFluent<T> cursorType(CursorType cursorType);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.annotations.Immutable;
-import com.mongodb.client.options.OperationOptions;
+import com.mongodb.async.client.MongoClientOptions;
+import org.bson.Document;
 import org.reactivestreams.Publisher;
 
 import java.io.Closeable;
@@ -41,15 +42,6 @@ public interface MongoClient extends Closeable {
     MongoDatabase getDatabase(String name);
 
     /**
-     * Gets the database with the given name.
-     *
-     * @param name                 the name of the database
-     * @param options the database options
-     * @return the database
-     */
-    MongoDatabase getDatabase(String name, OperationOptions options);
-
-    /**
      * Close the client, which will close all underlying cached resources, including, for example,
      * sockets and background monitoring threads.
      */
@@ -67,9 +59,25 @@ public interface MongoClient extends Closeable {
     /**
      * Get a list of the database names
      *
-     * @return a publisher emitting the sequence of database names
      * @mongodb.driver.manual reference/commands/listDatabases List Databases
+     * @return an iterable containing all the names of all the databases
      */
-    Publisher<String> getDatabaseNames();
+    Publisher<String> listDatabaseNames();
+
+    /**
+     * Gets the list of databases
+     *
+     * @return the fluent list databases interface
+     */
+    ListDatabasesFluent<Document> listDatabases();
+
+    /**
+     * Gets the list of databases
+     *
+     * @param clazz the class to cast the database documents to
+     * @param <T>   the type of the class to use instead of {@code Document}.
+     * @return the fluent list databases interface
+     */
+    <T> ListDatabasesFluent<T> listDatabases(Class<T> clazz);
 
 }

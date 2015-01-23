@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.MongoNamespace;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.AggregateOptions;
@@ -32,10 +34,10 @@ import com.mongodb.client.model.MapReduceOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
-import com.mongodb.client.options.OperationOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.reactivestreams.Publisher;
 
 import java.util.List;
@@ -57,12 +59,67 @@ public interface MongoCollection<T> {
      */
     MongoNamespace getNamespace();
 
+
     /**
-     * Gets the options to apply by default to all operations executed via this instance.
+     * Get the default class to cast any documents returned from the database into.
      *
-     * @return the collection options
+     * @return the default class to cast any documents into
      */
-    OperationOptions getOptions();
+    Class<T> getDefaultClass();
+
+    /**
+     * Get the codec registry for the MongoCollection.
+     *
+     * @return the {@link org.bson.codecs.configuration.CodecRegistry}
+     */
+    CodecRegistry getCodecRegistry();
+
+    /**
+     * Get the read preference for the MongoCollection.
+     *
+     * @return the {@link com.mongodb.ReadPreference}
+     */
+    ReadPreference getReadPreference();
+
+    /**
+     * Get the write concern for the MongoCollection.
+     *
+     * @return the {@link com.mongodb.WriteConcern}
+     */
+    WriteConcern getWriteConcern();
+
+    /**
+     * Create a new MongoCollection instance with a different default class to cast any documents returned from the database into..
+     *
+     * @param clazz the default class to cast any documents returned from the database into.
+     * @param <C>   The type that the new collection will encode documents from and decode documents to
+     * @return a new MongoCollection instance with the different default class
+     */
+    <C> MongoCollection<C> withDefaultClass(Class<C> clazz);
+
+    /**
+     * Create a new MongoCollection instance with a different codec registry.
+     *
+     * @param codecRegistry the new {@link org.bson.codecs.configuration.CodecRegistry} for the collection
+     * @return a new MongoCollection instance with the different codec registry
+     */
+    MongoCollection<T> withCodecRegistry(CodecRegistry codecRegistry);
+
+    /**
+     * Create a new MongoCollection instance with a different read preference.
+     *
+     * @param readPreference the new {@link com.mongodb.ReadPreference} for the collection
+     * @return a new MongoCollection instance with the different readPreference
+     */
+    MongoCollection<T> withReadPreference(ReadPreference readPreference);
+
+    /**
+     * Create a new MongoCollection instance with a different write concern.
+     *
+     * @param writeConcern the new {@link com.mongodb.WriteConcern} for the collection
+     * @return a new MongoCollection instance with the different writeConcern
+     */
+    MongoCollection<T> withWriteConcern(WriteConcern writeConcern);
 
     /**
      * Counts the number of documents in the collection.
@@ -96,7 +153,7 @@ public interface MongoCollection<T> {
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    Publisher<Object> distinct(String fieldName, Object filter);
+    Publisher<List<Object>> distinct(String fieldName, Object filter);
 
     /**
      * Gets the distinct values of the specified field name.
@@ -107,7 +164,7 @@ public interface MongoCollection<T> {
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    Publisher<Object> distinct(String fieldName, Object filter, DistinctOptions options);
+    Publisher<List<Object>> distinct(String fieldName, Object filter, DistinctOptions options);
 
     /**
      * Finds all documents in the collection.
@@ -115,7 +172,7 @@ public interface MongoCollection<T> {
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    FluentFindPublisher<T> find();
+    FindFluent<T> find();
 
     /**
      * Finds all documents in the collection.
@@ -125,7 +182,7 @@ public interface MongoCollection<T> {
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    <C> FluentFindPublisher<C> find(Class<C> clazz);
+    <C> FindFluent<C> find(Class<C> clazz);
 
     /**
      * Finds all documents in the collection.
@@ -134,7 +191,7 @@ public interface MongoCollection<T> {
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    FluentFindPublisher<T> find(Object filter);
+    FindFluent<T> find(Object filter);
 
     /**
      * Finds all documents in the collection.
@@ -145,7 +202,7 @@ public interface MongoCollection<T> {
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    <C> FluentFindPublisher<C> find(Object filter, Class<C> clazz);
+    <C> FindFluent<C> find(Object filter, Class<C> clazz);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -188,6 +245,26 @@ public interface MongoCollection<T> {
      * @mongodb.driver.manual aggregation/ Aggregation
      */
     <C> Publisher<C> aggregate(List<?> pipeline, AggregateOptions options, Class<C> clazz);
+
+    /**
+     * Aggregates documents according to the specified aggregation pipeline, which must end with a $out stage.
+     *
+     * @param pipeline the aggregate pipeline
+     * @return a publisher with a single element indicating when the operation has completed
+     * @mongodb.driver.manual aggregation/ Aggregation
+     */
+    Publisher<Void> aggregateToCollection(List<?> pipeline);
+
+    /**
+     * Aggregates documents according to the specified aggregation pipeline, which must end with a $out stage.
+     *
+     * @param pipeline the aggregate pipeline
+     * @param options  the options to apply to the aggregation operation
+     * @return a publisher with a single element indicating when the operation has completed
+     * @mongodb.driver.manual aggregation/ Aggregation
+     * @mongodb.server.release 2.6
+     */
+    Publisher<Void> aggregateToCollection(List<?> pipeline, AggregateOptions options);
 
     /**
      * Aggregates documents according to the specified map-reduce function.
@@ -234,6 +311,19 @@ public interface MongoCollection<T> {
      * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
      */
     <C> Publisher<C> mapReduce(String mapFunction, String reduceFunction, MapReduceOptions options, Class<C> clazz);
+
+    /**
+     * Aggregates documents to a collection according to the specified map-reduce function with the given options, which must specify a
+     * non-inline result.
+     *
+     * @param mapFunction    A JavaScript function that associates or "maps" a value with a key and emits the key and value pair.
+     * @param reduceFunction A JavaScript function that "reduces" to a single object all the values associated with a particular key.
+     * @param options        The specific options for the map-reduce command.
+     * @return a publisher with a single element indicating when the operation has completed
+     * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
+     */
+    Publisher<Void> mapReduceToCollection(String mapFunction, String reduceFunction, MapReduceOptions options);
+
 
     /**
      * Executes a mix of inserts, updates, replaces, and deletes.
@@ -468,18 +558,22 @@ public interface MongoCollection<T> {
     Publisher<Void> createIndex(Object key, CreateIndexOptions options);
 
     /**
-     * @return a publisher emitting the sequence of the indexes
-     * @mongodb.driver.manual reference/method/db.collection.getIndexes/ getIndexes
+     * Get all the indexes in this collection.
+     *
+     * @return the fluent list indexes interface
+     * @mongodb.driver.manual reference/command/listIndexes/ listIndexes
      */
-    Publisher<Document> getIndexes();
+    ListIndexesFluent<Document> listIndexes();
 
     /**
+     * Get all the indexes in this collection.
+     *
      * @param clazz the class to decode each document into
      * @param <C>   the target document type of the iterable.
-     * @return a publisher emitting the sequence of the indexes
-     * @mongodb.driver.manual reference/method/db.collection.getIndexes/ getIndexes
+     * @return the fluent list indexes interface
+     * @mongodb.driver.manual reference/command/listIndexes/ listIndexes
      */
-    <C> Publisher<C> getIndexes(Class<C> clazz);
+    <C> ListIndexesFluent<C> listIndexes(Class<C> clazz);
 
     /**
      * Drops the given index.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,10 @@
 
 package com.mongodb.reactivestreams.client
 
-import com.mongodb.MongoException
 import com.mongodb.MongoNamespace
+import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
-import com.mongodb.WriteConcernResult
-import com.mongodb.bulk.BulkWriteResult
-import com.mongodb.bulk.BulkWriteUpsert
-import com.mongodb.bulk.DeleteRequest
-import com.mongodb.bulk.InsertRequest
-import com.mongodb.bulk.UpdateRequest
-import com.mongodb.bulk.WriteRequest
+import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
 import com.mongodb.client.model.AggregateOptions
 import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.CountOptions
@@ -37,1419 +31,675 @@ import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneModel
 import com.mongodb.client.model.MapReduceOptions
+import com.mongodb.client.model.RenameCollectionOptions
 import com.mongodb.client.model.UpdateOptions
-import com.mongodb.client.options.OperationOptions
-import com.mongodb.client.result.DeleteResult
-import com.mongodb.client.result.UpdateResult
-import com.mongodb.operation.AggregateOperation
-import com.mongodb.operation.AggregateToCollectionOperation
-import com.mongodb.operation.AsyncBatchCursor
-import com.mongodb.operation.CountOperation
-import com.mongodb.operation.CreateIndexOperation
-import com.mongodb.operation.DeleteOperation
-import com.mongodb.operation.DistinctOperation
-import com.mongodb.operation.DropCollectionOperation
-import com.mongodb.operation.DropIndexOperation
-import com.mongodb.operation.FindAndDeleteOperation
-import com.mongodb.operation.FindAndReplaceOperation
-import com.mongodb.operation.FindAndUpdateOperation
-import com.mongodb.operation.FindOperation
-import com.mongodb.operation.InsertOperation
-import com.mongodb.operation.ListIndexesOperation
-import com.mongodb.operation.MapReduceStatistics
-import com.mongodb.operation.MapReduceToCollectionOperation
-import com.mongodb.operation.MapReduceWithInlineResultsOperation
-import com.mongodb.operation.MixedBulkWriteOperation
-import com.mongodb.operation.RenameCollectionOperation
-import org.bson.BsonArray
 import org.bson.BsonDocument
-import org.bson.BsonInt32
-import org.bson.BsonJavaScript
-import org.bson.BsonString
 import org.bson.Document
-import org.bson.codecs.BsonDocumentCodec
-import org.bson.codecs.BsonValueCodecProvider
-import org.bson.codecs.DocumentCodec
-import org.bson.codecs.ValueCodecProvider
-import org.bson.codecs.configuration.CodecConfigurationException
-import org.bson.codecs.configuration.RootCodecRegistry
+import org.bson.codecs.configuration.CodecRegistry
+import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
-import static com.mongodb.ReadPreference.secondary
-import static com.mongodb.bulk.BulkWriteResult.acknowledged
-import static com.mongodb.bulk.BulkWriteResult.unacknowledged
-import static com.mongodb.bulk.WriteRequest.Type.REPLACE
-import static com.mongodb.bulk.WriteRequest.Type.UPDATE
-import static Fixture.ObservableSubscriber
-import static java.util.Arrays.asList
-import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static com.mongodb.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
-@SuppressWarnings('ClassSize')
 class MongoCollectionSpecification extends Specification {
 
-    def namespace = new MongoNamespace('databaseName', 'collectionName')
-    def options = OperationOptions.builder()
-            .writeConcern(WriteConcern.ACKNOWLEDGED)
-            .readPreference(secondary())
-            .codecRegistry(MongoClientImpl.getDefaultCodecRegistry()).build()
-    def getOptions = { WriteConcern writeConcern ->
-        OperationOptions.builder().writeConcern(writeConcern).build().withDefaults(options)
+    def subscriber = Stub(Subscriber) {
+        onSubscribe(_) >> { args -> args[0].request(1) }
     }
-    def asyncDocCursor = {
-        Stub(AsyncBatchCursor) {
-            def seen = false
-            def closed = false
-            next(_) >> { args ->
-                if (seen) {
-                    closed = true
-                    args[0].onResult([new Document('c', 1)], null)
-                } else {
-                    args[0].onResult([new Document('a', 1), new Document('b', 1)], null)
-                    seen = true
-                }
-            }
-            isClosed() >> { closed }
-        }
-    }
+    def wrapped = Mock(WrappedMongoCollection)
+    def mongoCollection = new MongoCollectionImpl(wrapped)
+    def filter = new Document('_id', 1)
 
-    def 'should return the correct name from getName'() {
+    def 'should have the same methods as the wrapped MongoCollection'() {
         given:
-        def collection = new MongoCollectionImpl(namespace, Document, options, new TestOperationExecutor([null]))
+        def wrapped = WrappedMongoCollection.methods*.name.sort()
+        def local = MongoCollection.methods*.name.sort()
 
         expect:
-        collection.getNamespace() == namespace
+        wrapped == local
     }
 
-    def 'should return the correct options'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, options, new TestOperationExecutor([null]))
+    def 'should use the underlying getNamespace'() {
+        when:
+        mongoCollection.getNamespace()
 
-        expect:
-        collection.getOptions() == options
+        then:
+        1 * wrapped.getNamespace()
     }
 
-    def 'should use CountOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([1L, 2L, 3L])
-        def filter = new BsonDocument()
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def expectedOperation = new CountOperation(namespace).filter(filter)
-        def subscriber = new ObservableSubscriber<Long>();
-
+    def 'should use the underlying getDefaultClass'() {
         when:
-        collection.count().subscribe(subscriber)
+        mongoCollection.getDefaultClass()
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [1L]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as CountOperation
-
-        then:
-        expect operation, isTheSameAs(expectedOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<Long>()
-        filter = new BsonDocument('a', new BsonInt32(1))
-        collection.count(filter).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [2L]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as CountOperation
-
-        then:
-        expect operation, isTheSameAs(expectedOperation.filter(filter))
-
-        when:
-        subscriber = new ObservableSubscriber<Long>()
-        def hint = new BsonDocument('hint', new BsonInt32(1))
-        collection.count(filter, new CountOptions().hint(hint).skip(10).limit(100).maxTime(100, MILLISECONDS)).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [3L]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as CountOperation
-
-        then:
-        expect operation, isTheSameAs(expectedOperation.filter(filter).hint(hint).skip(10).limit(100).maxTime(100, MILLISECONDS))
+        1 * wrapped.getDefaultClass()
     }
 
-    def 'should use DistinctOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([new BsonArray([new BsonString('a'), new BsonInt32(1)]),
-                                                  new BsonArray([new BsonString('c')])])
-        def filter = new BsonDocument()
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Object>()
-
+    def 'should call the underlying getCodecRegistry'() {
         when:
-        collection.distinct('test', filter).subscribe(subscriber)
+        mongoCollection.getCodecRegistry()
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == ['a']
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == ['a', 1]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as DistinctOperation
-
-        then:
-        expect operation, isTheSameAs(new DistinctOperation(namespace, 'test').filter(new BsonDocument()))
-
-        when:
-        subscriber = new ObservableSubscriber<Object>()
-        filter = new BsonDocument('a', new BsonInt32(1))
-        collection.distinct('test', filter, new DistinctOptions().maxTime(100, MILLISECONDS)).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == ['c']
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as DistinctOperation
-
-        then:
-        expect operation, isTheSameAs(new DistinctOperation(namespace, 'test').filter(filter).maxTime(100, MILLISECONDS))
+        1 * wrapped.getCodecRegistry()
     }
 
-    def 'should handle exceptions in distinct correctly'() {
-        given:
-        def options = OperationOptions.builder().codecRegistry(new RootCodecRegistry(asList(new ValueCodecProvider(),
-                new BsonValueCodecProvider()))).build()
-        def executor = new TestOperationExecutor([new MongoException('failure'),
-                                                  new BsonArray([new BsonString('no document codec')])])
-        def filter = new BsonDocument()
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Object>()
-
-        when: 'A failed operation'
-        collection.distinct('test', filter).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
+    def 'should call the underlying getReadPreference'() {
+        when:
+        mongoCollection.getReadPreference()
 
         then:
-        notThrown(MongoException)
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().size() == 1
+        1 * wrapped.getReadPreference()
 
-        when: 'An unexpected result'
-        subscriber = new ObservableSubscriber<Object>()
-        collection.distinct('test', filter).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then:
-        notThrown(MongoException)
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().size() == 1
-
-        when: 'A missing codec should throw immediately'
-        collection.distinct('test', new Document())
-
-        then:
-        thrown(CodecConfigurationException)
     }
 
-    def 'should use FindOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([asyncDocCursor(), asyncDocCursor(), asyncDocCursor(), asyncDocCursor()])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def documentOperation = new FindOperation(namespace, new DocumentCodec()).filter(new BsonDocument()).slaveOk(true)
-        def bsonOperation = new FindOperation(namespace, new BsonDocumentCodec()).filter(new BsonDocument()).slaveOk(true)
-        def subscriber = new ObservableSubscriber<Document>()
-
+    def 'should call the underlying getWriteConcern'() {
         when:
-        collection.find().subscribe(subscriber)
+        mongoCollection.getWriteConcern()
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1), new Document('c', 1)]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as FindOperation
-
-        then:
-        expect operation, isTheSameAs(documentOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.find(new Document('filter', 1)).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as FindOperation
-
-        then:
-        expect operation, isTheSameAs(documentOperation.filter(new BsonDocument('filter', new BsonInt32(1))))
-
-        when:
-        subscriber = new ObservableSubscriber<BsonDocument>()
-        collection.find(BsonDocument).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as FindOperation
-
-        then:
-        expect operation, isTheSameAs(bsonOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<BsonDocument>()
-        collection.find(new Document('filter', 1), BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as FindOperation
-
-        then:
-        expect operation, isTheSameAs(bsonOperation.filter(new BsonDocument('filter', new BsonInt32(1))))
+        1 * wrapped.getWriteConcern()
     }
 
-    def 'should use AggregateOperation correctly'() {
+    def 'should use the underlying withDefaultClass'() {
         given:
-        def executor = new TestOperationExecutor([asyncDocCursor(), asyncDocCursor(), asyncDocCursor()])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when:
-        collection.aggregate([new Document('$match', 1)]).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1), new Document('c', 1)]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as AggregateOperation
-
-        then:
-        expect operation, isTheSameAs(new AggregateOperation(namespace, [new BsonDocument('$match', new BsonInt32(1))],
-                new DocumentCodec()))
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.aggregate([new Document('$match', 1)], new AggregateOptions().maxTime(100, MILLISECONDS)).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as AggregateOperation
-
-        then:
-        expect operation, isTheSameAs(new AggregateOperation(namespace, [new BsonDocument('$match', new BsonInt32(1))],
-                new DocumentCodec()).maxTime(100, MILLISECONDS))
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.aggregate([new Document('$match', 1)], BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as AggregateOperation
-
-        then:
-        expect operation, isTheSameAs(new AggregateOperation(namespace, [new BsonDocument('$match', new BsonInt32(1))],
-                new BsonDocumentCodec()))
-    }
-
-    def 'should use AggregateToCollectionOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([null, asyncDocCursor()])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when:
-        collection.aggregate([new Document('$out', 'newColl')]).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1), new Document('c', 1)]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getWriteOperation() as AggregateToCollectionOperation
-
-        then:
-        expect operation, isTheSameAs(new AggregateToCollectionOperation(namespace, [new BsonDocument('$out', new BsonString('newColl'))]))
-    }
-
-    def 'should handle exceptions in aggregate correctly'() {
-        given:
-        def options = OperationOptions.builder().codecRegistry(new RootCodecRegistry(asList(new ValueCodecProvider(),
-                new BsonValueCodecProvider()))).build()
-        def executor = new TestOperationExecutor([new MongoException('failure')])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Object>()
-
-        when: 'The operation fails with an exception'
-        collection.aggregate([new BsonDocument('$match', new BsonInt32(1))], BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then: 'the future should handle the exception'
-        notThrown(MongoException)
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().size() == 1
-
-        when: 'a codec is missing its acceptable to immediately throw'
-        collection.aggregate([new Document('$match', 1)])
-
-        then:
-        thrown(CodecConfigurationException)
-    }
-
-    def 'should use MapReduceWithInlineResultsOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([asyncDocCursor(), asyncDocCursor(), asyncDocCursor(), asyncDocCursor()])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def documentOperation = new MapReduceWithInlineResultsOperation(namespace, new BsonJavaScript('map'), new BsonJavaScript('reduce'),
-                new DocumentCodec()).verbose(true)
-        def bsonOperation = new MapReduceWithInlineResultsOperation(namespace, new BsonJavaScript('map'), new BsonJavaScript('reduce'),
-                new BsonDocumentCodec()).verbose(true)
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when:
-        collection.mapReduce('map', 'reduce').subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1), new Document('c', 1)]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as MapReduceWithInlineResultsOperation
-
-        then:
-        expect operation, isTheSameAs(documentOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        def mapReduceOptions = new MapReduceOptions().finalizeFunction('final')
-        collection.mapReduce('map', 'reduce', mapReduceOptions).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as MapReduceWithInlineResultsOperation
-
-        then:
-        expect operation, isTheSameAs(documentOperation.finalizeFunction(new BsonJavaScript('final')))
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.mapReduce('map', 'reduce', BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as MapReduceWithInlineResultsOperation
-
-        then:
-        expect operation, isTheSameAs(bsonOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.mapReduce('map', 'reduce', mapReduceOptions, BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getReadOperation() as MapReduceWithInlineResultsOperation
-
-        then:
-        expect operation, isTheSameAs(bsonOperation.finalizeFunction(new BsonJavaScript('final')))
-    }
-
-    def 'should use MapReduceToCollectionOperation correctly'() {
-        given:
-        def stats = Stub(MapReduceStatistics)
-        def executor = new TestOperationExecutor([stats, asyncDocCursor(), stats, asyncDocCursor()])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def expectedOperation = new MapReduceToCollectionOperation(namespace, new BsonJavaScript('map'), new BsonJavaScript('reduce'),
-                'collectionName').filter(new BsonDocument('filter', new BsonInt32(1)))
-                .finalizeFunction(new BsonJavaScript('final'))
-                .verbose(true)
-        def mapReduceOptions = new MapReduceOptions('collectionName').filter(new Document('filter', 1)).finalizeFunction('final')
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when:
-        collection.mapReduce('map', 'reduce', mapReduceOptions).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1)]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [new Document('a', 1), new Document('b', 1), new Document('c', 1)]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        def operation = executor.getWriteOperation() as MapReduceToCollectionOperation
-
-        then:
-        expect operation, isTheSameAs(expectedOperation)
-
-        when: 'The following read operation'
-        operation = executor.getReadOperation() as FindOperation
-
-        then:
-        expect operation, isTheSameAs(new FindOperation(new MongoNamespace(namespace.databaseName, 'collectionName'), new DocumentCodec())
-                .filter(new BsonDocument()))
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.mapReduce('map', 'reduce', mapReduceOptions, BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(3)
-
-        then:
-        subscriber.getReceived().size() == 3
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getWriteOperation() as MapReduceToCollectionOperation
-
-        then:
-        expect operation, isTheSameAs(expectedOperation)
-
-        when: 'The following read operation'
-        operation = executor.getReadOperation() as FindOperation
-
-        then:
-        expect operation, isTheSameAs(new FindOperation(new MongoNamespace(namespace.databaseName, 'collectionName'),
-                new BsonDocumentCodec())
-                .filter(new BsonDocument()))
-    }
-
-    def 'should handle exceptions in mapReduce correctly'() {
-        given:
-        def options = OperationOptions.builder().codecRegistry(new RootCodecRegistry(asList(new ValueCodecProvider(),
-                new BsonValueCodecProvider()))).build()
-        def executor = new TestOperationExecutor([new MongoException('failure')])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when: 'The operation fails with an exception'
-        collection.mapReduce('map', 'reduce', BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then: 'the future should handle the exception'
-        notThrown(MongoException)
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().size() == 1
-
-        when: 'a codec is missing its acceptable to immediately throw'
-        collection.mapReduce('map', 'reduce')
-
-        then:
-        thrown(CodecConfigurationException)
-    }
-
-    def 'should use MixedBulkWriteOperation correctly'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = { boolean ordered ->
-            new MixedBulkWriteOperation(namespace, [new InsertRequest(new BsonDocument('_id', new BsonInt32(1)))],
-                    ordered, writeConcern)
+        def wrappedResult = Stub(WrappedMongoCollection)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * withDefaultClass(BsonDocument) >> wrappedResult
         }
-        def subscriber = new ObservableSubscriber<BulkWriteResult>()
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        collection.bulkWrite([new InsertOneModel(new Document('_id', 1))]).subscribe(subscriber)
+        def result = mongoCollection.withDefaultClass(BsonDocument)
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        expect operation, isTheSameAs(expectedOperation(false))
-
-        when:
-        subscriber = new ObservableSubscriber<BulkWriteResult>()
-        collection.bulkWrite([new InsertOneModel(new Document('_id', 1))], new BulkWriteOptions().ordered(true)).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        expect operation, isTheSameAs(expectedOperation(true))
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([BulkWriteResult.acknowledged(WriteRequest.Type.INSERT, 0, []),
-                                                                 BulkWriteResult.acknowledged(WriteRequest.Type.INSERT, 0, [])])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([BulkWriteResult.unacknowledged(),
-                                                                 BulkWriteResult.unacknowledged()])
+        expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
     }
 
-    def 'should handle exceptions in bulkWrite correctly'() {
+    def 'should call the underlying withCodecRegistry'() {
         given:
-        def options = OperationOptions.builder().codecRegistry(new RootCodecRegistry(asList(new ValueCodecProvider(),
-                new BsonValueCodecProvider()))).build()
-        def executor = new TestOperationExecutor([new MongoException('failure')])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-
-        when: 'a codec is missing its acceptable to immediately throw'
-        collection.bulkWrite([new InsertOneModel(new Document('_id', 1))])
-
-        then:
-        thrown(CodecConfigurationException)
-    }
-
-    def 'should use InsertOneOperation correctly'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = new InsertOperation(namespace, true, writeConcern,
-                [new InsertRequest(new BsonDocument('_id', new BsonInt32(1)))])
-        def subscriber = new ObservableSubscriber<Void>();
-
-        when:
-        collection.insertOne(new Document('_id', 1)).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as InsertOperation
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, false, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged()])
-
-    }
-
-    def 'should use InsertManyOperation correctly'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = { ordered ->
-            new InsertOperation(namespace, ordered, writeConcern,
-                    [new InsertRequest(new BsonDocument('_id', new BsonInt32(1))),
-                     new InsertRequest(new BsonDocument('_id', new BsonInt32(2)))])
+        def codecRegistry = Stub(CodecRegistry)
+        def wrappedResult = Stub(WrappedMongoCollection)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * withCodecRegistry(codecRegistry) >> wrappedResult
         }
-        def subscriber = new ObservableSubscriber<Void>()
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        collection.insertMany([new Document('_id', 1), new Document('_id', 2)]).subscribe(subscriber)
+        def result = mongoCollection.withCodecRegistry(codecRegistry)
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as InsertOperation
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation(false))
-
-        when:
-        subscriber = new ObservableSubscriber<Void>()
-        collection.insertMany([new Document('_id', 1), new Document('_id', 2)], new InsertManyOptions().ordered(true))
-                .subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as InsertOperation
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation(true))
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, false, null),
-                                                                 WriteConcernResult.acknowledged(1, false, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged(),
-                                                                 WriteConcernResult.unacknowledged()])
+        expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
     }
 
-    def 'should use DeleteOneOperation correctly'() {
+    def 'should call the underlying withReadPreference'() {
         given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def subscriber = new ObservableSubscriber<DeleteResult>()
-
-        when:
-        collection.deleteOne(new Document('_id', 1)).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as DeleteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(new DeleteOperation(namespace, true, writeConcern,
-                [new DeleteRequest(new BsonDocument('_id', new BsonInt32(1))).multi(false)]))
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, true, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged()])
-    }
-
-    def 'should use DeleteManyOperation correctly'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def subscriber = new ObservableSubscriber<DeleteResult>()
-
-        when:
-        collection.deleteMany(new Document('_id', 1)).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as DeleteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(new DeleteOperation(namespace, true, writeConcern,
-                [new DeleteRequest(new BsonDocument('_id', new BsonInt32(1)))]))
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, true, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged()])
-    }
-
-    @SuppressWarnings('LineLength')
-    def 'replaceOne should use MixedBulkWriteOperationperation correctly'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def subscriber = new ObservableSubscriber<UpdateResult>()
-
-        when:
-        collection.replaceOne(new Document('a', 1), new Document('a', 10)).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(new MixedBulkWriteOperation(namespace, [new UpdateRequest(new BsonDocument('a', new BsonInt32(1)),
-                new BsonDocument('a', new BsonInt32(10)),
-                REPLACE)],
-                true, writeConcern))
-
-        where:
-        writeConcern                | executor                                                        | expectedResult
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([acknowledged(REPLACE, 1, null, [])]) | UpdateResult.acknowledged(1, null, null)
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([acknowledged(REPLACE, 1, 1, [])])    | UpdateResult.acknowledged(1, 1, null)
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([acknowledged(REPLACE, 1, 1,
-                [new BulkWriteUpsert(0, new BsonInt32(42))])])                                        | UpdateResult.acknowledged(1, 1, new BsonInt32(42))
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([unacknowledged()])                   | UpdateResult.unacknowledged()
-    }
-
-    def 'updateOne should use MixedBulkWriteOperationOperation correctly'() {
-        given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = { boolean upsert ->
-            new MixedBulkWriteOperation(namespace, [new UpdateRequest(new BsonDocument('a', new BsonInt32(1)),
-                    new BsonDocument('a', new BsonInt32(10)),
-                    UPDATE).multi(false).upsert(upsert)],
-                    true, writeConcern)
+        def readPreference = Stub(ReadPreference)
+        def wrappedResult = Stub(WrappedMongoCollection)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * withReadPreference(readPreference) >> wrappedResult
         }
-        def subscriber = new ObservableSubscriber<UpdateResult>()
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        collection.updateOne(new Document('a', 1), new Document('a', 10)).subscribe(subscriber)
+        def result = mongoCollection.withReadPreference(readPreference)
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation(false))
-
-        when:
-        subscriber = new ObservableSubscriber<UpdateResult>()
-        collection.updateOne(new Document('a', 1), new Document('a', 10), new UpdateOptions().upsert(true)).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation(true))
-
-        where:
-        writeConcern                | executor                                                 | expectedResult
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([acknowledged(UPDATE, 1, []),
-                                                                 acknowledged(UPDATE, 1, [])]) | UpdateResult.acknowledged(1, 0, null)
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([unacknowledged(),
-                                                                 unacknowledged()])            | UpdateResult.unacknowledged()
+        expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
     }
 
-    def 'updateMany should use MixedBulkWriteOperationOperation correctly'() {
+    def 'should call the underlying withWriteConcern'() {
         given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = { boolean upsert ->
-            new MixedBulkWriteOperation(namespace, [new UpdateRequest(new BsonDocument('a', new BsonInt32(1)),
-                    new BsonDocument('a', new BsonInt32(10)),
-                    UPDATE)
-                                                            .multi(true).upsert(upsert)],
-                    true, writeConcern)
+        def writeConcern = Stub(WriteConcern)
+        def wrappedResult = Stub(WrappedMongoCollection)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * withWriteConcern(writeConcern) >> wrappedResult
         }
-        def subscriber = new ObservableSubscriber<UpdateResult>()
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        collection.updateMany(new Document('a', 1), new Document('a', 10)).subscribe(subscriber)
+        def result = mongoCollection.withWriteConcern(writeConcern)
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived() == expectedResult
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation(false))
-
-        when:
-        subscriber = new ObservableSubscriber<UpdateResult>()
-        collection.updateMany(new Document('a', 1), new Document('a', 10), new UpdateOptions().upsert(true)).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as MixedBulkWriteOperation
-
-        then:
-        subscriber.getReceived() == expectedResult
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation(true))
-
-        where:
-        writeConcern                | executor                                                    | expectedResult
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([acknowledged(UPDATE, 5, 3, []),
-                                                                 acknowledged(UPDATE, 5, 3, [])]) | [UpdateResult.acknowledged(5, 3, null)]
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([unacknowledged(),
-                                                                 unacknowledged()])               | [UpdateResult.unacknowledged()]
+        expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
     }
 
-    def 'should use FindOneAndDeleteOperation correctly'() {
+    def 'should use the underlying count'() {
         given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = new FindAndDeleteOperation(namespace, new DocumentCodec()).filter(new BsonDocument('a', new BsonInt32(1)))
-        def subscriber = new ObservableSubscriber<Document>()
+        def options = new CountOptions()
 
         when:
-        collection.findOneAndDelete(new Document('a', 1)).subscribe(subscriber)
+        mongoCollection.count()
 
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
+        then: 'only executed when requested'
+        0 * wrapped.count(_, _, _)
 
         when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as FindAndDeleteOperation
+        mongoCollection.count().subscribe(subscriber)
 
         then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
+        1 * wrapped.count(_, _, _)
 
         when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.findOneAndDelete(new Document('a', 1), new FindOneAndDeleteOptions().projection(new Document('projection', 1)))
-                .subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as FindAndDeleteOperation
+        mongoCollection.count(filter).subscribe(subscriber)
 
         then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation.projection(new BsonDocument('projection', new BsonInt32(1))))
+        1 * wrapped.count(filter, _, _)
 
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, true, null),
-                                                                 WriteConcernResult.acknowledged(1, true, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged(),
-                                                                 WriteConcernResult.unacknowledged()])
+        when:
+        mongoCollection.count(filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.count(filter, options, _)
     }
 
-    def 'should use FindOneAndReplaceOperation correctly'() {
+    def 'should use the underlying distinct'() {
         given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = new FindAndReplaceOperation(namespace, new DocumentCodec(), new BsonDocument('a', new BsonInt32(10)))
-                .filter(new BsonDocument('a', new BsonInt32(1)))
-        def subscriber = new ObservableSubscriber<Document>()
+        def fieldName = 'fieldName'
+        def options = new DistinctOptions()
 
         when:
-        collection.findOneAndReplace(new Document('a', 1), new Document('a', 10)).subscribe(subscriber)
+        mongoCollection.distinct(fieldName, filter)
 
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
+        then: 'only executed when requested'
+        0 * wrapped.distinct(_, _, _)
 
         when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as FindAndReplaceOperation
+        mongoCollection.distinct(fieldName, filter).subscribe(subscriber)
 
         then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
+        1 * wrapped.distinct(fieldName, filter, _, _)
 
         when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.findOneAndReplace(new Document('a', 1), new Document('a', 10),
-                new FindOneAndReplaceOptions().projection(new Document('projection', 1))).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as FindAndReplaceOperation
+        mongoCollection.distinct(fieldName, filter, options).subscribe(subscriber)
 
         then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation.projection(new BsonDocument('projection', new BsonInt32(1))))
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, true, null),
-                                                                 WriteConcernResult.acknowledged(1, true, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged(),
-                                                                 WriteConcernResult.unacknowledged()])
+        1 * wrapped.distinct(fieldName, filter, options, _)
     }
 
-    def 'should use FindAndUpdateOperation correctly'() {
+    def 'should use the underlying find'() {
         given:
-        def collection = new MongoCollectionImpl(namespace, Document, getOptions(writeConcern), executor)
-        def expectedOperation = new FindAndUpdateOperation(namespace, new DocumentCodec(), new BsonDocument('a', new BsonInt32(10)))
-                .filter(new BsonDocument('a', new BsonInt32(1)))
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when:
-        collection.findOneAndUpdate(new Document('a', 1), new Document('a', 10)).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as FindAndUpdateOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<Document>()
-        collection.findOneAndUpdate(new Document('a', 1), new Document('a', 10),
-                new FindOneAndUpdateOptions().projection(new Document('projection', 1))).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as FindAndUpdateOperation
-
-        then:
-        subscriber.getReceived().head().wasAcknowledged() == writeConcern.isAcknowledged()
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation.projection(new BsonDocument('projection', new BsonInt32(1))))
-
-        where:
-        writeConcern                | executor
-        WriteConcern.ACKNOWLEDGED   | new TestOperationExecutor([WriteConcernResult.acknowledged(1, true, null),
-                                                                 WriteConcernResult.acknowledged(1, true, null)])
-        WriteConcern.UNACKNOWLEDGED | new TestOperationExecutor([WriteConcernResult.unacknowledged(),
-                                                                 WriteConcernResult.unacknowledged()])
-    }
-
-    def 'should use DropCollectionOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([null])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def expectedOperation = new DropCollectionOperation(namespace)
-        def subscriber = new ObservableSubscriber<Void>();
-
-        when:
-        collection.dropCollection().subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as DropCollectionOperation
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
-    }
-
-    def 'should use CreateIndexOperations correctly'() {
-        given:
-        def executor = new TestOperationExecutor([null, null])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def expectedOperation = new CreateIndexOperation(namespace, new BsonDocument('key', new BsonInt32(1)))
-        def subscriber = new ObservableSubscriber<Void>()
-
-        when:
-        collection.createIndex(new Document('key', 1)).subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as CreateIndexOperation
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
-
-        when:
-        subscriber = new ObservableSubscriber<Void>()
-        collection.createIndex(new Document('key', 1), new CreateIndexOptions().background(true)).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as CreateIndexOperation
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation.background(true))
-    }
-
-    def 'should use ListIndexesOperations correctly'() {
-        given:
-        def indexesDocs = [new Document('index', '1'), new Document('index', '2')]
-        def indexesBson = [new BsonDocument('index', new BsonString('1')), new BsonDocument('index', new BsonString('2'))]
-
-        def asyncIndexesDocCursor = Stub(AsyncBatchCursor) {
-            def seen = false;
-            next(_) >> { args ->
-                seen = true
-                args[0].onResult(indexesDocs, null)
-            }
-            isClosed() >> { seen }
+        def wrapped = Stub(WrappedMongoCollection) {
+            find(_, _) >> Stub(com.mongodb.async.client.FindFluent)
+            getDefaultClass() >> Document
         }
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
-        def asyncIndexesBsonCursor = Stub(AsyncBatchCursor) {
-            def seen = false;
-            next(_) >> { args ->
-                seen = true
-                args[0].onResult(indexesBson, null)
-            }
-            isClosed() >> { seen }
+        when:
+        def fluent = mongoCollection.find()
+
+        then:
+        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(new Document(), Document)))
+
+        when:
+        fluent = mongoCollection.find(BsonDocument)
+
+        then:
+        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(new Document(), BsonDocument)))
+
+        when:
+        fluent = mongoCollection.find(filter)
+
+        then:
+        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(filter, Document)))
+
+        when:
+        fluent = mongoCollection.find(filter, BsonDocument)
+
+        then:
+        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(filter, BsonDocument)))
+    }
+
+    def 'should use the underlying aggregate'() {
+        def wrapped = Stub(WrappedMongoCollection) {
+            aggregate(_, _, _) >> Stub(com.mongodb.async.client.MongoIterable)
+            getDefaultClass() >> Document
         }
-
-        def executor = new TestOperationExecutor([asyncIndexesDocCursor, asyncIndexesBsonCursor])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def subscriber = new ObservableSubscriber<Document>()
-
-        when:
-        collection.getIndexes().subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
+        def pipeline = [new Document('$match', new Document('_id', 1))]
+        def options = new AggregateOptions()
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getReadOperation() as ListIndexesOperation
+        def fluent = mongoCollection.aggregate(pipeline)
 
         then:
-        subscriber.getReceived() == [indexesDocs[0]]
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        expect operation, isTheSameAs(new ListIndexesOperation(namespace, new DocumentCodec()))
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.aggregate(pipeline, options, Document)))
 
         when:
-        subscriber.getSubscription().request(1)
+        mongoCollection.aggregate(pipeline, options)
 
         then:
-        subscriber.getReceived() == indexesDocs
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.aggregate(pipeline, options, Document)))
 
         when:
-        subscriber = new ObservableSubscriber<BsonDocument>()
-        collection.getIndexes(BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(2)
-        operation = executor.getReadOperation() as ListIndexesOperation
+        mongoCollection.aggregate(pipeline, options, BsonDocument)
 
         then:
-        subscriber.getReceived() == indexesBson
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(new ListIndexesOperation(namespace, new BsonDocumentCodec()))
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.aggregate(pipeline, options, BsonDocument)))
     }
 
-    def 'should use DropIndexOperation correctly for dropIndex'() {
+    def 'should use the underlying aggregateToCollection'() {
         given:
-        def executor = new TestOperationExecutor([null])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def expectedOperation = new DropIndexOperation(namespace, 'indexName')
-        def subscriber = new ObservableSubscriber<Void>()
+        def pipeline = [new Document('$match', new Document('_id', 1))]
+        def options = new AggregateOptions()
 
         when:
-        collection.dropIndex('indexName').subscribe(subscriber)
+        mongoCollection.aggregateToCollection(pipeline)
 
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
+        then: 'only executed when requested'
+        0 * wrapped.aggregateToCollection(_, _, _)
 
         when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as DropIndexOperation
+        mongoCollection.aggregateToCollection(pipeline).subscribe(subscriber)
 
         then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
+        1 * wrapped.aggregateToCollection(pipeline, _, _)
+
+        when:
+        mongoCollection.aggregateToCollection(pipeline, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.aggregateToCollection(pipeline, options, _)
     }
 
-    def 'should use DropIndexOperation correctly for dropIndexes'() {
-        given:
-        def executor = new TestOperationExecutor([null])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def expectedOperation = new DropIndexOperation(namespace, '*')
-        def subscriber = new ObservableSubscriber<Void>()
+    def 'should use the underlying mapReduce'() {
+        def wrapped = Stub(WrappedMongoCollection) {
+            mapReduce(_, _, _, _) >> Stub(com.mongodb.async.client.MongoIterable)
+            getDefaultClass() >> Document
+        }
+        def mapFunction = 'map'
+        def reduceFunction = 'reduce'
+        def options = new MapReduceOptions()
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        collection.dropIndexes().subscribe(subscriber)
+        def fluent = mongoCollection.mapReduce(mapFunction, reduceFunction)
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, Document)))
 
         when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as DropIndexOperation
+        fluent = mongoCollection.mapReduce(mapFunction, reduceFunction, options)
 
         then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, Document)))
+
+
+        when:
+        fluent = mongoCollection.mapReduce(mapFunction, reduceFunction, Document)
+
+        then:
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, Document)))
+
+        when:
+        fluent = mongoCollection.mapReduce(mapFunction, reduceFunction, options, BsonDocument)
+
+        then:
+        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, BsonDocument)))
     }
 
-    def 'should use RenameCollectionOperation correctly'() {
+    def 'should use the underlying mapReduceToCollection'() {
         given:
-        def executor = new TestOperationExecutor([null])
-        def collection = new MongoCollectionImpl(namespace, Document, options, executor)
-        def newNamespace = new MongoNamespace(namespace.getDatabaseName(), 'newName')
-        def expectedOperation = new RenameCollectionOperation(namespace, newNamespace)
-        def subscriber = new ObservableSubscriber<Void>()
+        def mapFunction = 'map'
+        def reduceFunction = 'reduce'
+        def options = new MapReduceOptions()
 
         when:
-        collection.renameCollection(newNamespace).subscribe(subscriber)
+        mongoCollection.mapReduceToCollection(mapFunction, reduceFunction, options)
 
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
+        then: 'only executed when requested'
+        0 * wrapped.mapReduceToCollection(_, _, _, _)
 
         when:
-        subscriber.getSubscription().request(1)
-        def operation = executor.getWriteOperation() as RenameCollectionOperation
+        mongoCollection.mapReduceToCollection(mapFunction, reduceFunction, options).subscribe(subscriber)
 
         then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-        expect operation, isTheSameAs(expectedOperation)
+        1 * wrapped.mapReduceToCollection(mapFunction, reduceFunction, options, _)
+    }
+
+    def 'should use the underlying bulkWrite'() {
+        def subscriber = Stub(Subscriber) {
+            onSubscribe(_) >> { args -> args[0].request(1) }
+        }
+        def bulkOperation = [new InsertOneModel<Document>(new Document('_id', 10))]
+        def options = new BulkWriteOptions()
+
+        when:
+        mongoCollection.bulkWrite(bulkOperation)
+
+        then: 'only executed when requested'
+        0 * wrapped.bulkWrite(_, _, _)
+
+        when:
+        mongoCollection.bulkWrite(bulkOperation).subscribe(subscriber)
+
+        then:
+        1 * wrapped.bulkWrite(bulkOperation, _, _)
+
+        when:
+        mongoCollection.bulkWrite(bulkOperation, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.bulkWrite(bulkOperation, options, _)
+    }
+
+    def 'should use the underlying insertOne'() {
+        given:
+        def insert = new Document('_id', 1)
+
+        when:
+        mongoCollection.insertOne(insert)
+
+        then: 'only executed when requested'
+        0 * wrapped.insertOne(_)
+
+        when:
+        mongoCollection.insertOne(insert).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertOne(insert, _)
+    }
+
+    def 'should use the underlying insertMany'() {
+        given:
+        def inserts = [new Document('_id', 1)]
+        def options = new InsertManyOptions()
+
+        when:
+        mongoCollection.insertMany(inserts)
+
+        then: 'only executed when requested'
+        0 * wrapped.insertMany(_, _, _)
+
+        when:
+        mongoCollection.insertMany(inserts).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertMany(inserts, _, _)
+
+        when:
+        mongoCollection.insertMany(inserts, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertMany(inserts, options, _)
+    }
+
+    def 'should use the underlying deleteOne'() {
+        when:
+        mongoCollection.deleteOne(filter)
+
+        then: 'only executed when requested'
+        0 * wrapped.deleteOne(_, _)
+
+        when:
+        mongoCollection.deleteOne(filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteOne(filter, _)
+    }
+
+    def 'should use the underlying deleteMany'() {
+        when:
+        mongoCollection.deleteMany(filter)
+
+        then: 'only executed when requested'
+        0 * wrapped.deleteMany(_, _)
+
+        when:
+        mongoCollection.deleteMany(filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteMany(filter, _)
+    }
+
+    def 'should use the underlying replaceOne'() {
+        given:
+        def replacement = new Document('new', 1)
+        def options = new UpdateOptions()
+
+        when:
+        mongoCollection.replaceOne(filter, replacement)
+
+        then: 'only executed when requested'
+        0 * wrapped.replaceOne(_, _, _, _)
+
+        when:
+        mongoCollection.replaceOne(filter, replacement).subscribe(subscriber)
+
+        then:
+        1 * wrapped.replaceOne(filter, replacement, _, _)
+
+        when:
+        mongoCollection.replaceOne(filter, replacement, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.replaceOne(filter, replacement, options, _)
+    }
+
+
+    def 'should use the underlying updateOne'() {
+        given:
+        def update = new Document('new', 1)
+        def options = new UpdateOptions()
+
+        when:
+        mongoCollection.updateOne(filter, update)
+
+        then: 'only executed when requested'
+        0 * wrapped.updateOne(_, _, _, _)
+
+        when:
+        mongoCollection.updateOne(filter, update).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateOne(filter, update, _, _)
+
+        when:
+        mongoCollection.updateOne(filter, update, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateOne(filter, update, options, _)
+    }
+
+    def 'should use the underlying updateMany'() {
+        given:
+        def update = new Document('new', 1)
+        def options = new UpdateOptions()
+
+        when:
+        mongoCollection.updateMany(filter, update)
+
+        then: 'only executed when requested'
+        0 * wrapped.updateMany(_, _, _, _)
+
+        when:
+        mongoCollection.updateMany(filter, update).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateMany(filter, update, _, _)
+
+        when:
+        mongoCollection.updateMany(filter, update, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateMany(filter, update, options, _)
+    }
+
+    def 'should use the underlying findOneAndDelete'() {
+        given:
+        def options = new FindOneAndDeleteOptions()
+
+        when:
+        mongoCollection.findOneAndDelete(filter)
+
+        then: 'only executed when requested'
+        0 * wrapped.findOneAndDelete(_, _, _)
+
+        when:
+        mongoCollection.findOneAndDelete(filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndDelete(filter, _, _)
+
+        when:
+        mongoCollection.findOneAndDelete(filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndDelete(filter, options, _)
+
+    }
+
+    def 'should use the underlying findOneAndReplace'() {
+        given:
+        def replacement = new Document('new', 1)
+        def options = new FindOneAndReplaceOptions()
+
+        when:
+        mongoCollection.findOneAndReplace(filter, replacement)
+
+        then: 'only executed when requested'
+        0 * wrapped.findOneAndReplace(_, _, _, _)
+
+        when:
+        mongoCollection.findOneAndReplace(filter, replacement).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndReplace(filter, replacement, _, _)
+
+        when:
+        mongoCollection.findOneAndReplace(filter, replacement, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndReplace(filter, replacement, options, _)
+    }
+
+    def 'should use the underlying findOneAndUpdate'() {
+        given:
+        def update = new Document('new', 1)
+        def options = new FindOneAndUpdateOptions()
+
+        when:
+        mongoCollection.findOneAndUpdate(filter, update)
+
+        then: 'only executed when requested'
+        0 * wrapped.findOneAndUpdate(_, _, _, _)
+
+        when:
+        mongoCollection.findOneAndUpdate(filter, update).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndUpdate(filter, update, _, _)
+
+        when:
+        mongoCollection.findOneAndUpdate(filter, update, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndUpdate(filter, update, options, _)
+    }
+
+    def 'should use the underlying dropCollection'() {
+        when:
+        mongoCollection.dropCollection()
+
+        then: 'only executed when requested'
+        0 * wrapped.dropCollection(_)
+
+        when:
+        mongoCollection.dropCollection().subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropCollection(_)
+    }
+
+    def 'should use the underlying createIndex'() {
+        given:
+        def index = new Document('index', 1)
+        def options = new CreateIndexOptions()
+
+        when:
+        mongoCollection.createIndex(index)
+
+        then: 'only executed when requested'
+        0 * wrapped.createIndex(_, _, _)
+
+        when:
+        mongoCollection.createIndex(index).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndex(index, _, _)
+
+        when:
+        mongoCollection.createIndex(index, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndex(index, options, _)
+    }
+
+    def 'should use the underlying listIndexes'() {
+        def wrapped = Stub(WrappedMongoCollection) {
+            listIndexes(_) >> Stub(com.mongodb.async.client.ListIndexesFluent)
+            getDefaultClass() >> Document
+        }
+        def mongoCollection = new MongoCollectionImpl(wrapped)
+
+        when:
+        def fluent = mongoCollection.listIndexes()
+
+        then:
+        expect fluent, isTheSameAs(new ListIndexesFluentImpl(wrapped.listIndexes(Document)))
+
+        when:
+        mongoCollection.listIndexes(BsonDocument)
+
+        then:
+        expect fluent, isTheSameAs(new ListIndexesFluentImpl(wrapped.listIndexes(BsonDocument)))
+    }
+
+    def 'should use the underlying dropIndex'() {
+        given:
+        def index = 'index'
+
+        when:
+        mongoCollection.dropIndex(index)
+
+        then: 'only executed when requested'
+        0 * wrapped.dropIndex(_, _)
+
+        when:
+        mongoCollection.dropIndex(index).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(index, _)
+
+        when:
+        mongoCollection.dropIndexes().subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex('*', _)
+    }
+
+    def 'should use the underlying renameCollection'() {
+        given:
+        def nameCollectionNamespace = new MongoNamespace('db', 'coll')
+        def options = new RenameCollectionOptions()
+
+        when:
+        mongoCollection.renameCollection(nameCollectionNamespace)
+
+        then: 'only executed when requested'
+        0 * wrapped.renameCollection(_, _, _)
+
+        when:
+        mongoCollection.renameCollection(nameCollectionNamespace).subscribe(subscriber)
+
+        then:
+        1 * wrapped.renameCollection(nameCollectionNamespace, _, _)
+
+        when:
+        mongoCollection.renameCollection(nameCollectionNamespace, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.renameCollection(nameCollectionNamespace, options, _)
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ apply plugin: 'osgi'
 description = "A Reactive Streams implementation of the MongoDB Java driver"
 
 dependencies {
-    compile 'org.mongodb:mongo-java-driver-core:3.0.0-SNAPSHOT'
+    compile 'org.mongodb:mongodb-driver-async:3.0.0-SNAPSHOT'
     compile 'org.reactivestreams:reactive-streams:1.0.0.RC1'
 
     testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0.RC1'

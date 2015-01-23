@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,296 +16,279 @@
 
 package com.mongodb.reactivestreams.client
 
+import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
+import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
+import com.mongodb.async.client.MongoDatabase as WrappedMongoDatabase
 import com.mongodb.client.model.CreateCollectionOptions
-import com.mongodb.client.options.OperationOptions
-import com.mongodb.operation.AsyncBatchCursor
-import com.mongodb.operation.CommandReadOperation
-import com.mongodb.operation.CommandWriteOperation
-import com.mongodb.operation.CreateCollectionOperation
-import com.mongodb.operation.DropDatabaseOperation
-import com.mongodb.operation.ListCollectionsOperation
 import org.bson.BsonDocument
-import org.bson.BsonInt32
 import org.bson.Document
-import org.bson.codecs.DocumentCodec
-import org.bson.codecs.configuration.RootCodecRegistry
+import org.bson.codecs.configuration.CodecRegistry
+import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
-import static Fixture.ObservableSubscriber
-import static com.mongodb.ReadPreference.primary
-import static com.mongodb.ReadPreference.primaryPreferred
-import static com.mongodb.ReadPreference.secondary
-import static com.mongodb.ReadPreference.secondaryPreferred
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
+import static com.mongodb.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
 class MongoDatabaseSpecification extends Specification {
 
-    def name = 'databaseName'
-    def options = OperationOptions.builder().readPreference(secondary()).codecRegistry(MongoClientImpl.getDefaultCodecRegistry()).build()
-
-    def 'should return the correct name from getName'() {
+    def 'should have the same methods as the wrapped MongoDatabase'() {
         given:
-        def database = new MongoDatabaseImpl(name, options, new TestOperationExecutor([]))
+        def wrapped = WrappedMongoDatabase.methods*.name.sort()
+        def local = MongoDatabase.methods*.name.sort()
 
         expect:
-        database.getName() == name
+        wrapped == local
     }
 
-    def 'should return the correct options'() {
+    def 'should return the a collection'() {
         given:
-        def database = new MongoDatabaseImpl(name, options, new TestOperationExecutor([]))
-
-        expect:
-        database.getOptions() == options
-    }
-
-    def 'should be able to executeCommand correctly'() {
-        given:
-        def command = new BsonDocument('command', new BsonInt32(1))
-        def executor = new TestOperationExecutor([null, null, null, null])
-        def database = new MongoDatabaseImpl(name, options, executor)
-        def subscriber = new ObservableSubscriber<Document>();
-
-        when:
-        database.executeCommand(command).subscribe(subscriber)
-
-        then:
-        executor.getWriteOperation() == null
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        def operation = executor.getWriteOperation() as CommandWriteOperation<Document>
-        operation.command == command
-        subscriber.getReceived().size() == 1
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        subscriber = new ObservableSubscriber<Document>();
-        database.executeCommand(command, primaryPreferred()).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getReadOperation() as CommandReadOperation<Document>
-
-        then:
-        operation.command == command
-        executor.getReadPreference() == primaryPreferred()
-        subscriber.getReceived().size() == 1
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        subscriber = new ObservableSubscriber<BsonDocument>();
-        database.executeCommand(command, BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getWriteOperation() as CommandWriteOperation<BsonDocument>
-
-        then:
-        operation.command == command
-        subscriber.getReceived().size() == 1
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        subscriber = new ObservableSubscriber<BsonDocument>();
-        database.executeCommand(command, primaryPreferred(), BsonDocument).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-        operation = executor.getReadOperation() as CommandReadOperation<BsonDocument>
-
-        then:
-        operation.command == command
-        executor.getReadPreference() == primaryPreferred()
-        subscriber.getReceived().size() == 1
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-    }
-
-    def 'should use DropDatabaseOperation correctly'() {
-        given:
-        def executor = new TestOperationExecutor([null])
-        def subscriber = new ObservableSubscriber<Void>();
-
-        when:
-        new MongoDatabaseImpl(name, options, executor).dropDatabase().subscribe(subscriber)
-
-        then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        subscriber.isCompleted()
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-
-        when:
-        def operation = executor.getWriteOperation() as DropDatabaseOperation
-
-        then:
-        expect operation, isTheSameAs(new DropDatabaseOperation(name))
-
-        when:
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-    }
-
-    def 'should use ListCollectionsOperation correctly'() {
-        given:
-        List<Document> names = (1..50).collect({ new Document('name', 'collection' + it) })
-        def asyncCursor = Stub(AsyncBatchCursor) {
-            def seen = false;
-            next(_) >> { args ->
-                seen = true
-                args[0].onResult(names, null)
-            }
-            isClosed() >> { seen }
+        def wrappedCollection = Mock(WrappedMongoCollection)
+        def wrapped = Mock(WrappedMongoDatabase) {
+            getCollection(_) >> wrappedCollection
+            getCollection(_, _) >> wrappedCollection
         }
-
-        def executor = new TestOperationExecutor([asyncCursor])
-        def subscriber = new ObservableSubscriber<String>();
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        new MongoDatabaseImpl(name, options, executor).getCollectionNames().subscribe(subscriber)
+        def collection = mongoDatabase.getCollection('collectionName')
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getReadOperation() == null
+        expect collection, isTheSameAs(new MongoCollectionImpl(wrappedCollection))
 
         when:
-        subscriber.getSubscription().request(10)
+        collection = mongoDatabase.getCollection('collectionName', Document)
 
         then:
-        subscriber.getReceived().size() == 10
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        def operation = executor.getReadOperation() as ListCollectionsOperation
-
-        then:
-        expect operation, isTheSameAs(new ListCollectionsOperation(name, new DocumentCodec()))
-        executor.getReadPreference() == primary()
-
-        when:
-        subscriber.getSubscription().request(30)
-
-        then:
-        subscriber.getReceived().size() == 40
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-
-        when:
-        subscriber.getSubscription().request(20)
-
-        then:
-        subscriber.getReceived() == names*.getString('name')
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
+        expect collection, isTheSameAs(new MongoCollectionImpl(wrappedCollection))
     }
 
-    def 'should use CreateCollectionOperation correctly'() {
+    def 'should call the underlying getName'() {
         given:
-        def collectionName = 'collectionName'
-        def executor = new TestOperationExecutor([null, null])
-        def database = new MongoDatabaseImpl(name, options, executor)
-        def subscriber = new ObservableSubscriber<Void>();
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        database.createCollection(collectionName).subscribe(subscriber)
+        mongoDatabase.getName()
 
         then:
-        subscriber.getReceived().isEmpty()
-        subscriber.getErrors().isEmpty()
-        !subscriber.isCompleted()
-        executor.getWriteOperation() == null
-
-        when:
-        subscriber.getSubscription().request(1)
-        subscriber.isCompleted()
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-
-        when:
-        def operation = executor.getWriteOperation() as CreateCollectionOperation
-
-        then:
-        expect operation, isTheSameAs(new CreateCollectionOperation(name, collectionName))
-
-        when:
-        def createCollectionOptions = new CreateCollectionOptions()
-                .autoIndex(false)
-                .capped(true)
-                .usePowerOf2Sizes(true)
-                .maxDocuments(100)
-                .sizeInBytes(1000)
-                .storageEngineOptions(new Document('wiredTiger', new Document()))
-
-        subscriber = new ObservableSubscriber<Void>()
-        database.createCollection(collectionName, createCollectionOptions).subscribe(subscriber)
-        subscriber.getSubscription().request(1)
-
-        then:
-        subscriber.getReceived() == [null]
-        subscriber.getErrors().isEmpty()
-        subscriber.isCompleted()
-
-        when:
-        operation = executor.getWriteOperation() as CreateCollectionOperation
-
-        then:
-        expect operation, isTheSameAs(new CreateCollectionOperation(name, collectionName)
-                .autoIndex(false)
-                .capped(true)
-                .usePowerOf2Sizes(true)
-                .maxDocuments(100)
-                .sizeInBytes(1000)
-                .storageEngineOptions(new BsonDocument('wiredTiger', new BsonDocument())))
+        1 * wrapped.getName()
     }
 
-    def 'should pass the correct options to getCollection'() {
+    def 'should call the underlying getCodecRegistry'() {
         given:
-        def options = OperationOptions.builder()
-                .readPreference(secondary())
-                .writeConcern(WriteConcern.ACKNOWLEDGED)
-                .codecRegistry(codecRegistry)
-                .build()
-        def executor = new TestOperationExecutor([])
-        def database = new MongoDatabaseImpl(name, options, executor)
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        def collectionOptions = customOptions ? database.getCollection('name', customOptions).getOptions() :
-                database.getCollection('name').getOptions()
+        mongoDatabase.getCodecRegistry()
+
         then:
-        collectionOptions.getReadPreference() == readPreference
-        collectionOptions.getWriteConcern() == writeConcern
-        collectionOptions.getCodecRegistry() == codecRegistry
+        1 * wrapped.getCodecRegistry()
+    }
+    def 'should call the underlying getReadPreference'() {
+        given:
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
-        where:
-        customOptions                      | readPreference       | writeConcern              | codecRegistry
-        null                               | secondary()          | WriteConcern.ACKNOWLEDGED | new RootCodecRegistry([])
-        OperationOptions.builder().build() | secondary()          | WriteConcern.ACKNOWLEDGED | new RootCodecRegistry([])
-        OperationOptions.builder()
-                .readPreference(secondaryPreferred())
-                .writeConcern(WriteConcern.MAJORITY)
-                .build()                   | secondaryPreferred() | WriteConcern.MAJORITY     | new RootCodecRegistry([])
+        when:
+        mongoDatabase.getReadPreference()
 
+        then:
+        1 * wrapped.getReadPreference()
+
+    }
+    def 'should call the underlying getWriteConcern'() {
+        given:
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.getWriteConcern()
+
+        then:
+        1 * wrapped.getWriteConcern()
+    }
+
+    def 'should call the underlying withCodecRegistry'() {
+        given:
+        def codecRegistry = Stub(CodecRegistry)
+        def wrappedResult = Stub(WrappedMongoDatabase)
+        def wrapped = Mock(WrappedMongoDatabase) {
+            1 * withCodecRegistry(codecRegistry) >> wrappedResult
+        }
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        def result = mongoDatabase.withCodecRegistry(codecRegistry)
+
+        then:
+        expect result, isTheSameAs(new MongoDatabaseImpl(wrappedResult))
+    }
+
+    def 'should call the underlying withReadPreference'() {
+        given:
+        def readPreference = Stub(ReadPreference)
+        def wrappedResult = Stub(WrappedMongoDatabase)
+        def wrapped = Mock(WrappedMongoDatabase) {
+            1 * withReadPreference(readPreference) >> wrappedResult
+        }
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        def result = mongoDatabase.withReadPreference(readPreference)
+
+        then:
+        expect result, isTheSameAs(new MongoDatabaseImpl(wrappedResult))
+    }
+
+    def 'should call the underlying withWriteConcern'() {
+        given:
+        def writeConcern = Stub(WriteConcern)
+        def wrappedResult = Stub(WrappedMongoDatabase)
+        def wrapped = Mock(WrappedMongoDatabase) {
+            1 * withWriteConcern(writeConcern) >> wrappedResult
+        }
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        def result = mongoDatabase.withWriteConcern(writeConcern)
+
+        then:
+        expect result, isTheSameAs(new MongoDatabaseImpl(wrappedResult))
+    }
+
+    def 'should call the underlying executeCommand when writing'() {
+        given:
+        def subscriber = Stub(Subscriber) {
+            onSubscribe(_) >> { args -> args[0].request(1) }
+        }
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.executeCommand(new Document())
+
+        then: 'only executed when requested'
+        0 * wrapped.executeCommand(_, _, _)
+
+        when:
+        mongoDatabase.executeCommand(new Document()).subscribe(subscriber)
+
+        then:
+        1 * wrapped.executeCommand(new Document(), Document, _)
+
+        when:
+        mongoDatabase.executeCommand(new BsonDocument(), BsonDocument).subscribe(subscriber)
+
+        then:
+        1 * wrapped.executeCommand(new BsonDocument(), BsonDocument, _)
+    }
+    def 'should call the underlying executeCommand for read operations'() {
+        given:
+        def subscriber = Stub(Subscriber) {
+            onSubscribe(_) >> { args -> args[0].request(1) }
+        }
+        def readPreference = Stub(ReadPreference)
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.executeCommand(new Document(), readPreference)
+
+        then: 'only executed when requested'
+        0 * wrapped.executeCommand(_, _, _, _)
+
+        when:
+        mongoDatabase.executeCommand(new Document(), readPreference).subscribe(subscriber)
+
+        then:
+        1 * wrapped.executeCommand(new Document(), readPreference, Document, _)
+
+        when:
+        mongoDatabase.executeCommand(new BsonDocument(), readPreference, BsonDocument).subscribe(subscriber)
+
+        then:
+        1 * wrapped.executeCommand(new BsonDocument(), readPreference, BsonDocument, _)
+    }
+
+    def 'should call the underlying dropDatabase'() {
+        given:
+        def subscriber = Stub(Subscriber) {
+            onSubscribe(_) >> { args -> args[0].request(1) }
+        }
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.dropDatabase()
+
+        then: 'only executed when requested'
+        0 * wrapped.dropDatabase(_)
+
+        when:
+        mongoDatabase.dropDatabase().subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropDatabase(_)
+    }
+    def 'should call the underlying listCollectionNames'() {
+        given:
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.listCollectionNames()
+
+        then:
+        1 * wrapped.listCollectionNames()
+
+    }
+    def 'should call the underlying listCollections'() {
+        given:
+        def wrapped = Stub(WrappedMongoDatabase) {
+            listCollections(_) >> Stub(com.mongodb.async.client.ListCollectionsFluent)
+        }
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        def fluent = mongoDatabase.listCollections()
+
+        then:
+        expect fluent, isTheSameAs(new ListCollectionsFluentImpl(wrapped.listCollections(Document)))
+
+        when:
+        fluent = mongoDatabase.listCollections(BsonDocument)
+
+        then:
+        expect fluent, isTheSameAs(new ListCollectionsFluentImpl(wrapped.listCollections(BsonDocument)))
+    }
+
+    def 'should call the underlying createCollection'() {
+        given:
+        def subscriber = Stub(Subscriber) {
+            onSubscribe(_) >> { args -> args[0].request(1) }
+        }
+        def createCollectionOptions = Stub(CreateCollectionOptions)
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.createCollection('collectionName')
+
+        then: 'only executed when requested'
+        0 * wrapped.createCollection(_, _, _)
+
+        when:
+        mongoDatabase.createCollection('collectionName').subscribe(subscriber)
+
+        then:
+        1 * wrapped.createCollection('collectionName', _, _)
+
+        when:
+        mongoDatabase.createCollection('collectionName', createCollectionOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createCollection('collectionName', createCollectionOptions, _)
     }
 }

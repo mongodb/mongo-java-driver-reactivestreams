@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,41 @@
 
 package com.mongodb.reactivestreams.client
 
+import com.mongodb.MongoNamespace
 import org.bson.Document
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.PublisherVerification
 import org.reactivestreams.tck.TestEnvironment
+import org.testng.annotations.AfterClass
 
-import static com.mongodb.reactivestreams.client.Fixture.getMongoClient
+import static com.mongodb.reactivestreams.client.Fixture.ObservableSubscriber
+import static com.mongodb.reactivestreams.client.Fixture.dropDatabase
+import static com.mongodb.reactivestreams.client.Fixture.getDefaultDatabaseName
+import static com.mongodb.reactivestreams.client.Fixture.initializeCollection
+import static java.util.concurrent.TimeUnit.SECONDS
 
-class WriteOperationPublisherVerification extends PublisherVerification<Document> {
+class SingleResultPublisherVerification extends PublisherVerification<Document> {
 
     public static final long DEFAULT_TIMEOUT_MILLIS = 10000L
     public static final long PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS = 1000L
 
-    WriteOperationPublisherVerification() {
+    @AfterClass
+    void after() {
+        dropDatabase(getDefaultDatabaseName())
+    }
+
+    SingleResultPublisherVerification() {
         super(new TestEnvironment(DEFAULT_TIMEOUT_MILLIS), PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS)
     }
 
     @Override
     Publisher<Document> createPublisher(long elements) {
         assert (elements <= maxElementsFromPublisher())
-        getMongoClient().getDatabase('admin').executeCommand(new Document('ping', 1))
+        def collection = initializeCollection(new MongoNamespace(getDefaultDatabaseName(), getClass().getName()))
+        def subscriber = new ObservableSubscriber<Void>()
+        collection.insertMany((0..<elements).collect({ new Document('_id', it) })).subscribe(subscriber)
+        subscriber.await(10, SECONDS)
+        collection.count()
     }
 
     @Override

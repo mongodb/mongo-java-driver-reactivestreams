@@ -1,11 +1,11 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,25 +14,28 @@
  * limitations under the License.
  */
 
+
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.Function;
 import org.reactivestreams.Publisher;
 
+import java.util.concurrent.TimeUnit;
+
 /**
- * A wrapper over a {@link Publisher} that also provides a map method for transformations.
+ * Fluent interface for ListDatabases.
  *
- * @param <T> the type of item emitted by this publisher
+ * @param <T> The type of the result.
  */
-interface MongoPublisher<T> extends Publisher<T> {
+public interface ListDatabasesFluent<T> extends Publisher<T> {
 
     /**
-     * See {@link Publishers#map(Publisher, Function)}.
+     * Sets the maximum execution time on the server for this operation.
      *
-     * @param function the transformation
-     * @param <O> the type of transformed item
-     * @return the transformed publisher
+     * @param maxTime  the max time
+     * @param timeUnit the time unit, which may not be null
+     * @return this
+     * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    <O> MongoPublisher<O> map(Function<? super T, ? extends O> function);
+    ListDatabasesFluent<T> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

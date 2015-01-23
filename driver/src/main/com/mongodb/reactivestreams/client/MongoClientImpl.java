@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,139 +16,46 @@
 
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.ReadPreference;
-import com.mongodb.async.SingleResultCallback;
-import com.mongodb.binding.AsyncClusterBinding;
-import com.mongodb.binding.AsyncReadBinding;
-import com.mongodb.binding.AsyncReadWriteBinding;
-import com.mongodb.binding.AsyncWriteBinding;
-import com.mongodb.client.options.OperationOptions;
-import com.mongodb.connection.Cluster;
-import com.mongodb.operation.AsyncOperationExecutor;
-import com.mongodb.operation.AsyncReadOperation;
-import com.mongodb.operation.AsyncWriteOperation;
-import com.mongodb.operation.GetDatabaseNamesOperation;
-import org.bson.codecs.BsonValueCodecProvider;
-import org.bson.codecs.DocumentCodecProvider;
-import org.bson.codecs.ValueCodecProvider;
-import org.bson.codecs.configuration.RootCodecRegistry;
+import com.mongodb.async.client.MongoClientOptions;
+import org.bson.Document;
 import org.reactivestreams.Publisher;
 
-import static com.mongodb.ReadPreference.primary;
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.ErrorHandlingResultCallback.errorHandlingCallback;
-import static java.util.Arrays.asList;
 
 class MongoClientImpl implements MongoClient {
-    private final Cluster cluster;
-    private final MongoClientOptions options;
-    private final AsyncOperationExecutor executor;
-    private final OperationOptions operationOptions;
+    private final com.mongodb.async.client.MongoClient wrapped;
 
-    private static final RootCodecRegistry DEFAULT_CODEC_REGISTRY = new RootCodecRegistry(asList(new ValueCodecProvider(),
-                                                                                                 new DocumentCodecProvider(),
-                                                                                                 new BsonValueCodecProvider()));
-
-    /**
-     * Gets the default codec registry.  It includes the following providers:
-     *
-     * <ul>
-     *     <li>{@link org.bson.codecs.ValueCodecProvider}</li>
-     *     <li>{@link org.bson.codecs.DocumentCodecProvider}</li>
-     *     <li>{@link org.bson.codecs.BsonValueCodecProvider}</li>
-     * </ul>
-     *
-     * @return the default codec registry
-     * @see MongoClientOptions#getCodecRegistry()
-     * @since 3.0
-     */
-    public static RootCodecRegistry getDefaultCodecRegistry() {
-        return DEFAULT_CODEC_REGISTRY;
-    }
-
-    MongoClientImpl(final MongoClientOptions options, final Cluster cluster) {
-        this(options, cluster, createOperationExecutor(options, cluster));
-    }
-
-    MongoClientImpl(final MongoClientOptions options, final Cluster cluster, final AsyncOperationExecutor executor) {
-        this.options = notNull("options", options);
-        this.cluster = notNull("cluster", cluster);
-        this.executor = notNull("executor", executor);
-        operationOptions = OperationOptions.builder()
-                                           .codecRegistry(options.getCodecRegistry())
-                                           .readPreference(options.getReadPreference())
-                                           .writeConcern(options.getWriteConcern())
-                                           .build();
+    MongoClientImpl(final com.mongodb.async.client.MongoClient wrapped) {
+        this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
     public MongoDatabase getDatabase(final String name) {
-        return getDatabase(name, OperationOptions.builder().build());
-    }
-
-    @Override
-    public MongoDatabase getDatabase(final String name, final OperationOptions options) {
-        return new MongoDatabaseImpl(name, options.withDefaults(operationOptions), executor);
+        return new MongoDatabaseImpl(wrapped.getDatabase(name));
     }
 
     @Override
     public void close() {
-        cluster.close();
+        wrapped.close();
     }
 
     @Override
     public MongoClientOptions getOptions() {
-        return options;
+        return wrapped.getOptions();
     }
 
     @Override
-    public Publisher<String> getDatabaseNames() {
-        return Publishers.flatten(new GetDatabaseNamesOperation(), primary(), executor);
+    public Publisher<String> listDatabaseNames() {
+        return new MongoIterablePublisher<String>(wrapped.listDatabaseNames());
     }
 
-    Cluster getCluster() {
-        return cluster;
+    @Override
+    public ListDatabasesFluent<Document> listDatabases() {
+        return listDatabases(Document.class);
     }
 
-    private static AsyncOperationExecutor createOperationExecutor(final MongoClientOptions options, final Cluster cluster) {
-        return new AsyncOperationExecutor(){
-            @Override
-            public <T> void execute(final AsyncReadOperation<T> operation, final ReadPreference readPreference,
-                                    final SingleResultCallback<T> callback) {
-                final SingleResultCallback<T> wrappedCallback = errorHandlingCallback(callback);
-                final AsyncReadBinding binding = getReadWriteBinding(readPreference, options, cluster);
-                operation.executeAsync(binding, new SingleResultCallback<T>() {
-                    @Override
-                    public void onResult(final T result, final Throwable t) {
-                        try {
-                            wrappedCallback.onResult(result, t);
-                        } finally {
-                            binding.release();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public <T> void execute(final AsyncWriteOperation<T> operation, final SingleResultCallback<T> callback) {
-                final AsyncWriteBinding binding = getReadWriteBinding(ReadPreference.primary(), options, cluster);
-                operation.executeAsync(binding, new SingleResultCallback<T>() {
-                    @Override
-                    public void onResult(final T result, final Throwable t) {
-                        try {
-                            errorHandlingCallback(callback).onResult(result, t);
-                        } finally {
-                            binding.release();
-                        }
-                    }
-                });
-            }
-        };
-    }
-
-    private static AsyncReadWriteBinding getReadWriteBinding(final ReadPreference readPreference, final MongoClientOptions options,
-                                                             final Cluster cluster) {
-        notNull("readPreference", readPreference);
-        return new AsyncClusterBinding(cluster, readPreference);
+    @Override
+    public <T> ListDatabasesFluent<T> listDatabases(final Class<T> clazz) {
+        return new ListDatabasesFluentImpl<T>(wrapped.listDatabases(clazz));
     }
 }

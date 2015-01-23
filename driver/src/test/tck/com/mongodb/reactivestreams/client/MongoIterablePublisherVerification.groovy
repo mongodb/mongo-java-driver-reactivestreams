@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2014 MongoDB, Inc.
+ * Copyright 2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import org.reactivestreams.tck.PublisherVerification
 import org.reactivestreams.tck.TestEnvironment
 import org.testng.annotations.AfterClass
 
+import static com.mongodb.reactivestreams.client.Fixture.ObservableSubscriber
 import static com.mongodb.reactivestreams.client.Fixture.dropDatabase
 import static com.mongodb.reactivestreams.client.Fixture.getDefaultDatabaseName
 import static com.mongodb.reactivestreams.client.Fixture.initializeCollection
-import static com.mongodb.reactivestreams.client.Fixture.ObservableSubscriber
 import static java.util.concurrent.TimeUnit.SECONDS
 
-class FindFluentPublisherVerification extends PublisherVerification<Document> {
+class MongoIterablePublisherVerification extends PublisherVerification<Document> {
 
     public static final long DEFAULT_TIMEOUT_MILLIS = 10000L
     public static final long PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS = 1000L
@@ -39,7 +39,7 @@ class FindFluentPublisherVerification extends PublisherVerification<Document> {
         dropDatabase(getDefaultDatabaseName())
     }
 
-    FindFluentPublisherVerification() {
+    MongoIterablePublisherVerification() {
         super(new TestEnvironment(DEFAULT_TIMEOUT_MILLIS), PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS)
     }
 
@@ -60,6 +60,6 @@ class FindFluentPublisherVerification extends PublisherVerification<Document> {
 
     @Override
     long maxElementsFromPublisher() {
-        5000
+        10000
     }
 }
