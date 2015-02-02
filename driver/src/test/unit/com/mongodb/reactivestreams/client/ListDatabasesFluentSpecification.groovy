@@ -37,7 +37,7 @@ class ListDatabasesFluentSpecification extends Specification {
     def 'should have the same methods as the wrapped ListDatabasesFluent'() {
         given:
         def wrapped = (com.mongodb.async.client.ListDatabasesFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (ListDatabasesFluent.methods*.name - Publisher.methods*.name).sort()
+        def local = (ListDatabasesFluent.methods*.name - Publisher.methods*.name  - 'batchSize').sort()
 
         expect:
         wrapped == local

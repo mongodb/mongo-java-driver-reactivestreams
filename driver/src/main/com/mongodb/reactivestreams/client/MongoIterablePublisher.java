@@ -43,12 +43,13 @@ class MongoIterablePublisher<T> implements Publisher<T> {
     }
 
     private class AsyncBatchCursorSubscription extends SubscriptionSupport<T> {
-        private final AtomicBoolean operationCompleted = new AtomicBoolean();
+        private final AtomicBoolean requestedBatchCursorLock = new AtomicBoolean();
+        private final AtomicBoolean bufferProcessingLock = new AtomicBoolean();
+        private final AtomicBoolean batchCursorNextLock = new AtomicBoolean();
+        private final AtomicBoolean cursorCompleted = new AtomicBoolean();
         private final AtomicReference<AsyncBatchCursor<T>> batchCursor = new AtomicReference<AsyncBatchCursor<T>>();
         private final AtomicLong wanted = new AtomicLong();
-        private final ConcurrentLinkedQueue<T> buffer = new ConcurrentLinkedQueue<T>();
-        private final AtomicBoolean draining = new AtomicBoolean();
-        private final AtomicBoolean getMore = new AtomicBoolean();
+        private final ConcurrentLinkedQueue<T> resultsQueue = new ConcurrentLinkedQueue<T>();
 
         public AsyncBatchCursorSubscription(final Subscriber<? super T> subscriber) {
             super(subscriber);
@@ -57,13 +58,22 @@ class MongoIterablePublisher<T> implements Publisher<T> {
         @Override
         protected void doRequest(final long n) {
             wanted.addAndGet(n);
-            if (operationCompleted.compareAndSet(false, true)) {
-                execute();
-            } else if (batchCursor.get() != null) {
-                tryDrain();
-                if (wanted.get() > buffer.size()) {
-                    getNextBatch();
-                }
+            if (requestedBatchCursorLock.compareAndSet(false, true)) {
+                mongoIterable.batchCursor(new SingleResultCallback<AsyncBatchCursor<T>>() {
+                    @Override
+                    public void onResult(final AsyncBatchCursor<T> result, final Throwable t) {
+                        if (t != null) {
+                            onError(t);
+                        } else if (result != null) {
+                            batchCursor.set(result);
+                            getNextBatch();
+                        } else {
+                            onError(new MongoException("Unexpected error, no AsyncBatchCursor returned from the MongoIterable."));
+                        }
+                    }
+                });
+            } else if (batchCursor.get() != null) { // we have the batch cursor so start to process the resultsQueue
+                processResultsQueue();
             }
         }
 
@@ -76,42 +86,31 @@ class MongoIterablePublisher<T> implements Publisher<T> {
             }
         }
 
-        void execute(){
-            mongoIterable.batchCursor(new SingleResultCallback<AsyncBatchCursor<T>>() {
-                @Override
-                public void onResult(final AsyncBatchCursor<T> result, final Throwable t) {
-                    if (t != null) {
-                        onError(t);
-                    } else if (result != null) {
-                        batchCursor.set(result);
-                        getNextBatch();
-                    } else {
-                        onError(new MongoException("Unexpected error, no AsyncBatchCursor returned from the MongoIterable."));
-                    }
-                }
-            });
-        }
-
         void getNextBatch() {
             log("getNextBatch");
-            if (getMore.compareAndSet(false, true)) {
+            if (batchCursorNextLock.compareAndSet(false, true)) {
                 AsyncBatchCursor<T> cursor = batchCursor.get();
                 if (cursor.isClosed()) {
-                    getMore.set(false);
-                    tryDrain();
+                    cursorCompleted.set(true);
+                    batchCursorNextLock.set(false);
+                    processResultsQueue();
                 } else {
+                    int batchSize = wanted.get() > Integer.MAX_VALUE ? Integer.MAX_VALUE : wanted.intValue();
+                    cursor.setBatchSize(batchSize);
                     cursor.next(new SingleResultCallback<List<T>>() {
                         @Override
                         public void onResult(final List<T> result, final Throwable t) {
                             if (t != null) {
                                 onError(t);
-                                getMore.set(false);
+                                batchCursorNextLock.set(false);
                             } else {
                                 if (result != null) {
-                                    buffer.addAll(result);
+                                    resultsQueue.addAll(result);
+                                } else {
+                                    cursorCompleted.set(true);
                                 }
-                                getMore.set(false);
-                                tryDrain();
+                                batchCursorNextLock.set(false);
+                                processResultsQueue();
                             }
                         }
                     });
@@ -122,12 +121,12 @@ class MongoIterablePublisher<T> implements Publisher<T> {
         /**
          * Original implementation from RatPack
          */
-        void tryDrain() {
-            if (draining.compareAndSet(false, true)) {
+        void processResultsQueue() {
+            if (bufferProcessingLock.compareAndSet(false, true)) {
                 try {
                     long i = wanted.get();
                     while (i > 0) {
-                        T item = buffer.poll();
+                        T item = resultsQueue.poll();
                         if (item == null) {
                             // Nothing left to process
                             break;
@@ -136,15 +135,21 @@ class MongoIterablePublisher<T> implements Publisher<T> {
                             i = wanted.decrementAndGet();
                         }
                     }
-                    AsyncBatchCursor<T> cursor = batchCursor.get();
-                    if (cursor != null && cursor.isClosed()) {
-                        onComplete();
+                    if (cursorCompleted.get()) {
+                        onComplete();  // Cursor has completed and there are no more items left to process
                     }
                 } finally {
-                    draining.set(false);
+                    bufferProcessingLock.set(false);
                 }
-                if (buffer.peek() != null && wanted.get() > 0) {
-                    tryDrain();
+
+                if (!cursorCompleted.get() && wanted.get() > resultsQueue.size()) {
+                    getNextBatch();
+                } else if (resultsQueue.peek() != null) {
+                    if (wanted.get() > 0) {
+                        processResultsQueue();
+                    } else if (cursorCompleted.get()) {
+                        onComplete();
+                    }
                 }
             }
         }

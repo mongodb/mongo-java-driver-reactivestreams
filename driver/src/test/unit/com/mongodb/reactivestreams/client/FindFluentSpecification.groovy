@@ -51,7 +51,7 @@ class FindFluentSpecification extends Specification {
     def 'should have the same methods as the wrapped FindFluent'() {
         given:
         def wrapped = (com.mongodb.async.client.FindFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (FindFluent.methods*.name - Publisher.methods*.name - 'first').sort()
+        def local = (FindFluent.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
 
         expect:
         wrapped == local

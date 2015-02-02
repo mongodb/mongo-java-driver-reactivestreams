@@ -16,28 +16,21 @@
 
 package com.mongodb.reactivestreams.client
 
-import com.mongodb.MongoNamespace
+import com.mongodb.Block
+import com.mongodb.Function
+import com.mongodb.async.AsyncBatchCursor
+import com.mongodb.async.SingleResultCallback
+import com.mongodb.async.client.MongoIterable
 import org.bson.Document
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.PublisherVerification
 import org.reactivestreams.tck.TestEnvironment
-import org.testng.annotations.AfterClass
 
-import static com.mongodb.reactivestreams.client.Fixture.ObservableSubscriber
-import static com.mongodb.reactivestreams.client.Fixture.dropDatabase
-import static com.mongodb.reactivestreams.client.Fixture.getDefaultDatabaseName
-import static com.mongodb.reactivestreams.client.Fixture.initializeCollection
-import static java.util.concurrent.TimeUnit.SECONDS
-
+@SuppressWarnings(['CloseWithoutCloseable', 'UnusedMethodParameter', 'EmptyMethod'])
 class MongoIterablePublisherVerification extends PublisherVerification<Document> {
 
     public static final long DEFAULT_TIMEOUT_MILLIS = 10000L
     public static final long PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS = 1000L
-
-    @AfterClass
-    void after() {
-        dropDatabase(getDefaultDatabaseName())
-    }
 
     MongoIterablePublisherVerification() {
         super(new TestEnvironment(DEFAULT_TIMEOUT_MILLIS), PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS)
@@ -46,20 +39,56 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
     @Override
     Publisher<Document> createPublisher(long elements) {
         assert (elements <= maxElementsFromPublisher())
-        def collection = initializeCollection(new MongoNamespace(getDefaultDatabaseName(), getClass().getName()))
-        def subscriber = new ObservableSubscriber<Void>()
-        collection.insertMany((0..<elements).collect({ new Document('_id', it) })).subscribe(subscriber)
-        subscriber.await(10, SECONDS)
-        collection.find()
+        new MongoIterablePublisher<Integer>(new MongoIterable<Integer>() {
+            def batch = 1024
+            void first(final SingleResultCallback<Integer> callback) { }
+            void forEach(final Block<? super Integer> block, final SingleResultCallback<Void> callback) { }
+            def <A extends Collection<? super Integer>> void into(final A target, final SingleResultCallback<A> callback) { }
+            def <U> MongoIterable<U> map(final Function<Integer, U> mapper) { null }
+
+            @Override
+            MongoIterable<Integer> batchSize(final int batchSize) { batch = batchSize }
+
+            @Override
+            void batchCursor(final SingleResultCallback<AsyncBatchCursor<Integer>> callback) {
+                callback.onResult(new AsyncBatchCursor<Integer>() {
+                    def totalCount = 0
+                    @Override
+                    void next(final SingleResultCallback<List<Integer>> batchCallback) {
+                        if (totalCount == elements) {
+                            batchCallback.onResult(null, null)
+                        } else {
+                            def start = totalCount + 1
+                            def end = ((start + batch) <= elements) ? batch + totalCount :  start + (elements - start)
+                            def range = (start..end)
+                            totalCount = end
+                            batchCallback.onResult(range.collect(), null)
+                        }
+                    }
+
+                    @Override
+                    void setBatchSize(final int bSize) { }
+
+                    @Override
+                    int getBatchSize() { batch }
+
+                    @Override
+                    boolean isClosed() { totalCount == elements }
+
+                    @Override
+                    void close() { }
+                }, null)
+            }
+        })
     }
 
     @Override
-    Publisher<Document> createErrorStatePublisher() {
+    Publisher<Integer> createErrorStatePublisher() {
         null
     }
 
     @Override
     long maxElementsFromPublisher() {
-        10000
+        Integer.MAX_VALUE
     }
 }

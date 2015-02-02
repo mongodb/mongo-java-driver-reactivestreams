@@ -197,24 +197,22 @@ class MongoCollectionSpecification extends Specification {
         given:
         def fieldName = 'fieldName'
         def options = new DistinctOptions()
+        def wrapped = Stub(WrappedMongoCollection) {
+            distinct(_, _, _, _) >> Stub(com.mongodb.async.client.MongoIterable)
+        }
+        def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        mongoCollection.distinct(fieldName, filter)
-
-        then: 'only executed when requested'
-        0 * wrapped.distinct(_, _, _)
-
-        when:
-        mongoCollection.distinct(fieldName, filter).subscribe(subscriber)
+        def iterable = mongoCollection.distinct(fieldName, filter, String)
 
         then:
-        1 * wrapped.distinct(fieldName, filter, _, _)
+        expect iterable, isTheSameAs(new MongoIterablePublisher(wrapped.distinct(fieldName, filter, options, String)))
 
         when:
-        mongoCollection.distinct(fieldName, filter, options).subscribe(subscriber)
+        mongoCollection.distinct(fieldName, filter, options, String).subscribe(subscriber)
 
         then:
-        1 * wrapped.distinct(fieldName, filter, options, _)
+        expect iterable, isTheSameAs(new MongoIterablePublisher(wrapped.distinct(fieldName, filter, options, String)))
     }
 
     def 'should use the underlying find'() {

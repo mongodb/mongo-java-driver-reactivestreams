@@ -73,8 +73,13 @@ abstract class SubscriptionSupport<T> implements Subscription {
         } else if (demand + n < 1) {
             terminateDueTo(new IllegalStateException(subscriber + " violated the Reactive Streams rule 3.17 by "
                     + "demanding more elements than Long.MAX_VALUE."));
+            /*
+            // As governed by rule 3.17, when demand overflows `Long.MAX_VALUE` we treat the signalled demand as "effectively unbounded"
+            demand = Long.MAX_VALUE;  // Here we protect from the overflow and treat it as "effectively unbounded"
+            handleSend(); // Then we proceed with sending data downstream
+             */
         } else {
-            demand += n; // Here we record the downstream demand
+            demand += n;  // Here we record the downstream demand
             handleSend(); // Then we can proceed with sending data downstream
         }
     }
@@ -88,29 +93,25 @@ abstract class SubscriptionSupport<T> implements Subscription {
     // This is our behavior for producing elements downstream
     private void handleSend() {
         try {
-            // In order to play nice we will only send at-most `batchSize` before rescheduing ourselves.
-            int leftInBatch = batchSize;
             boolean finished;
             if (resultsQueue.peek() != null) {
                 do {
                     subscriber.onNext(resultsQueue.poll().get());
                     finished = resultsQueue.peek() == null;
-                    --leftInBatch;
-                    --demand;
-                }
-                while (!finished           // There are more results to consume
-                        && !cancelled      // This makes sure that rule 1.8 is upheld
-                        && leftInBatch > 0 // This makes sure that we only send `batchSize` number of elements in one go
-                        && demand > 0);    // This makes sure that rule 1.1 is upheld (sending more than was demanded)
+                } while (!finished          // There are more results to consume
+                         && !cancelled);    // This makes sure that rule 1.8 is upheld
             }
 
             if (completed) {             // The batch was completed during the last request
                 handleCancel();          // We need to consider this `Subscription` as cancelled as per rule 1.6
                 subscriber.onComplete(); // Then we signal `onComplete` as per rule 1.2 and 1.5
             } else if (started && !cancelled && demand > 0) {
+                // This makes sure that rule 1.1 is upheld (sending more than was demanded)
                 // If the `Subscription` is still alive and well, and we have demand to satisfy,
                 // we signal ourselves to send more data
-                doRequest(demand > batchSize ? batchSize : demand);
+                long requestAmount = demand > batchSize ? batchSize : demand;
+                demand -= requestAmount;
+                doRequest(requestAmount);  // This makes sure that rule 1.1 is upheld (sending more than was demanded)
             }
         } catch (final MongoException t) {
             // We can only get here if `onNext` or `onComplete` threw, and they are not allowed to according to 2.13,

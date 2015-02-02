@@ -39,7 +39,7 @@ class ListIndexesFluentSpecification extends Specification {
     def 'should have the same methods as the wrapped ListIndexesFluent'() {
         given:
         def wrapped = (com.mongodb.async.client.ListIndexesFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (ListIndexesFluent.methods*.name - Publisher.methods*.name).sort()
+        def local = (ListIndexesFluent.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
         wrapped == local

@@ -119,18 +119,13 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<List<Object>> distinct(final String fieldName, final Object filter) {
-        return distinct(fieldName, filter, new DistinctOptions());
+    public <C> Publisher<C> distinct(final String fieldName, final Object filter, final Class<C> clazz) {
+        return distinct(fieldName, filter, new DistinctOptions(), clazz);
     }
 
     @Override
-    public Publisher<List<Object>> distinct(final String fieldName, final Object filter, final DistinctOptions options) {
-        return new SingleResultPublisher<List<Object>>() {
-            @Override
-            void execute(final SingleResultCallback<List<Object>> callback) {
-                wrapped.distinct(fieldName, filter, options, callback);
-            }
-        };
+    public <C> Publisher<C> distinct(final String fieldName, final Object filter, final DistinctOptions options, final Class<C> clazz) {
+        return new MongoIterablePublisher<C>(wrapped.distinct(fieldName, filter, options, clazz));
     }
 
     @Override

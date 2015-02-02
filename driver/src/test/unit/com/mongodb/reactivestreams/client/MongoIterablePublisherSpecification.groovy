@@ -94,15 +94,16 @@ class MongoIterablePublisherSpecification extends Specification {
 
     def 'should call next on the batchCursor'() {
         given:
-        def batchedResults = [[new Document('_id', 1), new Document('_id', 2), new Document('_id', 3)],
-                              [new Document('_id', 4)] , [new Document('_id', 5)]]
-        def cannedResults = batchedResults.flatten()
+        def batchSize = 10
+        def batches = 10
+        def cannedResults = (1..(batchSize * batches)).collect({ new Document('_id', it) })
+        def cursorResults = cannedResults.collate(batchSize)
         def cursor = {
             Stub(AsyncBatchCursor) {
                 next(_) >> {
-                    it[0].onResult(batchedResults.remove(0), null)
+                    it[0].onResult(cursorResults.remove(0), null)
                 }
-                isClosed() >> { batchedResults.isEmpty() }
+                isClosed() >> { cursorResults.isEmpty() }
             }
         }
         def subscriber = new Fixture.ObservableSubscriber()
@@ -112,21 +113,28 @@ class MongoIterablePublisherSpecification extends Specification {
 
         when:
         new MongoIterablePublisher(mongoIterable).subscribe(subscriber)
-        subscriber.getSubscription().request(1)  // 1 requested in total
+        subscriber.getSubscription().request(10)  // First batch
 
         then:
         !subscriber.isCompleted()
-        subscriber.getReceived() == [cannedResults[0]]
+        subscriber.getReceived() == cannedResults[0..9]
 
         when:
-        subscriber.getSubscription().request(3) // 4 requested in total
+        subscriber.getSubscription().request(15) // Request across batches
 
         then:
-        subscriber.getReceived() == cannedResults[0..3]
+        subscriber.getReceived() == cannedResults[0..24]
         !subscriber.isCompleted()
 
         when:
-        subscriber.getSubscription().request(6) // 10 requested in total
+        subscriber.getSubscription().request(55) // Request across batches
+
+        then:
+        subscriber.getReceived() == cannedResults[0..79]
+        !subscriber.isCompleted()
+
+        when:
+        subscriber.getSubscription().request(99)  // Request more than is left
 
         then:
         subscriber.getReceived() == cannedResults

@@ -150,10 +150,12 @@ public interface MongoCollection<T> {
      *
      * @param fieldName the field name
      * @param filter    the query filter
+     * @param clazz     the default class to cast any distinct items into.
+     * @param <C>       the target type of the iterable.
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    Publisher<List<Object>> distinct(String fieldName, Object filter);
+    <C> Publisher<C> distinct(String fieldName, Object filter, Class<C> clazz);
 
     /**
      * Gets the distinct values of the specified field name.
@@ -161,10 +163,12 @@ public interface MongoCollection<T> {
      * @param fieldName the field name
      * @param filter    the query filter
      * @param options   the options to apply to the distinct operation
+     * @param clazz     the default class to cast any distinct items into.
+     * @param <C>       the target type of the iterable.
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    Publisher<List<Object>> distinct(String fieldName, Object filter, DistinctOptions options);
+    <C> Publisher<C> distinct(String fieldName, Object filter, DistinctOptions options, Class<C> clazz);
 
     /**
      * Finds all documents in the collection.
