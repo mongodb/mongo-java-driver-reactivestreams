@@ -14,10 +14,17 @@
     <ruleset-ref path='rulesets/basic.xml'/>
     <ruleset-ref path='rulesets/braces.xml'/>
     <ruleset-ref path='rulesets/concurrency.xml'/>
-    <ruleset-ref path='rulesets/convention.xml'/>
+    <ruleset-ref path='rulesets/convention.xml'>
+        <rule-config name='NoDef'>
+            <property name='doNotApplyToFilesMatching' value='.*(Specification|Verification).groovy'/>
+        </rule-config>
+    </ruleset-ref>
     <ruleset-ref path='rulesets/design.xml'>
         <rule-config name='BuilderMethodWithSideEffects'>
             <property name='methodNameRegex' value='create.*|build.*'/>
+        </rule-config>
+        <rule-config name='Instanceof'>
+            <property name='doNotApplyToFilesMatching' value='.*Specification.groovy'/>
         </rule-config>
     </ruleset-ref>
     <ruleset-ref path='rulesets/dry.xml'>
@@ -46,11 +53,12 @@
     <ruleset-ref path='rulesets/groovyism.xml'>
         <exclude name="ExplicitCallToCompareToMethod"/>
         <exclude name='GetterMethodCouldBeProperty'/>
-     </ruleset-ref>
+    </ruleset-ref>
     <ruleset-ref path='rulesets/junit.xml'/>
     <ruleset-ref path='rulesets/logging.xml'/>
     <ruleset-ref path='rulesets/naming.xml'>
         <exclude name='MethodName'/>
+        <exclude name='FactoryMethodName'/>
     </ruleset-ref>
     <ruleset-ref path='rulesets/security.xml'/>
     <ruleset-ref path='rulesets/serialization.xml'/>
@@ -76,4 +84,3 @@
     </ruleset-ref>
 
 </ruleset>
-

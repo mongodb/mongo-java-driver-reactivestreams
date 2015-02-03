@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
 def configDir = new File(rootDir, 'config')
 
 buildscript {
@@ -26,6 +29,7 @@ buildscript {
     dependencies {
         classpath 'me.trnl:clirr-gradle-plugin:0.4'
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:1.12.+'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.2'
     }
 }
 
@@ -34,14 +38,8 @@ buildscript {
 //////////////////////////////////////////
 
 configure(subprojects.findAll { it.name != 'util' }) {
-    apply plugin: 'checkstyle'
-    apply plugin: 'findbugs'
-    apply plugin: 'jacoco'
-    apply plugin: 'eclipse'
-    apply plugin: 'idea'
-    apply plugin: 'groovy'
-    apply plugin: 'codenarc'
-    apply plugin: 'provided-base'
+    apply plugin: 'java'
+    apply plugin: 'optional-base'
 
     evaluationDependsOn(':util')
 
@@ -52,14 +50,56 @@ configure(subprojects.findAll { it.name != 'util' }) {
 
     repositories {
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        mavenLocal()
         jcenter()
         mavenCentral()
+        mavenLocal()
     }
 
     dependencies {
-        provided 'org.slf4j:slf4j-api:1.7.6'
+        compile 'org.slf4j:slf4j-api:1.7.6', optional
+    }
 
+    /* Compiling */
+    tasks.withType(AbstractCompile) {
+        options.encoding = 'ISO-8859-1'
+        options.fork = true
+        options.debug = true
+        options.compilerArgs = ['-Xlint:all', '-Xlint:-options']
+
+        onlyIf { JavaVersion.current().isJava7Compatible() }
+    }
+
+    project.ext.buildingWith = { propertyName ->
+        project.hasProperty(propertyName) && project.property(propertyName).toBoolean()
+    }
+
+    javadoc {
+        exclude "**/com/mongodb/**/internal/**"
+
+        dependsOn project(':util').compileJava //We need taglets to be compiled
+        options.author = true
+        options.version = true
+        options.links 'http://docs.oracle.com/javase/7/docs/api/'
+        options.tagletPath project(':util').sourceSets.main.output.classesDir
+        options.taglets 'ManualTaglet'
+        options.taglets 'ServerReleaseTaglet'
+        options.encoding = 'UTF-8'
+        options.charSet 'UTF-8'
+        options.docEncoding 'UTF-8'
+    }
+}
+
+
+
+
+configure(subprojects.findAll { it.name != 'util' && it.name != 'mongo-java-driver' }) {
+    apply plugin: 'checkstyle'
+    apply plugin: 'findbugs'
+    apply plugin: 'jacoco'
+    apply plugin: 'groovy'
+    apply plugin: 'codenarc'
+
+    dependencies {
         testCompile 'org.codehaus.groovy:groovy-all:2.3.9'
         testCompile 'org.spockframework:spock-core:1.0-groovy-2.3-SNAPSHOT'
         testCompile 'cglib:cglib-nodep:2.2.2'
@@ -77,20 +117,6 @@ configure(subprojects.findAll { it.name != 'util' }) {
             groovy.srcDirs = ['src/test/functional', 'src/test/unit', 'src/test/tck']
             java.srcDirs = ['src/test/functional', 'src/test/unit', 'src/test/tck']
         }
-    }
-
-    /* Compiling */
-    tasks.withType(AbstractCompile) {
-        options.encoding = 'ISO-8859-1'
-        options.fork = true
-        options.debug = true
-        options.compilerArgs = ['-Xlint:all', '-Xlint:-options']
-
-        onlyIf { JavaVersion.current().isJava7Compatible() }
-    }
-
-    project.ext.buildingWith = { propertyName ->
-        project.hasProperty(propertyName) && project.property(propertyName).toBoolean()
     }
 
     /* Testing */
@@ -128,7 +154,7 @@ configure(subprojects.findAll { it.name != 'util' }) {
 
         afterTest { descr, result ->
             logger.info("[Test ${descr.className} > ${descr.name}] ${result.getResultType()} "
-                        + "(${result.getEndTime() - result.getStartTime()} ms)" )
+                    + "(${result.getEndTime() - result.getStartTime()} ms)" )
         }
 
         testLogging { exceptionFormat = 'full' }
@@ -144,6 +170,7 @@ configure(subprojects.findAll { it.name != 'util' }) {
 
     /* Code quality */
     checkstyle {
+        toolVersion = "6.2"
         configFile = new File("$configDir/checkstyle.xml")
     }
 
@@ -154,7 +181,7 @@ configure(subprojects.findAll { it.name != 'util' }) {
     }
 
     codenarc {
-        toolVersion = '0.21'
+        toolVersion = '0.22'
         reportFormat = project.buildingWith('xmlReports.enabled') ? 'xml' : 'html'
     }
 
@@ -164,30 +191,17 @@ configure(subprojects.findAll { it.name != 'util' }) {
             html.enabled = !project.buildingWith('xmlReports.enabled')
         }
     }
-
-    javadoc {
-        dependsOn project(':util').compileJava //We need taglets to be compiled
-        options.author = true
-        options.version = true
-        options.links 'http://docs.oracle.com/javase/7/docs/api/'
-        options.tagletPath project(':util').sourceSets.main.output.classesDir
-        options.taglets 'ManualTaglet'
-        options.taglets 'ServerReleaseTaglet'
-        options.encoding = 'UTF-8'
-        options.charSet 'UTF-8'
-        options.docEncoding 'UTF-8'
-    }
-
-    idea {
-        module {
-            scopes.PROVIDED.plus += [configurations.provided]
-        }
-    }
-
-    eclipse {
-        classpath.plusConfigurations += [configurations.provided]
-    }
 }
+
+task docs(type: Javadoc) {
+    source subprojects.grep({ it.name != 'util' }).collect {project -> project.sourceSets.main.allJava }
+    options = subprojects.first().javadoc.options
+    dependsOn = subprojects.first().javadoc.dependsOn
+    excludes =  subprojects.first().javadoc.excludes
+    classpath = files(subprojects.collect {project -> project.sourceSets.main.compileClasspath})
+    destinationDir = new File(projectDir, 'build/docs')
+}
+
 
 //////////////////////////////////////////
 // Root project configuration           //
@@ -199,6 +213,8 @@ task wrapper(type: Wrapper) {
 gradle.buildFinished { BuildResult result ->
     if (result.failure && !JavaVersion.current().isJava7Compatible()) {
         gradle.rootProject.logger.error("\n* Warning:\nJDK ${JavaVersion.VERSION_1_7} is minimal requirement for building the driver. " +
-                                        "You have ${JavaVersion.current()}.")
+                "You have ${JavaVersion.current()}.")
     }
 }
+
+apply from: 'gradle/deploy.gradle'

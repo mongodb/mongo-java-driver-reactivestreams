@@ -29,7 +29,7 @@ import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
-import static com.mongodb.CustomMatchers.isTheSameAs
+import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static com.mongodb.ReadPreference.secondary
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static spock.util.matcher.HamcrestSupport.expect

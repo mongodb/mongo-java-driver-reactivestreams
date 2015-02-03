@@ -27,7 +27,7 @@ import org.bson.codecs.configuration.CodecRegistry
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
-import static com.mongodb.CustomMatchers.isTheSameAs
+import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
 class MongoDatabaseSpecification extends Specification {

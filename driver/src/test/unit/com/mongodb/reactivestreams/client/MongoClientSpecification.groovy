@@ -21,7 +21,7 @@ import org.bson.BsonDocument
 import org.bson.Document
 import spock.lang.Specification
 
-import static com.mongodb.CustomMatchers.isTheSameAs
+import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
 class MongoClientSpecification extends Specification {
