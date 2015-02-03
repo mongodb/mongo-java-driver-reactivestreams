@@ -20,17 +20,14 @@ import com.mongodb.MongoNamespace
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
-import com.mongodb.client.model.AggregateOptions
 import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.CountOptions
 import com.mongodb.client.model.CreateIndexOptions
-import com.mongodb.client.model.DistinctOptions
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneModel
-import com.mongodb.client.model.MapReduceOptions
 import com.mongodb.client.model.RenameCollectionOptions
 import com.mongodb.client.model.UpdateOptions
 import org.bson.BsonDocument
@@ -193,167 +190,103 @@ class MongoCollectionSpecification extends Specification {
         1 * wrapped.count(filter, options, _)
     }
 
-    def 'should use the underlying distinct'() {
-        given:
-        def fieldName = 'fieldName'
-        def options = new DistinctOptions()
-        def wrapped = Stub(WrappedMongoCollection) {
-            distinct(_, _, _, _) >> Stub(com.mongodb.async.client.MongoIterable)
-        }
-        def mongoCollection = new MongoCollectionImpl(wrapped)
 
-        when:
-        def iterable = mongoCollection.distinct(fieldName, filter, String)
-
-        then:
-        expect iterable, isTheSameAs(new MongoIterablePublisher(wrapped.distinct(fieldName, filter, options, String)))
-
-        when:
-        mongoCollection.distinct(fieldName, filter, options, String).subscribe(subscriber)
-
-        then:
-        expect iterable, isTheSameAs(new MongoIterablePublisher(wrapped.distinct(fieldName, filter, options, String)))
-    }
-
-    def 'should use the underlying find'() {
+    def 'should create DistinctPublisher correctly'() {
         given:
         def wrapped = Stub(WrappedMongoCollection) {
-            find(_, _) >> Stub(com.mongodb.async.client.FindFluent)
-            getDefaultClass() >> Document
+            distinct(_, _) >> Stub(com.mongodb.async.client.DistinctIterable)
         }
-        def mongoCollection = new MongoCollectionImpl(wrapped)
+        def collection = new MongoCollectionImpl(wrapped)
 
         when:
-        def fluent = mongoCollection.find()
+        def distinctPublisher = collection.distinct('field', String)
 
         then:
-        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(new Document(), Document)))
-
-        when:
-        fluent = mongoCollection.find(BsonDocument)
-
-        then:
-        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(new Document(), BsonDocument)))
-
-        when:
-        fluent = mongoCollection.find(filter)
-
-        then:
-        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(filter, Document)))
-
-        when:
-        fluent = mongoCollection.find(filter, BsonDocument)
-
-        then:
-        expect fluent, isTheSameAs(new FindFluentImpl(wrapped.find(filter, BsonDocument)))
+        expect distinctPublisher, isTheSameAs(new DistinctPublisherImpl(wrapped.distinct('field', String)))
     }
 
-    def 'should use the underlying aggregate'() {
-        def wrapped = Stub(WrappedMongoCollection) {
-            aggregate(_, _, _) >> Stub(com.mongodb.async.client.MongoIterable)
-            getDefaultClass() >> Document
-        }
-        def pipeline = [new Document('$match', new Document('_id', 1))]
-        def options = new AggregateOptions()
-        def mongoCollection = new MongoCollectionImpl(wrapped)
-
-        when:
-        def fluent = mongoCollection.aggregate(pipeline)
-
-        then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.aggregate(pipeline, options, Document)))
-
-        when:
-        mongoCollection.aggregate(pipeline, options)
-
-        then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.aggregate(pipeline, options, Document)))
-
-        when:
-        mongoCollection.aggregate(pipeline, options, BsonDocument)
-
-        then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.aggregate(pipeline, options, BsonDocument)))
-    }
-
-    def 'should use the underlying aggregateToCollection'() {
+    def 'should create FindPublisher correctly'() {
         given:
-        def pipeline = [new Document('$match', new Document('_id', 1))]
-        def options = new AggregateOptions()
-
-        when:
-        mongoCollection.aggregateToCollection(pipeline)
-
-        then: 'only executed when requested'
-        0 * wrapped.aggregateToCollection(_, _, _)
-
-        when:
-        mongoCollection.aggregateToCollection(pipeline).subscribe(subscriber)
-
-        then:
-        1 * wrapped.aggregateToCollection(pipeline, _, _)
-
-        when:
-        mongoCollection.aggregateToCollection(pipeline, options).subscribe(subscriber)
-
-        then:
-        1 * wrapped.aggregateToCollection(pipeline, options, _)
-    }
-
-    def 'should use the underlying mapReduce'() {
-        def wrapped = Stub(WrappedMongoCollection) {
-            mapReduce(_, _, _, _) >> Stub(com.mongodb.async.client.MongoIterable)
-            getDefaultClass() >> Document
+        def wrappedResult = Stub(com.mongodb.async.client.FindIterable)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * find(new BsonDocument(), Document) >> wrappedResult
+            1 * find(new BsonDocument(), BsonDocument) >> wrappedResult
+            1 * find(new Document(), Document) >> wrappedResult
+            1 * find(new Document(), BsonDocument) >> wrappedResult
+            2 * getDefaultClass() >> Document
         }
-        def mapFunction = 'map'
-        def reduceFunction = 'reduce'
-        def options = new MapReduceOptions()
-        def mongoCollection = new MongoCollectionImpl(wrapped)
+        def collection = new MongoCollectionImpl(wrapped)
 
         when:
-        def fluent = mongoCollection.mapReduce(mapFunction, reduceFunction)
+        def findPublisher = collection.find()
 
         then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, Document)))
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
 
         when:
-        fluent = mongoCollection.mapReduce(mapFunction, reduceFunction, options)
+        findPublisher = collection.find(BsonDocument)
 
         then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, Document)))
-
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
 
         when:
-        fluent = mongoCollection.mapReduce(mapFunction, reduceFunction, Document)
+        findPublisher = collection.find(new Document())
 
         then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, Document)))
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
 
         when:
-        fluent = mongoCollection.mapReduce(mapFunction, reduceFunction, options, BsonDocument)
+        findPublisher = collection.find(new Document(), BsonDocument)
 
         then:
-        expect fluent, isTheSameAs(new MongoIterablePublisher(wrapped.mapReduce(mapFunction, reduceFunction, options, BsonDocument)))
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
     }
 
-    def 'should use the underlying mapReduceToCollection'() {
+    def 'should use AggregatePublisher correctly'() {
         given:
-        def mapFunction = 'map'
-        def reduceFunction = 'reduce'
-        def options = new MapReduceOptions()
+        def wrappedResult = Stub(com.mongodb.async.client.AggregateIterable)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * aggregate(_, Document) >> wrappedResult
+            1 * aggregate(_, BsonDocument) >> wrappedResult
+        }
+        def collection = new MongoCollectionImpl(wrapped)
+        def pipeline = [new Document('$match', 1)]
 
         when:
-        mongoCollection.mapReduceToCollection(mapFunction, reduceFunction, options)
-
-        then: 'only executed when requested'
-        0 * wrapped.mapReduceToCollection(_, _, _, _)
-
-        when:
-        mongoCollection.mapReduceToCollection(mapFunction, reduceFunction, options).subscribe(subscriber)
+        def aggregatePublisher = collection.aggregate(pipeline)
 
         then:
-        1 * wrapped.mapReduceToCollection(mapFunction, reduceFunction, options, _)
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+
+        when:
+        aggregatePublisher = collection.aggregate(pipeline, BsonDocument)
+
+        then:
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
     }
+
+    def 'should create MapReducePublisher correctly'() {
+        given:
+        def wrappedResult = Stub(com.mongodb.async.client.MapReduceIterable)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * mapReduce('map', 'reduce', Document) >> wrappedResult
+            1 * mapReduce('map', 'reduce', BsonDocument) >> wrappedResult
+        }
+        def collection = new MongoCollectionImpl(wrapped)
+
+        when:
+        def mapReducePublisher = collection.mapReduce('map', 'reduce')
+
+        then:
+        expect mapReducePublisher, isTheSameAs(new MapReducePublisherImpl(wrappedResult))
+
+        when:
+        mapReducePublisher = collection.mapReduce('map', 'reduce', BsonDocument)
+
+        then:
+        expect mapReducePublisher, isTheSameAs(new MapReducePublisherImpl(wrappedResult))
+    }
+
 
     def 'should use the underlying bulkWrite'() {
         def subscriber = Stub(Subscriber) {
@@ -635,22 +568,22 @@ class MongoCollectionSpecification extends Specification {
 
     def 'should use the underlying listIndexes'() {
         def wrapped = Stub(WrappedMongoCollection) {
-            listIndexes(_) >> Stub(com.mongodb.async.client.ListIndexesFluent)
+            listIndexes(_) >> Stub(com.mongodb.async.client.ListIndexesIterable)
             getDefaultClass() >> Document
         }
         def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        def fluent = mongoCollection.listIndexes()
+        def publisher = mongoCollection.listIndexes()
 
         then:
-        expect fluent, isTheSameAs(new ListIndexesFluentImpl(wrapped.listIndexes(Document)))
+        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(wrapped.listIndexes(Document)))
 
         when:
         mongoCollection.listIndexes(BsonDocument)
 
         then:
-        expect fluent, isTheSameAs(new ListIndexesFluentImpl(wrapped.listIndexes(BsonDocument)))
+        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(wrapped.listIndexes(BsonDocument)))
     }
 
     def 'should use the underlying dropIndex'() {

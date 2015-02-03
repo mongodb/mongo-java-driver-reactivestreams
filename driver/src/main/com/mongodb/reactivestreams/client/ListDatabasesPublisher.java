@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 package com.mongodb.reactivestreams.client;
 
 import org.reactivestreams.Publisher;
@@ -21,20 +22,11 @@ import org.reactivestreams.Publisher;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fluent interface for ListIndexes.
+ * Publisher interface for ListDatabases.
  *
  * @param <T> The type of the result.
  */
-public interface ListIndexesFluent<T> extends Publisher<T> {
-
-    /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    ListIndexesFluent<T> batchSize(int batchSize);
+public interface ListDatabasesPublisher<T> extends Publisher<T> {
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -44,6 +36,6 @@ public interface ListIndexesFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    ListIndexesFluent<T> maxTime(long maxTime, TimeUnit timeUnit);
+    ListDatabasesPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

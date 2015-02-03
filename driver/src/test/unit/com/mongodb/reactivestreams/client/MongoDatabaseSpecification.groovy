@@ -246,22 +246,24 @@ class MongoDatabaseSpecification extends Specification {
     }
     def 'should call the underlying listCollections'() {
         given:
-        def wrapped = Stub(WrappedMongoDatabase) {
-            listCollections(_) >> Stub(com.mongodb.async.client.ListCollectionsFluent)
+        def wrappedResult = Stub(com.mongodb.async.client.ListCollectionsIterable)
+        def wrapped = Mock(WrappedMongoDatabase) {
+            1 * listCollections(Document) >> wrappedResult
+            1 * listCollections(BsonDocument) >> wrappedResult
         }
         def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        def fluent = mongoDatabase.listCollections()
+        def publisher = mongoDatabase.listCollections()
 
         then:
-        expect fluent, isTheSameAs(new ListCollectionsFluentImpl(wrapped.listCollections(Document)))
+        expect publisher, isTheSameAs(new ListCollectionsPublisherImpl(wrappedResult))
 
         when:
-        fluent = mongoDatabase.listCollections(BsonDocument)
+        publisher = mongoDatabase.listCollections(BsonDocument)
 
         then:
-        expect fluent, isTheSameAs(new ListCollectionsFluentImpl(wrapped.listCollections(BsonDocument)))
+        expect publisher, isTheSameAs(new ListCollectionsPublisherImpl(wrappedResult))
     }
 
     def 'should call the underlying createCollection'() {

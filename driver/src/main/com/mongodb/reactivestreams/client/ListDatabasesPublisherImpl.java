@@ -22,24 +22,18 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 
-final class ListIndexesFluentImpl<T> implements ListIndexesFluent<T> {
+class ListDatabasesPublisherImpl<T> implements ListDatabasesPublisher<T> {
 
-    private final com.mongodb.async.client.ListIndexesFluent<T> wrapped;
+    private final com.mongodb.async.client.ListDatabasesIterable<T> wrapped;
 
-    ListIndexesFluentImpl(final com.mongodb.async.client.ListIndexesFluent<T> wrapped) {
+    ListDatabasesPublisherImpl(final com.mongodb.async.client.ListDatabasesIterable<T> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
-    public ListIndexesFluentImpl<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public ListDatabasesPublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
         notNull("timeUnit", timeUnit);
         wrapped.maxTime(maxTime, timeUnit);
-        return this;
-    }
-
-    @Override
-    public ListIndexesFluentImpl<T> batchSize(final int batchSize) {
-        wrapped.batchSize(batchSize);
         return this;
     }
 
@@ -48,4 +42,3 @@ final class ListIndexesFluentImpl<T> implements ListIndexesFluent<T> {
         new MongoIterablePublisher<T>(wrapped).subscribe(s);
     }
 }
-

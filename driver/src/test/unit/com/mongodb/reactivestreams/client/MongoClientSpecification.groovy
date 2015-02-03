@@ -48,7 +48,7 @@ class MongoClientSpecification extends Specification {
 
     def 'should call the underlying listDatabases'() {
         given:
-        def wrappedResult = Stub(com.mongodb.async.client.ListDatabasesFluent)
+        def wrappedResult = Stub(com.mongodb.async.client.ListDatabasesIterable)
         def wrapped = Mock(WrappedMongoClient) {
             1 * listDatabases(Document) >> wrappedResult
             1 * listDatabases(BsonDocument) >> wrappedResult
@@ -57,16 +57,16 @@ class MongoClientSpecification extends Specification {
 
 
         when:
-        def fluent = mongoClient.listDatabases()
+        def publisher = mongoClient.listDatabases()
 
         then:
-        expect fluent, isTheSameAs(new ListDatabasesFluentImpl(wrappedResult))
+        expect publisher, isTheSameAs(new ListDatabasesPublisherImpl(wrappedResult))
 
         when:
-        fluent = mongoClient.listDatabases(BsonDocument)
+        publisher = mongoClient.listDatabases(BsonDocument)
 
         then:
-        expect fluent, isTheSameAs(new ListDatabasesFluentImpl(wrappedResult))
+        expect publisher, isTheSameAs(new ListDatabasesPublisherImpl(wrappedResult))
 
 
     }

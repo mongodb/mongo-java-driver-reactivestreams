@@ -35,12 +35,12 @@ import static com.mongodb.ReadPreference.secondary
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static spock.util.matcher.HamcrestSupport.expect
 
-class ListCollectionsFluentSpecification extends Specification {
+class ListCollectionsPublisherSpecification extends Specification {
 
-    def 'should have the same methods as the wrapped ListCollectionsFluent'() {
+    def 'should have the same methods as the wrapped ListCollectionsIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.ListCollectionsFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (ListCollectionsFluent.methods*.name - Publisher.methods*.name - 'batchSize').sort()
+        def wrapped = (com.mongodb.async.client.ListCollectionsIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def local = (ListCollectionsPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
         wrapped == local
@@ -53,11 +53,11 @@ class ListCollectionsFluentSpecification extends Specification {
             onSubscribe(_) >> { args -> args[0].request(1) }
         }
         def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new com.mongodb.async.client.ListCollectionsFluentImpl('db', Document, codecRegistry, secondary(), executor)
-        def listCollectionFluent = new ListCollectionsFluentImpl<Document>(wrapped)
+        def wrapped = new com.mongodb.async.client.ListCollectionsIterableImpl('db', Document, codecRegistry, secondary(), executor)
+        def listCollectionPublisher = new ListCollectionsPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
-        listCollectionFluent.subscribe(subscriber)
+        listCollectionPublisher.subscribe(subscriber)
 
         def operation = executor.getReadOperation() as ListCollectionsOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -67,7 +67,7 @@ class ListCollectionsFluentSpecification extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        listCollectionFluent.filter(new Document('filter', 2)).batchSize(99).maxTime(999, MILLISECONDS).subscribe(subscriber)
+        listCollectionPublisher.filter(new Document('filter', 2)).batchSize(99).maxTime(999, MILLISECONDS).subscribe(subscriber)
 
         operation = executor.getReadOperation() as ListCollectionsOperation<Document>
 

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,21 +21,11 @@ import org.reactivestreams.Publisher;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fluent interface for ListCollections.
+ * Publisher interface for ListIndexes.
  *
  * @param <T> The type of the result.
- * @since 3.0
  */
-public interface ListCollectionsFluent<T> extends Publisher<T> {
-
-    /**
-     * Sets the query filter to apply to the query.
-     *
-     * @param filter the filter, which may be null.
-     * @return this
-     * @mongodb.driver.manual reference/method/db.collection.find/ Filter
-     */
-    ListCollectionsFluent<T> filter(Object filter);
+public interface ListIndexesPublisher<T> extends Publisher<T> {
 
     /**
      * Sets the number of documents to return per batch.
@@ -44,7 +34,7 @@ public interface ListCollectionsFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
      */
-    ListCollectionsFluent<T> batchSize(int batchSize);
+    ListIndexesPublisher<T> batchSize(int batchSize);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -54,6 +44,6 @@ public interface ListCollectionsFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    ListCollectionsFluent<T> maxTime(long maxTime, TimeUnit timeUnit);
+    ListIndexesPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

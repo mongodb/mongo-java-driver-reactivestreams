@@ -50,12 +50,12 @@ class MongoClientImpl implements MongoClient {
     }
 
     @Override
-    public ListDatabasesFluent<Document> listDatabases() {
+    public ListDatabasesPublisher<Document> listDatabases() {
         return listDatabases(Document.class);
     }
 
     @Override
-    public <T> ListDatabasesFluent<T> listDatabases(final Class<T> clazz) {
-        return new ListDatabasesFluentImpl<T>(wrapped.listDatabases(clazz));
+    public <T> ListDatabasesPublisher<T> listDatabases(final Class<T> clazz) {
+        return new ListDatabasesPublisherImpl<T>(wrapped.listDatabases(clazz));
     }
 }

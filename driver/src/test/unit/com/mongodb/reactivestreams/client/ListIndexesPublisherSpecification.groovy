@@ -34,12 +34,12 @@ import static com.mongodb.ReadPreference.secondary
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static spock.util.matcher.HamcrestSupport.expect
 
-class ListIndexesFluentSpecification extends Specification {
+class ListIndexesPublisherSpecification extends Specification {
 
-    def 'should have the same methods as the wrapped ListIndexesFluent'() {
+    def 'should have the same methods as the wrapped ListIndexesIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.ListIndexesFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (ListIndexesFluent.methods*.name - Publisher.methods*.name - 'batchSize').sort()
+        def wrapped = (com.mongodb.async.client.ListIndexesIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def local = (ListIndexesPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
         wrapped == local
@@ -53,11 +53,11 @@ class ListIndexesFluentSpecification extends Specification {
         def namespace = new MongoNamespace('db', 'coll')
         def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
         def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new com.mongodb.async.client.ListIndexesFluentImpl(namespace, Document, codecRegistry, secondary(), executor)
-        def listIndexesFluent = new ListIndexesFluentImpl<Document>(wrapped)
+        def wrapped = new com.mongodb.async.client.ListIndexesIterableImpl(namespace, Document, codecRegistry, secondary(), executor)
+        def listIndexesPublisher = new ListIndexesPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
-        listIndexesFluent.subscribe(subscriber)
+        listIndexesPublisher.subscribe(subscriber)
 
         def operation = executor.getReadOperation() as ListIndexesOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -67,7 +67,7 @@ class ListIndexesFluentSpecification extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        listIndexesFluent.batchSize(99)
+        listIndexesPublisher.batchSize(99)
                 .maxTime(999, MILLISECONDS)
                 .subscribe(subscriber)
 

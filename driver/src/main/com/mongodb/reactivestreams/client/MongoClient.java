@@ -69,7 +69,7 @@ public interface MongoClient extends Closeable {
      *
      * @return the fluent list databases interface
      */
-    ListDatabasesFluent<Document> listDatabases();
+    ListDatabasesPublisher<Document> listDatabases();
 
     /**
      * Gets the list of databases
@@ -78,6 +78,6 @@ public interface MongoClient extends Closeable {
      * @param <T>   the type of the class to use instead of {@code Document}.
      * @return the fluent list databases interface
      */
-    <T> ListDatabasesFluent<T> listDatabases(Class<T> clazz);
+    <T> ListDatabasesPublisher<T> listDatabases(Class<T> clazz);
 
 }

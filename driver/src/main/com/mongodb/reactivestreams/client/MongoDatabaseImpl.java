@@ -125,13 +125,13 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public ListCollectionsFluent<Document> listCollections() {
+    public ListCollectionsPublisher<Document> listCollections() {
         return listCollections(Document.class);
     }
 
     @Override
-    public <C> ListCollectionsFluent<C> listCollections(final Class<C> clazz) {
-        return new ListCollectionsFluentImpl<C>(wrapped.listCollections(clazz));
+    public <C> ListCollectionsPublisher<C> listCollections(final Class<C> clazz) {
+        return new ListCollectionsPublisherImpl<C>(wrapped.listCollections(clazz));
     }
 
     @Override

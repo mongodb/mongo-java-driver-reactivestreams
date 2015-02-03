@@ -25,12 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 
-class FindFluentImpl<T> implements FindFluent<T> {
+class FindPublisherImpl<T> implements FindPublisher<T> {
 
+    private final com.mongodb.async.client.FindIterable<T> wrapped;
 
-    private final com.mongodb.async.client.FindFluent<T> wrapped;
-
-    FindFluentImpl(final com.mongodb.async.client.FindFluent<T> wrapped) {
+    FindPublisherImpl(final com.mongodb.async.client.FindIterable<T> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
@@ -45,73 +44,73 @@ class FindFluentImpl<T> implements FindFluent<T> {
     }
 
     @Override
-    public FindFluent<T> filter(final Object filter) {
+    public FindPublisher<T> filter(final Object filter) {
         wrapped.filter(filter);
         return this;
     }
 
     @Override
-    public FindFluent<T> limit(final int limit) {
+    public FindPublisher<T> limit(final int limit) {
         wrapped.limit(limit);
         return this;
     }
 
     @Override
-    public FindFluent<T> skip(final int skip) {
+    public FindPublisher<T> skip(final int skip) {
         wrapped.skip(skip);
         return this;
     }
 
     @Override
-    public FindFluent<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public FindPublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public FindFluent<T> batchSize(final int batchSize) {
+    public FindPublisher<T> batchSize(final int batchSize) {
         wrapped.batchSize(batchSize);
         return this;
     }
 
     @Override
-    public FindFluent<T> modifiers(final Object modifiers) {
+    public FindPublisher<T> modifiers(final Object modifiers) {
         wrapped.modifiers(modifiers);
         return this;
     }
 
     @Override
-    public FindFluent<T> projection(final Object projection) {
+    public FindPublisher<T> projection(final Object projection) {
         wrapped.projection(projection);
         return this;
     }
 
     @Override
-    public FindFluent<T> sort(final Object sort) {
+    public FindPublisher<T> sort(final Object sort) {
         wrapped.sort(sort);
         return this;
     }
 
     @Override
-    public FindFluent<T> noCursorTimeout(final boolean noCursorTimeout) {
+    public FindPublisher<T> noCursorTimeout(final boolean noCursorTimeout) {
         wrapped.noCursorTimeout(noCursorTimeout);
         return this;
     }
 
     @Override
-    public FindFluent<T> oplogReplay(final boolean oplogReplay) {
+    public FindPublisher<T> oplogReplay(final boolean oplogReplay) {
         wrapped.oplogReplay(oplogReplay);
         return this;
     }
 
     @Override
-    public FindFluent<T> partial(final boolean partial) {
+    public FindPublisher<T> partial(final boolean partial) {
         wrapped.partial(partial);
         return this;
     }
 
     @Override
-    public FindFluent<T> cursorType(final CursorType cursorType) {
+    public FindPublisher<T> cursorType(final CursorType cursorType) {
         wrapped.cursorType(cursorType);
         return this;
     }

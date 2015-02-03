@@ -161,7 +161,7 @@ public interface MongoDatabase {
      * @return the fluent list collections interface
      * @mongodb.driver.manual reference/command/listCollections listCollections
      */
-    ListCollectionsFluent<Document> listCollections();
+    ListCollectionsPublisher<Document> listCollections();
 
     /**
      * Finds all the collections in this database.
@@ -171,7 +171,7 @@ public interface MongoDatabase {
      * @return the fluent list collections interface
      * @mongodb.driver.manual reference/command/listCollections listCollections
      */
-    <C> ListCollectionsFluent<C> listCollections(Class<C> clazz);
+    <C> ListCollectionsPublisher<C> listCollections(Class<C> clazz);
 
     /**
      * Create a new collection with the given name.

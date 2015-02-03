@@ -39,15 +39,15 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
     @Override
     Publisher<Document> createPublisher(long elements) {
         assert (elements <= maxElementsFromPublisher())
+        int batchSize = 1024
         new MongoIterablePublisher<Integer>(new MongoIterable<Integer>() {
-            def batch = 1024
             void first(final SingleResultCallback<Integer> callback) { }
             void forEach(final Block<? super Integer> block, final SingleResultCallback<Void> callback) { }
             def <A extends Collection<? super Integer>> void into(final A target, final SingleResultCallback<A> callback) { }
             def <U> MongoIterable<U> map(final Function<Integer, U> mapper) { null }
 
             @Override
-            MongoIterable<Integer> batchSize(final int batchSize) { batch = batchSize }
+            MongoIterable<Integer> batchSize(final int bSize) { this }
 
             @Override
             void batchCursor(final SingleResultCallback<AsyncBatchCursor<Integer>> callback) {
@@ -59,7 +59,7 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
                             batchCallback.onResult(null, null)
                         } else {
                             def start = totalCount + 1
-                            def end = ((start + batch) <= elements) ? batch + totalCount :  start + (elements - start)
+                            def end = ((start + batchSize) <= elements) ? batchSize + totalCount :  start + (elements - start)
                             def range = (start..end)
                             totalCount = end
                             batchCallback.onResult(range.collect(), null)
@@ -70,7 +70,7 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
                     void setBatchSize(final int bSize) { }
 
                     @Override
-                    int getBatchSize() { batch }
+                    int getBatchSize() { batchSize }
 
                     @Override
                     boolean isClosed() { totalCount == elements }

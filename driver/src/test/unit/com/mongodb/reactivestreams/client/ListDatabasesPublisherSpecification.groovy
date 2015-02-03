@@ -16,7 +16,7 @@
 
 package com.mongodb.reactivestreams.client
 
-import com.mongodb.async.client.ListDatabasesFluentImpl as WrappedListDatabasesFluentImpl
+import com.mongodb.async.client.ListDatabasesIterableImpl as WrappedListDatabasesIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.ListDatabasesOperation
 import org.bson.Document
@@ -32,12 +32,12 @@ import static com.mongodb.ReadPreference.secondary
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static spock.util.matcher.HamcrestSupport.expect
 
-class ListDatabasesFluentSpecification extends Specification {
+class ListDatabasesPublisherSpecification extends Specification {
 
-    def 'should have the same methods as the wrapped ListDatabasesFluent'() {
+    def 'should have the same methods as the wrapped ListDatabasesIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.ListDatabasesFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (ListDatabasesFluent.methods*.name - Publisher.methods*.name  - 'batchSize').sort()
+        def wrapped = (com.mongodb.async.client.ListDatabasesIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def local = (ListDatabasesPublisher.methods*.name - Publisher.methods*.name  - 'batchSize').sort()
 
         expect:
         wrapped == local
@@ -50,11 +50,11 @@ class ListDatabasesFluentSpecification extends Specification {
             onSubscribe(_) >> { args -> args[0].request(1) }
         }
         def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new WrappedListDatabasesFluentImpl(Document, codecRegistry, secondary(), executor)
-        def listDatabasesFluent = new ListDatabasesFluentImpl<Document>(wrapped)
+        def wrapped = new WrappedListDatabasesIterableImpl(Document, codecRegistry, secondary(), executor)
+        def listDatabasesPublisher = new ListDatabasesPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
-        listDatabasesFluent.subscribe(subscriber)
+        listDatabasesPublisher.subscribe(subscriber)
 
         def operation = executor.getReadOperation() as ListDatabasesOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -64,7 +64,7 @@ class ListDatabasesFluentSpecification extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        listDatabasesFluent.maxTime(999, MILLISECONDS).subscribe(subscriber)
+        listDatabasesPublisher.maxTime(999, MILLISECONDS).subscribe(subscriber)
 
         operation = executor.getReadOperation() as ListDatabasesOperation<Document>
 

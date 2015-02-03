@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.mongodb.reactivestreams.client;
 
 import org.reactivestreams.Publisher;
@@ -22,11 +21,21 @@ import org.reactivestreams.Publisher;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fluent interface for ListDatabases.
+ * Iterable for distinct.
  *
  * @param <T> The type of the result.
+ * @since 3.0
  */
-public interface ListDatabasesFluent<T> extends Publisher<T> {
+public interface DistinctPublisher<T> extends Publisher<T> {
+
+    /**
+     * Sets the query filter to apply to the query.
+     *
+     * @param filter the filter, which may be null.
+     * @return this
+     * @mongodb.driver.manual reference/method/db.collection.find/ Filter
+     */
+    DistinctPublisher<T> filter(Object filter);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -34,8 +43,16 @@ public interface ListDatabasesFluent<T> extends Publisher<T> {
      * @param maxTime  the max time
      * @param timeUnit the time unit, which may not be null
      * @return this
-     * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    ListDatabasesFluent<T> maxTime(long maxTime, TimeUnit timeUnit);
+    DistinctPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    DistinctPublisher<T> batchSize(int batchSize);
 
 }

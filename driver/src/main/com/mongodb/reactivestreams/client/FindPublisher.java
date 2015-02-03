@@ -22,11 +22,11 @@ import org.reactivestreams.Publisher;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fluent interface for find.
+ * Publisher interface for find.
  *
  * @param <T> The type of the result.
  */
-public interface FindFluent<T> extends Publisher<T> {
+public interface FindPublisher<T> extends Publisher<T> {
 
     /**
      * Helper to return a publisher limited first from the query.
@@ -42,7 +42,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Filter
      */
-    FindFluent<T> filter(Object filter);
+    FindPublisher<T> filter(Object filter);
 
     /**
      * Sets the limit to apply.
@@ -51,7 +51,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.limit/#cursor.limit Limit
      */
-    FindFluent<T> limit(int limit);
+    FindPublisher<T> limit(int limit);
     /**
      * Sets the number of documents to skip.
      *
@@ -59,7 +59,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.skip/#cursor.skip Skip
      */
-    FindFluent<T> skip(int skip);
+    FindPublisher<T> skip(int skip);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -69,7 +69,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.maxTimeMS/#cursor.maxTimeMS Max Time
      */
-    FindFluent<T> maxTime(long maxTime, TimeUnit timeUnit);
+    FindPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
 
     /**
      * Sets the number of documents to return per batch.
@@ -78,7 +78,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
      */
-    FindFluent<T> batchSize(int batchSize);
+    FindPublisher<T> batchSize(int batchSize);
 
     /**
      * Sets the query modifiers to apply to this operation.
@@ -87,7 +87,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/query-modifier/ Query Modifiers
      */
-    FindFluent<T> modifiers(Object modifiers);
+    FindPublisher<T> modifiers(Object modifiers);
 
     /**
      * Sets a document describing the fields to return for all matching documents.
@@ -96,7 +96,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Projection
      */
-    FindFluent<T> projection(Object projection);
+    FindPublisher<T> projection(Object projection);
     /**
      * Sets the sort criteria to apply to the query.
      *
@@ -104,7 +104,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.sort/ Sort
      */
-    FindFluent<T> sort(Object sort);
+    FindPublisher<T> sort(Object sort);
 
     /**
      * The server normally times out idle cursors after an inactivity period (10 minutes)
@@ -113,7 +113,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @param noCursorTimeout true if cursor timeout is disabled
      * @return this
      */
-    FindFluent<T> noCursorTimeout(boolean noCursorTimeout);
+    FindPublisher<T> noCursorTimeout(boolean noCursorTimeout);
 
     /**
      * Users should not set this under normal circumstances.
@@ -121,7 +121,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @param oplogReplay if oplog replay is enabled
      * @return this
      */
-    FindFluent<T> oplogReplay(boolean oplogReplay);
+    FindPublisher<T> oplogReplay(boolean oplogReplay);
 
     /**
      * Get partial results from a sharded cluster if one or more shards are unreachable (instead of throwing an error).
@@ -129,7 +129,7 @@ public interface FindFluent<T> extends Publisher<T> {
      * @param partial if partial results for sharded clusters is enabled
      * @return this
      */
-    FindFluent<T> partial(boolean partial);
+    FindPublisher<T> partial(boolean partial);
 
 
     /**
@@ -138,5 +138,5 @@ public interface FindFluent<T> extends Publisher<T> {
      * @param cursorType the cursor type
      * @return this
      */
-    FindFluent<T> cursorType(CursorType cursorType);
+    FindPublisher<T> cursorType(CursorType cursorType);
 }

@@ -21,16 +21,13 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.client.model.AggregateOptions;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateIndexOptions;
-import com.mongodb.client.model.DistinctOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.InsertManyOptions;
-import com.mongodb.client.model.MapReduceOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -119,99 +116,48 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public <C> Publisher<C> distinct(final String fieldName, final Object filter, final Class<C> clazz) {
-        return distinct(fieldName, filter, new DistinctOptions(), clazz);
+    public <C> DistinctPublisher<C> distinct(final String fieldName, final Class<C> clazz) {
+        return new DistinctPublisherImpl<C>(wrapped.distinct(fieldName, clazz));
     }
 
     @Override
-    public <C> Publisher<C> distinct(final String fieldName, final Object filter, final DistinctOptions options, final Class<C> clazz) {
-        return new MongoIterablePublisher<C>(wrapped.distinct(fieldName, filter, options, clazz));
-    }
-
-    @Override
-    public FindFluent<T> find() {
+    public FindPublisher<T> find() {
         return find(new BsonDocument(), wrapped.getDefaultClass());
     }
 
     @Override
-    public <C> FindFluent<C> find(final Class<C> clazz) {
+    public <C> FindPublisher<C> find(final Class<C> clazz) {
         return find(new BsonDocument(), clazz);
     }
 
     @Override
-    public FindFluent<T> find(final Object filter) {
+    public FindPublisher<T> find(final Object filter) {
         return find(filter, wrapped.getDefaultClass());
     }
 
     @Override
-    public <C> FindFluent<C> find(final Object filter, final Class<C> clazz) {
-        return new FindFluentImpl<C>(wrapped.find(filter, clazz));
+    public <C> FindPublisher<C> find(final Object filter, final Class<C> clazz) {
+        return new FindPublisherImpl<C>(wrapped.find(filter, clazz));
     }
 
     @Override
-    public Publisher<Document> aggregate(final List<?> pipeline) {
-        return aggregate(pipeline, new AggregateOptions(), Document.class);
+    public AggregatePublisher<Document> aggregate(final List<?> pipeline) {
+        return aggregate(pipeline, Document.class);
     }
 
     @Override
-    public <C> Publisher<C> aggregate(final List<?> pipeline, final Class<C> clazz) {
-        return aggregate(pipeline, new AggregateOptions(), clazz);
+    public <C> AggregatePublisher<C> aggregate(final List<?> pipeline, final Class<C> clazz) {
+        return new AggregatePublisherImpl<C>(wrapped.aggregate(pipeline, clazz));
     }
 
     @Override
-    public Publisher<Document> aggregate(final List<?> pipeline, final AggregateOptions options) {
-        return aggregate(pipeline, options, Document.class);
+    public MapReducePublisher<Document> mapReduce(final String mapFunction, final String reduceFunction) {
+        return mapReduce(mapFunction, reduceFunction, Document.class);
     }
 
     @Override
-    public <C> Publisher<C> aggregate(final List<?> pipeline, final AggregateOptions options, final Class<C> clazz) {
-        return new MongoIterablePublisher<C>(wrapped.aggregate(pipeline, options, clazz));
-    }
-
-    @Override
-    public Publisher<Void> aggregateToCollection(final List<?> pipeline) {
-        return aggregateToCollection(pipeline, new AggregateOptions());
-    }
-
-    @Override
-    public Publisher<Void> aggregateToCollection(final List<?> pipeline, final AggregateOptions options) {
-        return new SingleResultPublisher<Void>() {
-            @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.aggregateToCollection(pipeline, options, callback);
-            }
-        };
-    }
-
-    @Override
-    public Publisher<Document> mapReduce(final String mapFunction, final String reduceFunction) {
-        return mapReduce(mapFunction, reduceFunction, new MapReduceOptions());
-    }
-
-    @Override
-    public Publisher<Document> mapReduce(final String mapFunction, final String reduceFunction, final MapReduceOptions options) {
-        return mapReduce(mapFunction, reduceFunction, options, Document.class);
-    }
-
-    @Override
-    public <C> Publisher<C> mapReduce(final String mapFunction, final String reduceFunction, final Class<C> clazz) {
-        return mapReduce(mapFunction, reduceFunction, new MapReduceOptions(), clazz);
-    }
-
-    @Override
-    public <C> Publisher<C> mapReduce(final String mapFunction, final String reduceFunction, final MapReduceOptions options,
-                                      final Class<C> clazz) {
-        return new MongoIterablePublisher<C>(wrapped.mapReduce(mapFunction, reduceFunction, options, clazz));
-    }
-
-    @Override
-    public Publisher<Void> mapReduceToCollection(final String mapFunction, final String reduceFunction, final MapReduceOptions options) {
-        return new SingleResultPublisher<Void>() {
-            @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.mapReduceToCollection(mapFunction, reduceFunction, options, callback);
-            }
-        };
+    public <C> MapReducePublisher<C> mapReduce(final String mapFunction, final String reduceFunction, final Class<C> clazz) {
+        return new MapReducePublisherImpl<C>(wrapped.mapReduce(mapFunction, reduceFunction, clazz));
     }
 
     @Override
@@ -219,7 +165,6 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         return bulkWrite(requests, new BulkWriteOptions());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Publisher<BulkWriteResult> bulkWrite(final List<? extends WriteModel<? extends T>> requests,
                                                 final BulkWriteOptions options) {
@@ -392,13 +337,13 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public ListIndexesFluent<Document> listIndexes() {
+    public ListIndexesPublisher<Document> listIndexes() {
         return listIndexes(Document.class);
     }
 
     @Override
-    public <C> ListIndexesFluent<C> listIndexes(final Class<C> clazz) {
-        return new ListIndexesFluentImpl<C>(wrapped.listIndexes(clazz));
+    public <C> ListIndexesPublisher<C> listIndexes(final Class<C> clazz) {
+        return new ListIndexesPublisherImpl<C>(wrapped.listIndexes(clazz));
     }
 
     @Override

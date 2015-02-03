@@ -40,7 +40,7 @@ import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static spock.util.matcher.HamcrestSupport.expect
 
-class FindFluentSpecification extends Specification {
+class FindPublisherSpecification extends Specification {
 
     def subscriber = Stub(Subscriber) {
         onSubscribe(_) >> { args -> args[0].request(1) }
@@ -48,10 +48,10 @@ class FindFluentSpecification extends Specification {
     def namespace = new MongoNamespace('db', 'coll')
     def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
 
-    def 'should have the same methods as the wrapped FindFluent'() {
+    def 'should have the same methods as the wrapped FindIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.FindFluent.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (FindFluent.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
+        def wrapped = (com.mongodb.async.client.FindIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def local = (FindPublisher.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
 
         expect:
         wrapped == local
@@ -71,12 +71,12 @@ class FindFluentSpecification extends Specification {
                 .oplogReplay(false)
                 .noCursorTimeout(false)
                 .partial(false)
-        def wrapped = new com.mongodb.async.client.FindFluentImpl<Document>(namespace, Document, codecRegistry, secondary(), executor,
+        def wrapped = new com.mongodb.async.client.FindIterableImpl<Document>(namespace, Document, codecRegistry, secondary(), executor,
                 new Document('filter', 1), findOptions)
-        def fluentFind = new FindFluentImpl<Document>(wrapped)
+        def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
-        fluentFind.subscribe(subscriber)
+        findPublisher.subscribe(subscriber)
 
         def operation = executor.getReadOperation() as FindOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -97,7 +97,7 @@ class FindFluentSpecification extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        fluentFind.filter(new Document('filter', 2))
+        findPublisher.filter(new Document('filter', 2))
                 .sort(new Document('sort', 2))
                 .modifiers(new Document('modifier', 2))
                 .projection(new Document('projection', 2))
@@ -154,12 +154,12 @@ class FindFluentSpecification extends Specification {
             }
         }
         def executor = new TestOperationExecutor([cursor()]);
-        def wrapped = new com.mongodb.async.client.FindFluentImpl<Document>(namespace, Document, codecRegistry, primary(), executor,
+        def wrapped = new com.mongodb.async.client.FindIterableImpl<Document>(namespace, Document, codecRegistry, primary(), executor,
                 new Document(), new FindOptions())
-        def fluentFind = new FindFluentImpl<Document>(wrapped)
+        def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
-        fluentFind.first().subscribe(subscriber)
+        findPublisher.first().subscribe(subscriber)
 
         def operation = executor.getReadOperation() as FindOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -178,12 +178,12 @@ class FindFluentSpecification extends Specification {
 
         def executor = new TestOperationExecutor([null]);
         def findOptions = new FindOptions()
-        def wrapped = new com.mongodb.async.client.FindFluentImpl<Document>(namespace, Document, codecRegistry, secondary(), executor,
+        def wrapped = new com.mongodb.async.client.FindIterableImpl<Document>(namespace, Document, codecRegistry, secondary(), executor,
                 new Document('filter', 1), findOptions)
-        def fluentFind = new FindFluentImpl<Document>(wrapped)
+        def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when:
-        fluentFind.filter(new Document('filter', 1))
+        findPublisher.filter(new Document('filter', 1))
                 .sort(new BsonDocument('sort', new BsonInt32(1)))
                 .modifiers(new Document('modifier', 1))
                 .subscribe(subscriber)
