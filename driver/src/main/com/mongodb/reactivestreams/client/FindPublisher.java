@@ -72,15 +72,6 @@ public interface FindPublisher<T> extends Publisher<T> {
     FindPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
 
     /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    FindPublisher<T> batchSize(int batchSize);
-
-    /**
      * Sets the query modifiers to apply to this operation.
      *
      * @param modifiers the query modifiers to apply, which may be null.

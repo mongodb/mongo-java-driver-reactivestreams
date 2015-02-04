@@ -68,12 +68,6 @@ class FindPublisherImpl<T> implements FindPublisher<T> {
     }
 
     @Override
-    public FindPublisher<T> batchSize(final int batchSize) {
-        wrapped.batchSize(batchSize);
-        return this;
-    }
-
-    @Override
     public FindPublisher<T> modifiers(final Object modifiers) {
         wrapped.modifiers(modifiers);
         return this;

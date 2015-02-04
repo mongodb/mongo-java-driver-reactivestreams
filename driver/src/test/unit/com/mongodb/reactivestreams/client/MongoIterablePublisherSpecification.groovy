@@ -47,6 +47,25 @@ class MongoIterablePublisherSpecification extends Specification {
         subscriber.getSubscription().request(1)
 
         then:
+        1 * mongoIterable.batchSize(2) // minimum batchSize is 2
+        1 * mongoIterable.batchCursor(_)
+
+        when: 'Is an integer greater than 1 should just set the number'
+        subscriber = new Fixture.ObservableSubscriber()
+        publisher.subscribe(subscriber)
+        subscriber.getSubscription().request(100)
+
+        then:
+        1 * mongoIterable.batchSize(100)
+        1 * mongoIterable.batchCursor(_)
+
+        when: 'Amounts greater than 1024 are batched'
+        subscriber = new Fixture.ObservableSubscriber()
+        publisher.subscribe(subscriber)
+        subscriber.getSubscription().request(10000)
+
+        then:
+        1 * mongoIterable.batchSize(1024)
         1 * mongoIterable.batchCursor(_)
     }
 

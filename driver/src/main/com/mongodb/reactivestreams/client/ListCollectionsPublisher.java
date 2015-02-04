@@ -38,15 +38,6 @@ public interface ListCollectionsPublisher<T> extends Publisher<T> {
     ListCollectionsPublisher<T> filter(Object filter);
 
     /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    ListCollectionsPublisher<T> batchSize(int batchSize);
-
-    /**
      * Sets the maximum execution time on the server for this operation.
      *
      * @param maxTime  the max time

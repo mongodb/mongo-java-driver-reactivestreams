@@ -43,7 +43,7 @@ import static spock.util.matcher.HamcrestSupport.expect
 class FindPublisherSpecification extends Specification {
 
     def subscriber = Stub(Subscriber) {
-        onSubscribe(_) >> { args -> args[0].request(1) }
+        onSubscribe(_) >> { args -> args[0].request(100) }
     }
     def namespace = new MongoNamespace('db', 'coll')
     def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
@@ -64,7 +64,7 @@ class FindPublisherSpecification extends Specification {
                 .modifiers(new Document('modifier', 1))
                 .projection(new Document('projection', 1))
                 .maxTime(1000, MILLISECONDS)
-                .batchSize(100)
+                .batchSize(1) // Overriden by the subscriber
                 .limit(100)
                 .skip(10)
                 .cursorType(CursorType.NonTailable)
@@ -76,7 +76,7 @@ class FindPublisherSpecification extends Specification {
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
-        findPublisher.subscribe(subscriber)
+        findPublisher.subscribe(subscriber)  // sets the batchSize
 
         def operation = executor.getReadOperation() as FindOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -102,7 +102,6 @@ class FindPublisherSpecification extends Specification {
                 .modifiers(new Document('modifier', 2))
                 .projection(new Document('projection', 2))
                 .maxTime(999, MILLISECONDS)
-                .batchSize(99)
                 .limit(99)
                 .skip(9)
                 .cursorType(CursorType.Tailable)
@@ -120,7 +119,7 @@ class FindPublisherSpecification extends Specification {
                 .modifiers(new BsonDocument('modifier', new BsonInt32(2)))
                 .projection(new BsonDocument('projection', new BsonInt32(2)))
                 .maxTime(999, MILLISECONDS)
-                .batchSize(99)
+                .batchSize(100)
                 .limit(99)
                 .skip(9)
                 .cursorType(CursorType.Tailable)
@@ -197,6 +196,7 @@ class FindPublisherSpecification extends Specification {
                 .modifiers(new BsonDocument('modifier', new BsonInt32(1)))
                 .cursorType(CursorType.NonTailable)
                 .slaveOk(true)
+                .batchSize(100)
         )
     }
 

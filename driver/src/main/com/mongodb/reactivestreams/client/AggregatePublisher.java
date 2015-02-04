@@ -59,15 +59,6 @@ public interface AggregatePublisher<T> extends Publisher<T> {
     AggregatePublisher<T> useCursor(Boolean useCursor);
 
     /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    AggregatePublisher<T> batchSize(int batchSize);
-
-    /**
      * Aggregates documents according to the specified aggregation pipeline, which must end with a $out stage.
      *
      * @return a publisher with a single element indicating when the operation has completed

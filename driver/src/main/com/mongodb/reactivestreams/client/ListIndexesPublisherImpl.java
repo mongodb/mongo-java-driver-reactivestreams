@@ -38,12 +38,6 @@ final class ListIndexesPublisherImpl<T> implements ListIndexesPublisher<T> {
     }
 
     @Override
-    public ListIndexesPublisherImpl<T> batchSize(final int batchSize) {
-        wrapped.batchSize(batchSize);
-        return this;
-    }
-
-    @Override
     public void subscribe(final Subscriber<? super T> s) {
         new MongoIterablePublisher<T>(wrapped).subscribe(s);
     }

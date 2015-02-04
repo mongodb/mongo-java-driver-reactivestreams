@@ -41,7 +41,6 @@ class ListCollectionsPublisherSpecification extends Specification {
         given:
         def wrapped = (com.mongodb.async.client.ListCollectionsIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (ListCollectionsPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
-
         expect:
         wrapped == local
     }
@@ -50,7 +49,7 @@ class ListCollectionsPublisherSpecification extends Specification {
         given:
         def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
         def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(1) }
+            onSubscribe(_) >> { args -> args[0].request(100) }
         }
         def executor = new TestOperationExecutor([null, null]);
         def wrapped = new com.mongodb.async.client.ListCollectionsIterableImpl('db', Document, codecRegistry, secondary(), executor)
@@ -63,17 +62,17 @@ class ListCollectionsPublisherSpecification extends Specification {
         def readPreference = executor.getReadPreference()
 
         then:
-        expect operation, isTheSameAs(new ListCollectionsOperation<Document>('db', new DocumentCodec()))
+        expect operation, isTheSameAs(new ListCollectionsOperation<Document>('db', new DocumentCodec()).batchSize(100))
         readPreference == secondary()
 
         when: 'overriding initial options'
-        listCollectionPublisher.filter(new Document('filter', 2)).batchSize(99).maxTime(999, MILLISECONDS).subscribe(subscriber)
+        listCollectionPublisher.filter(new Document('filter', 2)).maxTime(999, MILLISECONDS).subscribe(subscriber)
 
         operation = executor.getReadOperation() as ListCollectionsOperation<Document>
 
         then: 'should use the overrides'
         expect operation, isTheSameAs(new ListCollectionsOperation<Document>('db', new DocumentCodec())
-                .filter(new BsonDocument('filter', new BsonInt32(2))).batchSize(99).maxTime(999, MILLISECONDS))
+                .filter(new BsonDocument('filter', new BsonInt32(2))).batchSize(100).maxTime(999, MILLISECONDS))
     }
 
 }

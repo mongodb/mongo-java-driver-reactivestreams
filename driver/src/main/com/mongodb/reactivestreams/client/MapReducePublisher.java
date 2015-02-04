@@ -151,15 +151,6 @@ public interface MapReducePublisher<T> extends Publisher<T> {
     MapReducePublisher<T> nonAtomic(boolean nonAtomic);
 
     /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    MapReducePublisher<T> batchSize(int batchSize);
-
-    /**
      * Aggregates documents to a collection according to the specified map-reduce function with the given options, which must specify a
      * non-inline result.
      *

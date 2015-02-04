@@ -240,11 +240,11 @@ public final class Fixture {
         }
 
         public int get(final long timeout, final TimeUnit unit) throws Throwable {
+            subscription.request(Integer.MAX_VALUE);
             return await(timeout, unit).getCount();
         }
 
         public CountingSubscriber<T> await(final long timeout, final TimeUnit unit) throws Throwable {
-            subscription.request(Integer.MAX_VALUE);
             if (!latch.await(timeout, unit)) {
                 if (!isCompleted()) {
                     subscription.cancel();

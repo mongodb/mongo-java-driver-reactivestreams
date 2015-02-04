@@ -56,7 +56,7 @@ class AggregatePublisherSpecification  extends Specification {
     def 'should build the expected AggregateOperation'() {
         given:
         def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(1) }
+            onSubscribe(_) >> { args -> args[0].request(100) }
         }
 
         def executor = new TestOperationExecutor([null, null]);
@@ -73,7 +73,7 @@ class AggregatePublisherSpecification  extends Specification {
 
         then:
         expect operation, isTheSameAs(new AggregateOperation<Document>(namespace, [new BsonDocument('$match', new BsonInt32(1))],
-                new DocumentCodec()));
+                new DocumentCodec()).batchSize(100));
         readPreference == secondary()
 
         when: 'overriding initial options'
@@ -84,6 +84,7 @@ class AggregatePublisherSpecification  extends Specification {
         then: 'should use the overrides'
         expect operation, isTheSameAs(new AggregateOperation<Document>(namespace, [new BsonDocument('$match', new BsonInt32(1))],
                 new DocumentCodec())
+                .batchSize(100)
                 .maxTime(999, MILLISECONDS)
                 .useCursor(true))
     }
@@ -91,7 +92,7 @@ class AggregatePublisherSpecification  extends Specification {
     def 'should build the expected AggregateToCollectionOperation'() {
         given:
         def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(1) }
+            onSubscribe(_) >> { args -> args[0].request(100) }
         }
         def executor = new TestOperationExecutor([null, null, null, null, null]);
         def collectionName = 'collectionName'
@@ -100,7 +101,6 @@ class AggregatePublisherSpecification  extends Specification {
         def wrapped = new com.mongodb.async.client.AggregateIterableImpl<Document>(namespace, Document, codecRegistry, secondary(),
                 executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
-                .batchSize(99)
                 .maxTime(999, MILLISECONDS)
                 .allowDiskUse(true)
                 .useCursor(true)
@@ -120,7 +120,7 @@ class AggregatePublisherSpecification  extends Specification {
 
         then: 'should use the correct settings'
         operation.getNamespace() == collectionNamespace
-        operation.getBatchSize() == 99
+        operation.getBatchSize() == 100
 
         when: 'toCollection should work as expected'
         wrapped = new com.mongodb.async.client.AggregateIterableImpl<Document>(namespace, Document, codecRegistry, secondary(),

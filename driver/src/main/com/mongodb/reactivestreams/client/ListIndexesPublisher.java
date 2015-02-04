@@ -28,15 +28,6 @@ import java.util.concurrent.TimeUnit;
 public interface ListIndexesPublisher<T> extends Publisher<T> {
 
     /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    ListIndexesPublisher<T> batchSize(int batchSize);
-
-    /**
      * Sets the maximum execution time on the server for this operation.
      *
      * @param maxTime  the max time

@@ -46,13 +46,4 @@ public interface DistinctPublisher<T> extends Publisher<T> {
      */
     DistinctPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
 
-    /**
-     * Sets the number of documents to return per batch.
-     *
-     * @param batchSize the batch size
-     * @return this
-     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
-     */
-    DistinctPublisher<T> batchSize(int batchSize);
-
 }

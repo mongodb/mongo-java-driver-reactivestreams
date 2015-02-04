@@ -48,7 +48,7 @@ class ListIndexesPublisherSpecification extends Specification {
     def 'should build the expected listIndexesOperation'() {
         given:
         def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(1) }
+            onSubscribe(_) >> { args -> args[0].request(100) }
         }
         def namespace = new MongoNamespace('db', 'coll')
         def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
@@ -63,11 +63,11 @@ class ListIndexesPublisherSpecification extends Specification {
         def readPreference = executor.getReadPreference()
 
         then:
-        expect operation, isTheSameAs(new ListIndexesOperation<Document>(namespace, new DocumentCodec()))
+        expect operation, isTheSameAs(new ListIndexesOperation<Document>(namespace, new DocumentCodec()).batchSize(100))
         readPreference == secondary()
 
         when: 'overriding initial options'
-        listIndexesPublisher.batchSize(99)
+        listIndexesPublisher
                 .maxTime(999, MILLISECONDS)
                 .subscribe(subscriber)
 
@@ -75,7 +75,7 @@ class ListIndexesPublisherSpecification extends Specification {
 
         then: 'should use the overrides'
         expect operation, isTheSameAs(new ListIndexesOperation<Document>(namespace, new DocumentCodec())
-                .batchSize(99).maxTime(999, MILLISECONDS))
+                .batchSize(100).maxTime(999, MILLISECONDS))
     }
 
 }

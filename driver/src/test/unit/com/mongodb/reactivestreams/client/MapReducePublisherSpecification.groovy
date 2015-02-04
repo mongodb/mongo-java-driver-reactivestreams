@@ -61,7 +61,7 @@ class MapReducePublisherSpecification extends Specification {
         def 'should build the expected MapReduceWithInlineResultsOperation'() {
             given:
             def subscriber = Stub(Subscriber) {
-                onSubscribe(_) >> { args -> args[0].request(1) }
+                onSubscribe(_) >> { args -> args[0].request(100) }
             }
             def executor = new TestOperationExecutor([null, null]);
             def wrapped = new com.mongodb.async.client.MapReduceIterableImpl(namespace, Document, codecRegistry, readPreference, executor,
@@ -107,7 +107,7 @@ class MapReducePublisherSpecification extends Specification {
         def 'should build the expected MapReduceToCollectionOperation'() {
             given:
             def subscriber = Stub(Subscriber) {
-                onSubscribe(_) >> { args -> args[0].request(1) }
+                onSubscribe(_) >> { args -> args[0].request(100) }
             }
             def executor = new TestOperationExecutor([null, null, null]);
 
@@ -125,7 +125,6 @@ class MapReducePublisherSpecification extends Specification {
                     .scope(new Document('scope', 1))
                     .sort(new Document('sort', 1))
                     .verbose(false)
-                    .batchSize(99)
                     .nonAtomic(true)
                     .action(MapReduceAction.MERGE)
                     .sharded(true)
@@ -156,7 +155,7 @@ class MapReducePublisherSpecification extends Specification {
 
             then: 'should use the correct settings'
             operation.getNamespace() == collectionNamespace
-            operation.getBatchSize() == 99
+            operation.getBatchSize() == 100 // set by subscriber.request
 
             when: 'toCollection should work as expected'
             mapReducePublisher.toCollection().subscribe(subscriber)

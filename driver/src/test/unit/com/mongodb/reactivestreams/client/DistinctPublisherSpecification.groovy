@@ -56,7 +56,7 @@ class DistinctPublisherSpecification extends Specification {
     def 'should build the expected DistinctOperation'() {
         given:
         def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(1) }
+            onSubscribe(_) >> { args -> args[0].request(100) }
         }
 
         def executor = new TestOperationExecutor([null, null]);
@@ -75,7 +75,7 @@ class DistinctPublisherSpecification extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        disinctPublisher.filter(new Document('field', 1)).maxTime(999, MILLISECONDS).batchSize(99).subscribe(subscriber)
+        disinctPublisher.filter(new Document('field', 1)).maxTime(999, MILLISECONDS).subscribe(subscriber)
 
         operation = executor.getReadOperation() as DistinctOperation<Document>
 

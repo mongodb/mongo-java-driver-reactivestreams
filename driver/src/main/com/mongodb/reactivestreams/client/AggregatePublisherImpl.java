@@ -52,12 +52,6 @@ class AggregatePublisherImpl<T> implements AggregatePublisher<T> {
     }
 
     @Override
-    public AggregatePublisher<T> batchSize(final int batchSize) {
-        wrapped.batchSize(batchSize);
-        return this;
-    }
-
-    @Override
     public Publisher<Void> toCollection() {
         return new SingleResultPublisher<Void>() {
             @Override

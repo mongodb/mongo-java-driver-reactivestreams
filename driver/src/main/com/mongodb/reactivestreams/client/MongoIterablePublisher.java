@@ -59,6 +59,11 @@ class MongoIterablePublisher<T> implements Publisher<T> {
         protected void doRequest(final long n) {
             wanted.addAndGet(n);
             if (requestedBatchCursorLock.compareAndSet(false, true)) {
+                if (n <= 1) {
+                    mongoIterable.batchSize(2);
+                } else if (n < Integer.MAX_VALUE) {
+                    mongoIterable.batchSize((int) n);
+                }
                 mongoIterable.batchCursor(new SingleResultCallback<AsyncBatchCursor<T>>() {
                     @Override
                     public void onResult(final AsyncBatchCursor<T> result, final Throwable t) {
@@ -89,7 +94,7 @@ class MongoIterablePublisher<T> implements Publisher<T> {
         void getNextBatch() {
             log("getNextBatch");
             if (batchCursorNextLock.compareAndSet(false, true)) {
-                AsyncBatchCursor<T> cursor = batchCursor.get();
+                final AsyncBatchCursor<T> cursor = batchCursor.get();
                 if (cursor.isClosed()) {
                     cursorCompleted.set(true);
                     batchCursorNextLock.set(false);

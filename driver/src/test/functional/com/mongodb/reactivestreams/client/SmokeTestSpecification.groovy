@@ -124,33 +124,36 @@ class SmokeTestSpecification extends FunctionalSpecification {
         !run('the collection name is no longer in the collectionNames list', database.&listCollectionNames).contains(collectionName)
     }
 
+    @SuppressWarnings('BusyWait')
     def 'should visit all documents from a cursor with multiple batches'() {
         given:
-        def documents = (1..10000).collect { new Document('_id', it) }
+        def batchSize = 100
+        def total = 1000
+        def documents = (1..total).collect { new Document('_id', it) }
         run('Insert 10000 documents', collection.&insertMany, documents)
 
         when:
-        def subscriber = new Fixture.ObservableSubscriber<Document>()
-        collection.find(new Document()).sort(new Document('_id', 1)).batchSize(99).subscribe(subscriber)
-        def foundDocuments = subscriber.get(30, SECONDS)
+        def subscriber = new Fixture.CountingSubscriber<Document>()
+        collection.find(new Document()).sort(new Document('_id', 1)).subscribe(subscriber)
 
         then:
-        foundDocuments.size() == documents.size()
-        foundDocuments == documents
-    }
+        def range = 1..( total / batchSize )
+        for (i in range) {
+            subscriber.getSubscription().request(batchSize)
+            while (subscriber.getCount() < (i * batchSize)) {
+                sleep(100)
+            }
+        }
 
-    def 'should visit a large number of documents from a cursor with multiple batches'() {
-        given:
-        def documents = (1..100000).collect { new Document('_id', it) }
-        run('Insert 1000000 documents', collection.&insertMany, documents)
+        then:
+        subscriber.getCount() == documents.size()
 
         when:
-        def subscriber = new Fixture.CountingSubscriber<Document>()
-        collection.find(new Document()).sort(new Document('_id', 1)).batchSize(99).subscribe(subscriber)
-        def foundDocuments = subscriber.get(30, SECONDS)
+        subscriber.getSubscription().request(1)
+        subscriber.await(10, SECONDS)
 
         then:
-        foundDocuments == documents.size()
+        subscriber.isCompleted()
     }
 
     def run(String log, operation, ... args) {

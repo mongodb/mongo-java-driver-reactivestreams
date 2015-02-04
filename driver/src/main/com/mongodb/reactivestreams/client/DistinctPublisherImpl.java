@@ -44,12 +44,6 @@ class DistinctPublisherImpl<T> implements DistinctPublisher<T> {
     }
 
     @Override
-    public DistinctPublisher<T> batchSize(final int batchSize) {
-        wrapped.batchSize(batchSize);
-        return this;
-    }
-
-    @Override
     public void subscribe(final Subscriber<? super T> s) {
         new MongoIterablePublisher<T>(wrapped).subscribe(s);
     }

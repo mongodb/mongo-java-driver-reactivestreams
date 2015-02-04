@@ -47,7 +47,7 @@ class ListDatabasesPublisherSpecification extends Specification {
         given:
         def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider()])
         def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(1) }
+            onSubscribe(_) >> { args -> args[0].request(100) }
         }
         def executor = new TestOperationExecutor([null, null]);
         def wrapped = new WrappedListDatabasesIterableImpl(Document, codecRegistry, secondary(), executor)

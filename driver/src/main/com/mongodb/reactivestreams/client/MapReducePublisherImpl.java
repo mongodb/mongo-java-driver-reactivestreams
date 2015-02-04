@@ -114,12 +114,6 @@ class MapReducePublisherImpl<T> implements MapReducePublisher<T> {
     }
 
     @Override
-    public MapReducePublisher<T> batchSize(final int batchSize) {
-        wrapped.batchSize(batchSize);
-        return this;
-    }
-
-    @Override
     public Publisher<Void> toCollection() {
         return new SingleResultPublisher<Void>() {
             @Override
