@@ -450,6 +450,8 @@ public interface MongoCollection<T> {
     Publisher<Void> dropCollection();
 
     /**
+     * Creates an index.
+     *
      * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
      *            registered
      * @return a publisher with a single element indicating when the operation has completed
@@ -458,6 +460,8 @@ public interface MongoCollection<T> {
     Publisher<Void> createIndex(Object key);
 
     /**
+     * Creates an index.
+     *
      * @param key     an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
      *                registered
      * @param options the options for the index
