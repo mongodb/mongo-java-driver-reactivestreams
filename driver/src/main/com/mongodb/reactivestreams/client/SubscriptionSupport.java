@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.mongodb.assertions.Assertions.isTrueArgument;
-import static com.mongodb.assertions.Assertions.notNull;
 
 /**
  * Based upon an implementation of a Subscriber in the AsyncIterablePublisher example http://www.reactive-streams.org/
@@ -48,7 +47,7 @@ abstract class SubscriptionSupport<T> implements Subscription {
 
     // This `ConcurrentLinkedQueue` will track signals that are sent to this `Subscription`, like `request` and `cancel`
     private final ConcurrentLinkedQueue<Signal> inboundSignals = new ConcurrentLinkedQueue<Signal>();
-    private final ConcurrentLinkedQueue<Result<T>> resultsQueue = new ConcurrentLinkedQueue<Result<T>>();
+    private final ConcurrentLinkedQueue<T> resultsQueue = new ConcurrentLinkedQueue<T>();
 
     // We are using this `AtomicBoolean` to make sure that this `Subscription` doesn't run concurrently with itself,
     // which would violate rule 1.3 among others (no concurrent notifications).
@@ -60,7 +59,11 @@ abstract class SubscriptionSupport<T> implements Subscription {
 
     SubscriptionSupport(final Subscriber<? super T> subscriber, final int batchSize) {
         isTrueArgument("batchSize must be greater than zero!", batchSize > 0);
-        this.subscriber = notNull("subscriber", subscriber);
+        // As per rule 1.09, we need to throw a `java.lang.NullPointerException` if the `Subscriber` is `null`
+        if (subscriber == null) {
+            throw new NullPointerException("Subscriber cannot be null");
+        }
+        this.subscriber = subscriber;
         this.batchSize = batchSize;
         log("constructor");
     }
@@ -71,13 +74,9 @@ abstract class SubscriptionSupport<T> implements Subscription {
             terminateDueTo(new IllegalArgumentException(subscriber + " violated the Reactive Streams rule 3.9 by "
                     + "requesting a non-positive number of elements."));
         } else if (demand + n < 1) {
-            terminateDueTo(new IllegalStateException(subscriber + " violated the Reactive Streams rule 3.17 by "
-                    + "demanding more elements than Long.MAX_VALUE."));
-            /*
             // As governed by rule 3.17, when demand overflows `Long.MAX_VALUE` we treat the signalled demand as "effectively unbounded"
             demand = Long.MAX_VALUE;  // Here we protect from the overflow and treat it as "effectively unbounded"
             handleSend(); // Then we proceed with sending data downstream
-             */
         } else {
             demand += n;  // Here we record the downstream demand
             handleSend(); // Then we can proceed with sending data downstream
@@ -96,7 +95,7 @@ abstract class SubscriptionSupport<T> implements Subscription {
             boolean finished;
             if (resultsQueue.peek() != null) {
                 do {
-                    subscriber.onNext(resultsQueue.poll().get());
+                    subscriber.onNext(resultsQueue.poll());
                     finished = resultsQueue.peek() == null;
                 } while (!finished          // There are more results to consume
                          && !cancelled);    // This makes sure that rule 1.8 is upheld
@@ -174,10 +173,14 @@ abstract class SubscriptionSupport<T> implements Subscription {
         }
     }
 
-    public void onNext(final T t) {
+    public void onNext(final T element) {
+        // As per rule 2.13, we need to throw a `java.lang.NullPointerException` if the `element` is `null`
+        if (element == null) {
+            throw new NullPointerException("onNext called with a null value");
+        }
         if (!cancelled) {
             log("onNext - queued");
-            resultsQueue.add(new Result<T>(t));
+            resultsQueue.add(element);
             signal(Send.Instance);
         } else {
             log("onNext - canceled");
@@ -185,6 +188,10 @@ abstract class SubscriptionSupport<T> implements Subscription {
     }
 
     public void onError(final Throwable t) {
+        // As per rule 2.13, we need to throw a `java.lang.NullPointerException` if the `element` is `null`
+        if (t == null) {
+            throw new NullPointerException("onError called with a null value");
+        }
         log("onError");
         terminateDueTo(t);  // If calling  we need to treat the stream as errored as per rule 1.4
     }
@@ -234,24 +241,6 @@ abstract class SubscriptionSupport<T> implements Subscription {
             LOGGER.debug(getName() + ": " + msg);
         }
     }
-
-    /**
-     * A Result container so we can queue null results
-     *
-     * @param <R> The type of the result in the container
-     */
-    class Result<R> {
-        private final R result;
-
-        Result(final R result) {
-            this.result = result;
-        }
-
-        R get() {
-            return result;
-        }
-    }
-
 
     // Signal interface for the signal queue
     interface Signal {

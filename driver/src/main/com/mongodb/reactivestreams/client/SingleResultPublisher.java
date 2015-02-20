@@ -37,7 +37,9 @@ abstract class SingleResultPublisher<T> implements Publisher<T> {
                 if (t != null) {
                     subscription.onError(t);
                 } else {
-                    subscription.onNext(result);
+                    if (result != null) {
+                        subscription.onNext(result);
+                    }
                     subscription.onComplete();
                 }
             }

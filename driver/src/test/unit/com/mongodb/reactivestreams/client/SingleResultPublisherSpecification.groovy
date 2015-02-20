@@ -32,7 +32,7 @@ class SingleResultPublisherSpecification extends Specification {
             @Override
             void execute(final SingleResultCallback callback) {
                 called = true
-                callback.onResult(null, null);
+                callback.onResult(Success.SUCCESS, null);
             }
         }
 

@@ -146,7 +146,7 @@ public interface MongoDatabase {
      * @return a publisher identifying when the database has been dropped
      * @mongodb.driver.manual reference/commands/dropDatabase/#dbcmd.dropDatabase Drop database
      */
-    Publisher<Void> dropDatabase();
+    Publisher<Success> dropDatabase();
 
     /**
      * Gets the names of all the collections in this database.
@@ -180,7 +180,7 @@ public interface MongoDatabase {
      * @return a publisher identifying when the collection has been created
      * @mongodb.driver.manual reference/commands/create Create Command
      */
-    Publisher<Void> createCollection(String collectionName);
+    Publisher<Success> createCollection(String collectionName);
 
     /**
      * Create a new collection with the selected options
@@ -190,5 +190,5 @@ public interface MongoDatabase {
      * @return a publisher identifying when the collection has been created
      * @mongodb.driver.manual reference/commands/create Create Command
      */
-    Publisher<Void> createCollection(String collectionName, CreateCollectionOptions options);
+    Publisher<Success> createCollection(String collectionName, CreateCollectionOptions options);
 }

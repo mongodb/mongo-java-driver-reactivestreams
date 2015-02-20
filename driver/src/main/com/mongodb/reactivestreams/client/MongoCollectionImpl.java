@@ -41,6 +41,7 @@ import org.reactivestreams.Publisher;
 import java.util.List;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
 class MongoCollectionImpl<T> implements MongoCollection<T> {
 
@@ -177,26 +178,26 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Void> insertOne(final T document) {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> insertOne(final T document) {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.insertOne(document, callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.insertOne(document, voidToSuccessCallback(callback));
             }
         };
     }
 
     @Override
-    public Publisher<Void> insertMany(final List<? extends T> documents) {
+    public Publisher<Success> insertMany(final List<? extends T> documents) {
         return insertMany(documents, new InsertManyOptions());
     }
 
     @Override
-    public Publisher<Void> insertMany(final List<? extends T> documents, final InsertManyOptions options) {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> insertMany(final List<? extends T> documents, final InsertManyOptions options) {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.insertMany(documents, options, callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.insertMany(documents, options, voidToSuccessCallback(callback));
             }
         };
     }
@@ -312,26 +313,26 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Void> dropCollection() {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> dropCollection() {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.dropCollection(callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.dropCollection(voidToSuccessCallback(callback));
             }
         };
     }
 
     @Override
-    public Publisher<Void> createIndex(final Object key) {
+    public Publisher<Success> createIndex(final Object key) {
         return createIndex(key, new CreateIndexOptions());
     }
 
     @Override
-    public Publisher<Void> createIndex(final Object key, final CreateIndexOptions options) {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> createIndex(final Object key, final CreateIndexOptions options) {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.createIndex(key, options, callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.createIndex(key, options, voidToSuccessCallback(callback));
             }
         };
     }
@@ -347,31 +348,31 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Void> dropIndex(final String indexName) {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> dropIndex(final String indexName) {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.dropIndex(indexName, callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.dropIndex(indexName, voidToSuccessCallback(callback));
             }
         };
     }
 
     @Override
-    public Publisher<Void> dropIndexes() {
+    public Publisher<Success> dropIndexes() {
         return dropIndex("*");
     }
 
     @Override
-    public Publisher<Void> renameCollection(final MongoNamespace newCollectionNamespace) {
+    public Publisher<Success> renameCollection(final MongoNamespace newCollectionNamespace) {
         return renameCollection(newCollectionNamespace, new RenameCollectionOptions());
     }
 
     @Override
-    public Publisher<Void> renameCollection(final MongoNamespace newCollectionNamespace, final RenameCollectionOptions options) {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> renameCollection(final MongoNamespace newCollectionNamespace, final RenameCollectionOptions options) {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.renameCollection(newCollectionNamespace, options, callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.renameCollection(newCollectionNamespace, options, voidToSuccessCallback(callback));
             }
         };
     }

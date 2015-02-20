@@ -35,14 +35,14 @@ class SmokeTestSpecification extends FunctionalSpecification {
         def updatedDocument = new Document('_id', 1).append('a', 1)
 
         when:
-        run('clean up old database', mongoClient.getDatabase(databaseName).&dropDatabase) == null
+        run('clean up old database', mongoClient.getDatabase(databaseName).&dropDatabase) == Success.SUCCESS
         def names = run('get database names', mongoClient.&listDatabaseNames)
 
         then: 'Get Database Names'
         !names.contains(null)
 
         then:
-        run('Create a collection and the created database is in the list', database.&createCollection, collectionName)[0] == null
+        run('Create a collection and the created database is in the list', database.&createCollection, collectionName)[0] == Success.SUCCESS
 
         when:
         def updatedNames = run('get database names', mongoClient.&listDatabaseNames)
@@ -62,10 +62,10 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('The count is zero', collection.&count)[0] == 0
 
         then:
-        run('find first should return null if no documents', collection.find().&first)[0] == null
+        run('find first should return nothing if no documents', collection.find().&first) == []
 
         then:
-        run('Insert a document', collection.&insertOne, document)[0] == null
+        run('Insert a document', collection.&insertOne, document)[0] == Success.SUCCESS
 
         then:
         run('The count is one', collection.&count)[0] == 1
@@ -89,7 +89,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('The count is zero', collection.&count)[0] == 0
 
         then:
-        run('create an index', collection.&createIndex, new Document('test', 1))[0] == null
+        run('create an index', collection.&createIndex, new Document('test', 1))[0] == Success.SUCCESS
 
         then:
         def indexNames = run('has the newly created index', collection.&listIndexes)*.name
@@ -98,14 +98,15 @@ class SmokeTestSpecification extends FunctionalSpecification {
         indexNames.containsAll('_id_', 'test_1')
 
         then:
-        run('drop the index', collection.&dropIndex, 'test_1')[0] == null
+        run('drop the index', collection.&dropIndex, 'test_1')[0] == Success.SUCCESS
 
         then:
         run('has a single index left "_id" ', collection.&listIndexes).size == 1
 
         then:
         def newCollectionName = 'new' + collectionName.capitalize()
-        run('can rename the collection', collection.&renameCollection, new MongoNamespace(databaseName, newCollectionName))[0] == null
+        run('can rename the collection', collection.&renameCollection, new MongoNamespace(databaseName, newCollectionName)
+            )[0] == Success.SUCCESS
 
         then:
         !run('the new collection name is in the collection names list', database.&listCollectionNames).contains(collectionName)
@@ -115,7 +116,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         collection = database.getCollection(newCollectionName)
 
         then:
-        run('drop the collection', collection.&dropCollection)[0] == null
+        run('drop the collection', collection.&dropCollection)[0] == Success.SUCCESS
 
         then:
         run('there are no indexes', collection.&listIndexes).size == 0

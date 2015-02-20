@@ -23,6 +23,7 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
 class AggregatePublisherImpl<T> implements AggregatePublisher<T> {
 
@@ -52,11 +53,11 @@ class AggregatePublisherImpl<T> implements AggregatePublisher<T> {
     }
 
     @Override
-    public Publisher<Void> toCollection() {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> toCollection() {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.toCollection(callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.toCollection(voidToSuccessCallback(callback));
             }
         };
     }

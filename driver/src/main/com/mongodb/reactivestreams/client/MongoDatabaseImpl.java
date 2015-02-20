@@ -25,6 +25,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.reactivestreams.Publisher;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
 class MongoDatabaseImpl implements MongoDatabase {
 
@@ -110,11 +111,11 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public Publisher<Void> dropDatabase() {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> dropDatabase() {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.dropDatabase(callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.dropDatabase(voidToSuccessCallback(callback));
             }
         };
     }
@@ -135,16 +136,16 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public Publisher<Void> createCollection(final String collectionName) {
+    public Publisher<Success> createCollection(final String collectionName) {
         return createCollection(collectionName, new CreateCollectionOptions());
     }
 
     @Override
-    public Publisher<Void> createCollection(final String collectionName, final CreateCollectionOptions options) {
-        return new SingleResultPublisher<Void>() {
+    public Publisher<Success> createCollection(final String collectionName, final CreateCollectionOptions options) {
+        return new SingleResultPublisher<Success>() {
             @Override
-            void execute(final SingleResultCallback<Void> callback) {
-                wrapped.createCollection(collectionName, options, callback);
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.createCollection(collectionName, options, voidToSuccessCallback(callback));
             }
         };
     }

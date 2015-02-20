@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.rxjava;
 
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import com.mongodb.reactivestreams.client.Success;
 import org.junit.Test;
 import rx.Observable;
 import rx.functions.Func1;
@@ -39,7 +40,7 @@ public class ObservableTest {
 
         toObservable(database.dropDatabase()).timeout(10, SECONDS).toBlocking().single();
 
-        List<Observable<Void>> observers = new ArrayList<Observable<Void>>();
+        List<Observable<Success>> observers = new ArrayList<Observable<Success>>();
         List<String> uppercaseNames = new ArrayList<String>();
 
         for (int i = 0; i < 25; i++) {

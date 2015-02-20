@@ -157,5 +157,5 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    Publisher<Void> toCollection();
+    Publisher<Success> toCollection();
 }

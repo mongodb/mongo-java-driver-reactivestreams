@@ -51,6 +51,8 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
 
             @Override
             void batchCursor(final SingleResultCallback<AsyncBatchCursor<Integer>> callback) {
+                List<Integer> cachedRange = []
+                def cachedLength = 0;
                 callback.onResult(new AsyncBatchCursor<Integer>() {
                     def totalCount = 0
                     @Override
@@ -60,9 +62,12 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
                         } else {
                             def start = totalCount + 1
                             def end = ((start + batchSize) <= elements) ? batchSize + totalCount :  start + (elements - start)
-                            def range = (start..end)
+                            if ((end - start) != cachedLength) {
+                                cachedLength = end - start
+                                cachedRange = (start..end).collect()
+                            }
                             totalCount = end
-                            batchCallback.onResult(range.collect(), null)
+                            batchCallback.onResult(cachedRange, null)
                         }
                     }
 

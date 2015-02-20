@@ -258,7 +258,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    Publisher<Void> insertOne(T document);
+    Publisher<Success> insertOne(T document);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a
@@ -268,7 +268,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    Publisher<Void> insertMany(List<? extends T> documents);
+    Publisher<Success> insertMany(List<? extends T> documents);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a
@@ -279,7 +279,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    Publisher<Void> insertMany(List<? extends T> documents, InsertManyOptions options);
+    Publisher<Success> insertMany(List<? extends T> documents, InsertManyOptions options);
 
     /**
      * Removes at most one document from the collection that matches the given filter.  If no documents match, the collection is not
@@ -447,7 +447,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/drop/ Drop Collection
      */
-    Publisher<Void> dropCollection();
+    Publisher<Success> dropCollection();
 
     /**
      * Creates an index.
@@ -457,7 +457,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Void> createIndex(Object key);
+    Publisher<Success> createIndex(Object key);
 
     /**
      * Creates an index.
@@ -468,7 +468,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Void> createIndex(Object key, CreateIndexOptions options);
+    Publisher<Success> createIndex(Object key, CreateIndexOptions options);
 
     /**
      * Get all the indexes in this collection.
@@ -495,7 +495,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/dropIndexes/ Drop Indexes
      */
-    Publisher<Void> dropIndex(String indexName);
+    Publisher<Success> dropIndex(String indexName);
 
     /**
      * Drop all the indexes on this collection, except for the default on _id.
@@ -503,7 +503,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/dropIndexes/ Drop Indexes
      */
-    Publisher<Void> dropIndexes();
+    Publisher<Success> dropIndexes();
 
     /**
      * Rename the collection with oldCollectionName to the newCollectionName.
@@ -512,7 +512,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/commands/renameCollection Rename collection
      */
-    Publisher<Void> renameCollection(MongoNamespace newCollectionNamespace);
+    Publisher<Success> renameCollection(MongoNamespace newCollectionNamespace);
 
     /**
      * Rename the collection with oldCollectionName to the newCollectionName.
@@ -522,6 +522,6 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/commands/renameCollection Rename collection
      */
-    Publisher<Void> renameCollection(MongoNamespace newCollectionNamespace, RenameCollectionOptions options);
+    Publisher<Success> renameCollection(MongoNamespace newCollectionNamespace, RenameCollectionOptions options);
 
 }
