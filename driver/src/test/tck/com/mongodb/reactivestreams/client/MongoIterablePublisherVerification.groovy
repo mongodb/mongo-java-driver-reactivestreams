@@ -25,11 +25,24 @@ import org.bson.Document
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.PublisherVerification
 import org.reactivestreams.tck.TestEnvironment
+import org.testng.annotations.AfterClass
+import org.testng.annotations.BeforeClass
 
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @SuppressWarnings(['CloseWithoutCloseable', 'UnusedMethodParameter', 'EmptyMethod'])
 class MongoIterablePublisherVerification extends PublisherVerification<Document> {
+
+    private ExecutorService pool
+    @BeforeClass void before() {
+        pool = Executors.newSingleThreadExecutor()
+    }
+    @AfterClass void after() {
+        if (pool != null) {
+            pool.shutdown()
+        }
+    }
 
     public static final long DEFAULT_TIMEOUT_MILLIS = 10000L
     public static final long PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS = 1000L
@@ -41,7 +54,7 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
     @Override
     Publisher<Document> createPublisher(long elements) {
         assert (elements <= maxElementsFromPublisher())
-        int batchSize = 1024 * 1024
+        int batchSize = 1024
         new MongoIterablePublisher<Integer>(new MongoIterable<Integer>() {
             void first(final SingleResultCallback<Integer> callback) { }
             void forEach(final Block<? super Integer> block, final SingleResultCallback<Void> callback) { }
@@ -54,26 +67,23 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
             @Override
             void batchCursor(final SingleResultCallback<AsyncBatchCursor<Integer>> callback) {
                 List<Integer> cachedRange = []
-                def cachedLength = 0;
-                def pool = Executors.newFixedThreadPool(10)
+                def cachedLength = -1;
                 callback.onResult(new AsyncBatchCursor<Integer>() {
                     def totalCount = 0
                     @Override
                     void next(final SingleResultCallback<List<Integer>> batchCallback) {
-                        pool.submit({
-                            if (totalCount == elements) {
-                                batchCallback.onResult(null, null)
-                            } else {
-                                def start = totalCount + 1
-                                def end = ((start + batchSize) <= elements) ? batchSize + totalCount : start + (elements - start)
-                                if ((end - start) != cachedLength) {
-                                    cachedLength = end - start
-                                    cachedRange = start..end
-                                }
-                                totalCount = end
-                                batchCallback.onResult(cachedRange, null)
+                        if (totalCount == elements) {
+                            batchCallback.onResult(null, null)
+                        } else {
+                            def start = totalCount + 1
+                            def end = ((start + batchSize) <= elements) ? batchSize + totalCount : start + (elements - start)
+                            if ((end - start) != cachedLength) {
+                                cachedLength = end - start
+                                cachedRange = start..end
                             }
-                        })
+                            totalCount = end
+                            pool.submit { batchCallback.onResult(cachedRange, null) }
+                        }
                     }
 
                     @Override
