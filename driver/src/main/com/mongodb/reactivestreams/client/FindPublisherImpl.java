@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.CursorType;
 import com.mongodb.async.SingleResultCallback;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -25,92 +26,92 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 
-class FindPublisherImpl<T> implements FindPublisher<T> {
+class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
 
-    private final com.mongodb.async.client.FindIterable<T> wrapped;
+    private final com.mongodb.async.client.FindIterable<TResult> wrapped;
 
-    FindPublisherImpl(final com.mongodb.async.client.FindIterable<T> wrapped) {
+    FindPublisherImpl(final com.mongodb.async.client.FindIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
-    public Publisher<T> first() {
-        return new SingleResultPublisher<T>() {
+    public Publisher<TResult> first() {
+        return new SingleResultPublisher<TResult>() {
             @Override
-            void execute(final SingleResultCallback<T> callback) {
+            void execute(final SingleResultCallback<TResult> callback) {
                 wrapped.first(callback);
             }
         };
     }
 
     @Override
-    public FindPublisher<T> filter(final Object filter) {
+    public FindPublisher<TResult> filter(final Bson filter) {
         wrapped.filter(filter);
         return this;
     }
 
     @Override
-    public FindPublisher<T> limit(final int limit) {
+    public FindPublisher<TResult> limit(final int limit) {
         wrapped.limit(limit);
         return this;
     }
 
     @Override
-    public FindPublisher<T> skip(final int skip) {
+    public FindPublisher<TResult> skip(final int skip) {
         wrapped.skip(skip);
         return this;
     }
 
     @Override
-    public FindPublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public FindPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public FindPublisher<T> modifiers(final Object modifiers) {
+    public FindPublisher<TResult> modifiers(final Bson modifiers) {
         wrapped.modifiers(modifiers);
         return this;
     }
 
     @Override
-    public FindPublisher<T> projection(final Object projection) {
+    public FindPublisher<TResult> projection(final Bson projection) {
         wrapped.projection(projection);
         return this;
     }
 
     @Override
-    public FindPublisher<T> sort(final Object sort) {
+    public FindPublisher<TResult> sort(final Bson sort) {
         wrapped.sort(sort);
         return this;
     }
 
     @Override
-    public FindPublisher<T> noCursorTimeout(final boolean noCursorTimeout) {
+    public FindPublisher<TResult> noCursorTimeout(final boolean noCursorTimeout) {
         wrapped.noCursorTimeout(noCursorTimeout);
         return this;
     }
 
     @Override
-    public FindPublisher<T> oplogReplay(final boolean oplogReplay) {
+    public FindPublisher<TResult> oplogReplay(final boolean oplogReplay) {
         wrapped.oplogReplay(oplogReplay);
         return this;
     }
 
     @Override
-    public FindPublisher<T> partial(final boolean partial) {
+    public FindPublisher<TResult> partial(final boolean partial) {
         wrapped.partial(partial);
         return this;
     }
 
     @Override
-    public FindPublisher<T> cursorType(final CursorType cursorType) {
+    public FindPublisher<TResult> cursorType(final CursorType cursorType) {
         wrapped.cursorType(cursorType);
         return this;
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
-        new MongoIterablePublisher<T>(wrapped).subscribe(s);
+    public void subscribe(final Subscriber<? super TResult> s) {
+        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
     }
 }

@@ -31,15 +31,15 @@ import static com.mongodb.assertions.Assertions.isTrueArgument;
 /**
  * Based upon an implementation of a Subscriber in the AsyncIterablePublisher example http://www.reactive-streams.org/
  *
- * @param <T> The publisher result type.
+ * @param <TResult> The publisher result type.
  */
-abstract class SubscriptionSupport<T> implements Subscription {
+abstract class SubscriptionSupport<TResult> implements Subscription {
 
     private static final Logger LOGGER = Loggers.getLogger("reactivestreams");
     private static final int DEFAULT_BATCHSIZE = 1024;
 
     private final int batchSize;  // The max batchSize to use
-    private final Subscriber<? super T> subscriber; // We need a reference to the `Subscriber` so we can talk to it
+    private final Subscriber<? super TResult> subscriber; // We need a reference to the `Subscriber` so we can talk to it
     private volatile boolean started = false;   // Tracks whether this `Subscription` is to have started
     private boolean completed = false; // Tracks whether this `Subscription` is to be considered completed or not
     private boolean cancelled = false; // Tracks whether this `Subscription` is to be considered cancelled or not
@@ -47,17 +47,17 @@ abstract class SubscriptionSupport<T> implements Subscription {
 
     // This `ConcurrentLinkedQueue` will track signals that are sent to this `Subscription`, like `request` and `cancel`
     private final ConcurrentLinkedQueue<Signal> inboundSignals = new ConcurrentLinkedQueue<Signal>();
-    private final ConcurrentLinkedQueue<T> resultsQueue = new ConcurrentLinkedQueue<T>();
+    private final ConcurrentLinkedQueue<TResult> resultsQueue = new ConcurrentLinkedQueue<TResult>();
 
     // We are using this `AtomicBoolean` to make sure that this `Subscription` doesn't run concurrently with itself,
     // which would violate rule 1.3 among others (no concurrent notifications).
     private final AtomicBoolean on = new AtomicBoolean(false);
 
-    public SubscriptionSupport(final Subscriber<? super T> subscriber) {
+    public SubscriptionSupport(final Subscriber<? super TResult> subscriber) {
         this(subscriber, DEFAULT_BATCHSIZE);
     }
 
-    SubscriptionSupport(final Subscriber<? super T> subscriber, final int batchSize) {
+    SubscriptionSupport(final Subscriber<? super TResult> subscriber, final int batchSize) {
         isTrueArgument("batchSize must be greater than zero!", batchSize > 0);
         // As per rule 1.09, we need to throw a `java.lang.NullPointerException` if the `Subscriber` is `null`
         if (subscriber == null) {
@@ -173,7 +173,7 @@ abstract class SubscriptionSupport<T> implements Subscription {
         }
     }
 
-    public void onNext(final T element) {
+    public void onNext(final TResult element) {
         // As per rule 2.13, we need to throw a `java.lang.NullPointerException` if the `element` is `null`
         if (element == null) {
             throw new NullPointerException("onNext called with a null value");

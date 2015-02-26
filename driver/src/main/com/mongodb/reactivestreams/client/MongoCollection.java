@@ -35,6 +35,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.List;
@@ -44,10 +45,11 @@ import java.util.List;
  *
  * <p>Note: Additions to this interface will not be considered to break binary compatibility.</p>
  *
- * @param <T> The type that this collection will encode documents from and decode documents to.
+ * @param <TDocument> The type that this collection will encode documents from and decode documents to.
+ * @since 1.0
  */
 @ThreadSafe
-public interface MongoCollection<T> {
+public interface MongoCollection<TDocument> {
 
     /**
      * Gets the namespace of this collection.
@@ -58,11 +60,11 @@ public interface MongoCollection<T> {
 
 
     /**
-     * Get the default class to cast any documents returned from the database into.
+     * Get the class of documents stored in this collection.
      *
-     * @return the default class to cast any documents into
+     * @return the class
      */
-    Class<T> getDefaultClass();
+    Class<TDocument> getDocumentClass();
 
     /**
      * Get the codec registry for the MongoCollection.
@@ -89,10 +91,10 @@ public interface MongoCollection<T> {
      * Create a new MongoCollection instance with a different default class to cast any documents returned from the database into..
      *
      * @param clazz the default class to cast any documents returned from the database into.
-     * @param <C>   The type that the new collection will encode documents from and decode documents to
+     * @param <NewTDocument> The type that the new collection will encode documents from and decode documents to
      * @return a new MongoCollection instance with the different default class
      */
-    <C> MongoCollection<C> withDefaultClass(Class<C> clazz);
+    <NewTDocument> MongoCollection<NewTDocument> withDocumentClass(Class<NewTDocument> clazz);
 
     /**
      * Create a new MongoCollection instance with a different codec registry.
@@ -100,7 +102,7 @@ public interface MongoCollection<T> {
      * @param codecRegistry the new {@link org.bson.codecs.configuration.CodecRegistry} for the collection
      * @return a new MongoCollection instance with the different codec registry
      */
-    MongoCollection<T> withCodecRegistry(CodecRegistry codecRegistry);
+    MongoCollection<TDocument> withCodecRegistry(CodecRegistry codecRegistry);
 
     /**
      * Create a new MongoCollection instance with a different read preference.
@@ -108,7 +110,7 @@ public interface MongoCollection<T> {
      * @param readPreference the new {@link com.mongodb.ReadPreference} for the collection
      * @return a new MongoCollection instance with the different readPreference
      */
-    MongoCollection<T> withReadPreference(ReadPreference readPreference);
+    MongoCollection<TDocument> withReadPreference(ReadPreference readPreference);
 
     /**
      * Create a new MongoCollection instance with a different write concern.
@@ -116,7 +118,7 @@ public interface MongoCollection<T> {
      * @param writeConcern the new {@link com.mongodb.WriteConcern} for the collection
      * @return a new MongoCollection instance with the different writeConcern
      */
-    MongoCollection<T> withWriteConcern(WriteConcern writeConcern);
+    MongoCollection<TDocument> withWriteConcern(WriteConcern writeConcern);
 
     /**
      * Counts the number of documents in the collection.
@@ -131,7 +133,7 @@ public interface MongoCollection<T> {
      * @param filter the query filter
      * @return a publisher with a single element indicating the number of documents
      */
-    Publisher<Long> count(Object filter);
+    Publisher<Long> count(Bson filter);
 
     /**
      * Counts the number of documents in the collection according to the given options.
@@ -140,18 +142,18 @@ public interface MongoCollection<T> {
      * @param options the options describing the count
      * @return a publisher with a single element indicating the number of documents
      */
-    Publisher<Long> count(Object filter, CountOptions options);
+    Publisher<Long> count(Bson filter, CountOptions options);
 
     /**
      * Gets the distinct values of the specified field name.
      *
      * @param fieldName the field name
      * @param clazz     the default class to cast any distinct items into.
-     * @param <C>       the target type of the iterable.
+     * @param <TResult>       the target type of the iterable.
      * @return a publisher emitting the sequence of distinct values
      * @mongodb.driver.manual reference/command/distinct/ Distinct
      */
-    <C> DistinctPublisher<C> distinct(String fieldName, Class<C> clazz);
+    <TResult> DistinctPublisher<TResult> distinct(String fieldName, Class<TResult> clazz);
 
     /**
      * Finds all documents in the collection.
@@ -159,17 +161,17 @@ public interface MongoCollection<T> {
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    FindPublisher<T> find();
+    FindPublisher<TDocument> find();
 
     /**
      * Finds all documents in the collection.
      *
      * @param clazz the class to decode each document into
-     * @param <C>   the target document type of the iterable.
+     * @param <TResult>   the target document type of the iterable.
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    <C> FindPublisher<C> find(Class<C> clazz);
+    <TResult> FindPublisher<TResult> find(Class<TResult> clazz);
 
     /**
      * Finds all documents in the collection.
@@ -178,18 +180,18 @@ public interface MongoCollection<T> {
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    FindPublisher<T> find(Object filter);
+    FindPublisher<TDocument> find(Bson filter);
 
     /**
      * Finds all documents in the collection.
      *
      * @param filter the query filter
      * @param clazz  the class to decode each document into
-     * @param <C>    the target document type of the iterable.
+     * @param <TResult>    the target document type of the iterable.
      * @return the fluent find interface
      * @mongodb.driver.manual tutorial/query-documents/ Find
      */
-    <C> FindPublisher<C> find(Object filter, Class<C> clazz);
+    <TResult> FindPublisher<TResult> find(Bson filter, Class<TResult> clazz);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -198,18 +200,18 @@ public interface MongoCollection<T> {
      * @return a publisher containing the result of the aggregation operation
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    AggregatePublisher<Document> aggregate(List<?> pipeline);
+    AggregatePublisher<Document> aggregate(List<? extends Bson> pipeline);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
      *
      * @param pipeline the aggregate pipeline
      * @param clazz    the class to decode each document into
-     * @param <C>      the target document type of the iterable.
+     * @param <TResult>      the target document type of the iterable.
      * @return a publisher containing the result of the aggregation operation
      * @mongodb.driver.manual aggregation/ Aggregation
      */
-    <C> AggregatePublisher<C> aggregate(List<?> pipeline, Class<C> clazz);
+    <TResult> AggregatePublisher<TResult> aggregate(List<? extends Bson> pipeline, Class<TResult> clazz);
 
 
     /**
@@ -228,11 +230,11 @@ public interface MongoCollection<T> {
      * @param mapFunction    A JavaScript function that associates or "maps" a value with a key and emits the key and value pair.
      * @param reduceFunction A JavaScript function that "reduces" to a single object all the values associated with a particular key.
      * @param clazz          the class to decode each resulting document into.
-     * @param <C>            the target document type of the iterable.
+     * @param <TResult>            the target document type of the iterable.
      * @return a publisher containing the result of the map-reduce operation
      * @mongodb.driver.manual reference/command/mapReduce/ map-reduce
      */
-    <C> MapReducePublisher<C> mapReduce(String mapFunction, String reduceFunction, Class<C> clazz);
+    <TResult> MapReducePublisher<TResult> mapReduce(String mapFunction, String reduceFunction, Class<TResult> clazz);
 
     /**
      * Executes a mix of inserts, updates, replaces, and deletes.
@@ -240,7 +242,7 @@ public interface MongoCollection<T> {
      * @param requests the writes to execute
      * @return a publisher with a single element the BulkWriteResult
      */
-    Publisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests);
+    Publisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends TDocument>> requests);
 
     /**
      * Executes a mix of inserts, updates, replaces, and deletes.
@@ -249,7 +251,7 @@ public interface MongoCollection<T> {
      * @param options  the options to apply to the bulk write operation
      * @return a publisher with a single element the BulkWriteResult
      */
-    Publisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests, BulkWriteOptions options);
+    Publisher<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends TDocument>> requests, BulkWriteOptions options);
 
     /**
      * Inserts the provided document. If the document is missing an identifier, the driver should generate one.
@@ -258,7 +260,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    Publisher<Success> insertOne(T document);
+    Publisher<Success> insertOne(TDocument document);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a
@@ -268,7 +270,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    Publisher<Success> insertMany(List<? extends T> documents);
+    Publisher<Success> insertMany(List<? extends TDocument> documents);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a
@@ -279,7 +281,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element indicating when the operation has completed or with either a
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
-    Publisher<Success> insertMany(List<? extends T> documents, InsertManyOptions options);
+    Publisher<Success> insertMany(List<? extends TDocument> documents, InsertManyOptions options);
 
     /**
      * Removes at most one document from the collection that matches the given filter.  If no documents match, the collection is not
@@ -288,7 +290,7 @@ public interface MongoCollection<T> {
      * @param filter the query filter to apply the the delete operation
      * @return a publisher with a single element the DeleteResult or with an com.mongodb.MongoException
      */
-    Publisher<DeleteResult> deleteOne(Object filter);
+    Publisher<DeleteResult> deleteOne(Bson filter);
 
     /**
      * Removes all documents from the collection that match the given query filter.  If no documents match, the collection is not modified.
@@ -296,7 +298,7 @@ public interface MongoCollection<T> {
      * @param filter the query filter to apply the the delete operation
      * @return a publisher with a single element the DeleteResult or with an com.mongodb.MongoException
      */
-    Publisher<DeleteResult> deleteMany(Object filter);
+    Publisher<DeleteResult> deleteMany(Bson filter);
 
     /**
      * Replace a document in the collection according to the specified arguments.
@@ -306,7 +308,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
      */
-    Publisher<UpdateResult> replaceOne(Object filter, T replacement);
+    Publisher<UpdateResult> replaceOne(Bson filter, TDocument replacement);
 
     /**
      * Replace a document in the collection according to the specified arguments.
@@ -317,61 +319,53 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
      */
-    Publisher<UpdateResult> replaceOne(Object filter, T replacement, UpdateOptions options);
+    Publisher<UpdateResult> replaceOne(Bson filter, TDocument replacement, UpdateOptions options);
 
     /**
      * Update a single document in the collection according to the specified arguments.
      *
-     * @param filter a document describing the query filter, which may not be null. This can be of any type for which a {@code Codec} is
-     *               registered
-     * @param update a document describing the update, which may not be null. The update to apply must include only update operators. This
-     *               can be of any type for which a {@code Codec} is registered
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a document describing the update, which may not be null. The update to apply must include only update operators.
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    Publisher<UpdateResult> updateOne(Object filter, Object update);
+    Publisher<UpdateResult> updateOne(Bson filter, Bson update);
 
     /**
      * Update a single document in the collection according to the specified arguments.
      *
-     * @param filter  a document describing the query filter, which may not be null. This can be of any type for which a {@code Codec} is
-     *                registered
-     * @param update  a document describing the update, which may not be null. The update to apply must include only update operators. This
-     *                can be of any type for which a {@code Codec} is registered
+     * @param filter  a document describing the query filter, which may not be null.
+     * @param update  a document describing the update, which may not be null. The update to apply must include only update operators.
      * @param options the options to apply to the update operation
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    Publisher<UpdateResult> updateOne(Object filter, Object update, UpdateOptions options);
+    Publisher<UpdateResult> updateOne(Bson filter, Bson update, UpdateOptions options);
 
     /**
      * Update a single document in the collection according to the specified arguments.
      *
-     * @param filter a document describing the query filter, which may not be null. This can be of any type for which a {@code Codec} is
-     *               registered
-     * @param update a document describing the update, which may not be null. The update to apply must include only update operators. This
-     *               can be of any type for which a {@code Codec} is registered
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a document describing the update, which may not be null. The update to apply must include only update operators.
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    Publisher<UpdateResult> updateMany(Object filter, Object update);
+    Publisher<UpdateResult> updateMany(Bson filter, Bson update);
 
     /**
      * Update a single document in the collection according to the specified arguments.
      *
-     * @param filter  a document describing the query filter, which may not be null. This can be of any type for which a {@code Codec} is
-     *                registered
-     * @param update  a document describing the update, which may not be null. The update to apply must include only update operators. This
-     *                can be of any type for which a {@code Codec} is registered
+     * @param filter  a document describing the query filter, which may not be null.
+     * @param update  a document describing the update, which may not be null. The update to apply must include only update operators.
      * @param options the options to apply to the update operation
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/ Updates
      * @mongodb.driver.manual reference/operator/update/ Update Operators
      */
-    Publisher<UpdateResult> updateMany(Object filter, Object update, UpdateOptions options);
+    Publisher<UpdateResult> updateMany(Bson filter, Bson update, UpdateOptions options);
 
     /**
      * Atomically find a document and remove it.
@@ -380,7 +374,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the document that was removed.  If no documents matched the query filter, then null will be
      * returned
      */
-    Publisher<T> findOneAndDelete(Object filter);
+    Publisher<TDocument> findOneAndDelete(Bson filter);
 
     /**
      * Atomically find a document and remove it.
@@ -390,7 +384,7 @@ public interface MongoCollection<T> {
      * @return a publisher with a single element the document that was removed.  If no documents matched the query filter, then null will be
      * returned
      */
-    Publisher<T> findOneAndDelete(Object filter, FindOneAndDeleteOptions options);
+    Publisher<TDocument> findOneAndDelete(Bson filter, FindOneAndDeleteOptions options);
 
     /**
      * Atomically find a document and replace it.
@@ -401,7 +395,7 @@ public interface MongoCollection<T> {
      * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
      * query filter, then null will be returned
      */
-    Publisher<T> findOneAndReplace(Object filter, T replacement);
+    Publisher<TDocument> findOneAndReplace(Bson filter, TDocument replacement);
 
     /**
      * Atomically find a document and replace it.
@@ -413,33 +407,29 @@ public interface MongoCollection<T> {
      * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
      * query filter, then null will be returned
      */
-    Publisher<T> findOneAndReplace(Object filter, T replacement, FindOneAndReplaceOptions options);
+    Publisher<TDocument> findOneAndReplace(Bson filter, TDocument replacement, FindOneAndReplaceOptions options);
 
     /**
      * Atomically find a document and update it.
      *
-     * @param filter a document describing the query filter, which may not be null. This can be of any type for which a {@code Codec} is
-     *               registered
-     * @param update a document describing the update, which may not be null. The update to apply must include only update operators. This
-     *               can be of any type for which a {@code Codec} is registered
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a document describing the update, which may not be null. The update to apply must include only update operators.
      * @return a publisher with a single element the document that was updated before the update was applied.  If no documents matched the
      * query filter, then null will be returned
      */
-    Publisher<T> findOneAndUpdate(Object filter, Object update);
+    Publisher<TDocument> findOneAndUpdate(Bson filter, Bson update);
 
     /**
      * Atomically find a document and update it.
      *
-     * @param filter  a document describing the query filter, which may not be null. This can be of any type for which a {@code Codec} is
-     *                registered
-     * @param update  a document describing the update, which may not be null. The update to apply must include only update operators. This
-     *                can be of any type for which a {@code Codec} is registered
+     * @param filter  a document describing the query filter, which may not be null.
+     * @param update  a document describing the update, which may not be null. The update to apply must include only update operators.
      * @param options the options to apply to the operation
      * @return a publisher with a single element the document that was updated.  Depending on the value of the {@code returnOriginal}
      * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
      * query filter, then null will be returned
      */
-    Publisher<T> findOneAndUpdate(Object filter, Object update, FindOneAndUpdateOptions options);
+    Publisher<TDocument> findOneAndUpdate(Bson filter, Bson update, FindOneAndUpdateOptions options);
 
     /**
      * Drops this collection from the Database.
@@ -452,23 +442,21 @@ public interface MongoCollection<T> {
     /**
      * Creates an index.
      *
-     * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
-     *            registered
+     * @param key an object describing the index key(s), which may not be null.
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Success> createIndex(Object key);
+    Publisher<Success> createIndex(Bson key);
 
     /**
      * Creates an index.
      *
-     * @param key     an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
-     *                registered
+     * @param key     an object describing the index key(s), which may not be null.
      * @param options the options for the index
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Success> createIndex(Object key, CreateIndexOptions options);
+    Publisher<Success> createIndex(Bson key, CreateIndexOptions options);
 
     /**
      * Get all the indexes in this collection.
@@ -482,11 +470,11 @@ public interface MongoCollection<T> {
      * Get all the indexes in this collection.
      *
      * @param clazz the class to decode each document into
-     * @param <C>   the target document type of the iterable.
+     * @param <TResult>   the target document type of the iterable.
      * @return the fluent list indexes interface
      * @mongodb.driver.manual reference/command/listIndexes/ listIndexes
      */
-    <C> ListIndexesPublisher<C> listIndexes(Class<C> clazz);
+    <TResult> ListIndexesPublisher<TResult> listIndexes(Class<TResult> clazz);
 
     /**
      * Drops the given index.

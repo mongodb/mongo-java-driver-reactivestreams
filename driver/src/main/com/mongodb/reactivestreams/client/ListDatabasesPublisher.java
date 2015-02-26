@@ -24,9 +24,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Publisher interface for ListDatabases.
  *
- * @param <T> The type of the result.
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface ListDatabasesPublisher<T> extends Publisher<T> {
+public interface ListDatabasesPublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -36,6 +37,6 @@ public interface ListDatabasesPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    ListDatabasesPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    ListDatabasesPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

@@ -23,9 +23,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Publisher interface for ListIndexes.
  *
- * @param <T> The type of the result.
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface ListIndexesPublisher<T> extends Publisher<T> {
+public interface ListIndexesPublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -35,6 +36,6 @@ public interface ListIndexesPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    ListIndexesPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    ListIndexesPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

@@ -19,6 +19,8 @@ package com.mongodb.reactivestreams.client
 import com.mongodb.CursorType
 import com.mongodb.MongoNamespace
 import com.mongodb.async.AsyncBatchCursor
+import com.mongodb.async.client.FindIterable
+import com.mongodb.async.client.FindIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.client.model.FindOptions
 import com.mongodb.operation.FindOperation
@@ -29,7 +31,6 @@ import org.bson.codecs.BsonValueCodecProvider
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
 import org.bson.codecs.ValueCodecProvider
-import org.bson.codecs.configuration.RootCodecRegistry
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -38,6 +39,7 @@ import static com.mongodb.ReadPreference.primary
 import static com.mongodb.ReadPreference.secondary
 import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.bson.codecs.configuration.CodecRegistryHelper.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
 class FindPublisherSpecification extends Specification {
@@ -46,11 +48,11 @@ class FindPublisherSpecification extends Specification {
         onSubscribe(_) >> { args -> args[0].request(100) }
     }
     def namespace = new MongoNamespace('db', 'coll')
-    def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
+    def codecRegistry = fromProviders([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
 
     def 'should have the same methods as the wrapped FindIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.FindIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (FindIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (FindPublisher.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
 
         expect:
@@ -71,7 +73,7 @@ class FindPublisherSpecification extends Specification {
                 .oplogReplay(false)
                 .noCursorTimeout(false)
                 .partial(false)
-        def wrapped = new com.mongodb.async.client.FindIterableImpl<Document>(namespace, Document, codecRegistry, secondary(), executor,
+        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(), executor,
                 new Document('filter', 1), findOptions)
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
@@ -153,7 +155,7 @@ class FindPublisherSpecification extends Specification {
             }
         }
         def executor = new TestOperationExecutor([cursor()]);
-        def wrapped = new com.mongodb.async.client.FindIterableImpl<Document>(namespace, Document, codecRegistry, primary(), executor,
+        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, primary(), executor,
                 new Document(), new FindOptions())
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
@@ -177,7 +179,7 @@ class FindPublisherSpecification extends Specification {
 
         def executor = new TestOperationExecutor([null]);
         def findOptions = new FindOptions()
-        def wrapped = new com.mongodb.async.client.FindIterableImpl<Document>(namespace, Document, codecRegistry, secondary(), executor,
+        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(), executor,
                 new Document('filter', 1), findOptions)
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 

@@ -29,29 +29,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-class MongoIterablePublisher<T> implements Publisher<T> {
+class MongoIterablePublisher<TResult> implements Publisher<TResult> {
 
-    private final MongoIterable<T> mongoIterable;
+    private final MongoIterable<TResult> mongoIterable;
 
-    MongoIterablePublisher(final MongoIterable<T> mongoIterable) {
+    MongoIterablePublisher(final MongoIterable<TResult> mongoIterable) {
         this.mongoIterable = mongoIterable;
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
+    public void subscribe(final Subscriber<? super TResult> s) {
         new AsyncBatchCursorSubscription(s).start();
     }
 
-    private class AsyncBatchCursorSubscription extends SubscriptionSupport<T> {
+    private class AsyncBatchCursorSubscription extends SubscriptionSupport<TResult> {
         private final AtomicBoolean requestedBatchCursorLock = new AtomicBoolean();
         private final AtomicBoolean bufferProcessingLock = new AtomicBoolean();
         private final AtomicBoolean batchCursorNextLock = new AtomicBoolean();
         private final AtomicBoolean cursorCompleted = new AtomicBoolean();
-        private final AtomicReference<AsyncBatchCursor<T>> batchCursor = new AtomicReference<AsyncBatchCursor<T>>();
+        private final AtomicReference<AsyncBatchCursor<TResult>> batchCursor = new AtomicReference<AsyncBatchCursor<TResult>>();
         private final AtomicLong wanted = new AtomicLong();
-        private final ConcurrentLinkedQueue<T> resultsQueue = new ConcurrentLinkedQueue<T>();
+        private final ConcurrentLinkedQueue<TResult> resultsQueue = new ConcurrentLinkedQueue<TResult>();
 
-        public AsyncBatchCursorSubscription(final Subscriber<? super T> subscriber) {
+        public AsyncBatchCursorSubscription(final Subscriber<? super TResult> subscriber) {
             super(subscriber);
         }
 
@@ -64,9 +64,9 @@ class MongoIterablePublisher<T> implements Publisher<T> {
                 } else if (n < Integer.MAX_VALUE) {
                     mongoIterable.batchSize((int) n);
                 }
-                mongoIterable.batchCursor(new SingleResultCallback<AsyncBatchCursor<T>>() {
+                mongoIterable.batchCursor(new SingleResultCallback<AsyncBatchCursor<TResult>>() {
                     @Override
-                    public void onResult(final AsyncBatchCursor<T> result, final Throwable t) {
+                    public void onResult(final AsyncBatchCursor<TResult> result, final Throwable t) {
                         if (t != null) {
                             onError(t);
                         } else if (result != null) {
@@ -85,7 +85,7 @@ class MongoIterablePublisher<T> implements Publisher<T> {
         @Override
         protected void handleCancel() {
             super.handleCancel();
-            AsyncBatchCursor<T> cursor = batchCursor.get();
+            AsyncBatchCursor<TResult> cursor = batchCursor.get();
             if (cursor != null) {
                 cursor.close();
             }
@@ -94,7 +94,7 @@ class MongoIterablePublisher<T> implements Publisher<T> {
         void getNextBatch() {
             log("getNextBatch");
             if (batchCursorNextLock.compareAndSet(false, true)) {
-                final AsyncBatchCursor<T> cursor = batchCursor.get();
+                final AsyncBatchCursor<TResult> cursor = batchCursor.get();
                 if (cursor.isClosed()) {
                     cursorCompleted.set(true);
                     batchCursorNextLock.set(false);
@@ -102,9 +102,9 @@ class MongoIterablePublisher<T> implements Publisher<T> {
                 } else {
                     int batchSize = wanted.get() > Integer.MAX_VALUE ? Integer.MAX_VALUE : wanted.intValue();
                     cursor.setBatchSize(batchSize);
-                    cursor.next(new SingleResultCallback<List<T>>() {
+                    cursor.next(new SingleResultCallback<List<TResult>>() {
                         @Override
-                        public void onResult(final List<T> result, final Throwable t) {
+                        public void onResult(final List<TResult> result, final Throwable t) {
                             if (t != null) {
                                 onError(t);
                                 batchCursorNextLock.set(false);
@@ -131,7 +131,7 @@ class MongoIterablePublisher<T> implements Publisher<T> {
                 try {
                     long i = wanted.get();
                     while (i > 0) {
-                        T item = resultsQueue.poll();
+                        TResult item = resultsQueue.poll();
                         if (item == null) {
                             // Nothing left to process
                             break;

@@ -16,36 +16,37 @@
 
 package com.mongodb.reactivestreams.client;
 
+import org.bson.conversions.Bson;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 
-final class ListCollectionsPublisherImpl<T> implements ListCollectionsPublisher<T> {
+final class ListCollectionsPublisherImpl<TResult> implements ListCollectionsPublisher<TResult> {
 
-    private final com.mongodb.async.client.ListCollectionsIterable<T> wrapped;
+    private final com.mongodb.async.client.ListCollectionsIterable<TResult> wrapped;
 
-    ListCollectionsPublisherImpl(final com.mongodb.async.client.ListCollectionsIterable<T> wrapped) {
+    ListCollectionsPublisherImpl(final com.mongodb.async.client.ListCollectionsIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
-    public ListCollectionsPublisher<T> filter(final Object filter) {
+    public ListCollectionsPublisher<TResult> filter(final Bson filter) {
         notNull("filter", filter);
         wrapped.filter(filter);
         return this;
     }
 
     @Override
-    public ListCollectionsPublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public ListCollectionsPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         notNull("timeUnit", timeUnit);
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
-        new MongoIterablePublisher<T>(wrapped).subscribe(s);
+    public void subscribe(final Subscriber<? super TResult> s) {
+        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
     }
 }

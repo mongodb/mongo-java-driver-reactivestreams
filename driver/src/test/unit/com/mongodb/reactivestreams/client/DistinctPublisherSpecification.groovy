@@ -17,6 +17,8 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.async.client.DistinctIterable
+import com.mongodb.async.client.DistinctIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.DistinctOperation
 import org.bson.BsonDocument
@@ -26,7 +28,6 @@ import org.bson.codecs.BsonValueCodecProvider
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
 import org.bson.codecs.ValueCodecProvider
-import org.bson.codecs.configuration.RootCodecRegistry
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -34,19 +35,20 @@ import spock.lang.Specification
 import static com.mongodb.ReadPreference.secondary
 import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.bson.codecs.configuration.CodecRegistryHelper.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
 class DistinctPublisherSpecification extends Specification {
 
     def namespace = new MongoNamespace('db', 'coll')
-    def codecRegistry = new RootCodecRegistry([new ValueCodecProvider(),
+    def codecRegistry = fromProviders([new ValueCodecProvider(),
                                                new DocumentCodecProvider(),
                                                new BsonValueCodecProvider()])
     def readPreference = secondary()
 
     def 'should have the same methods as the wrapped DistinctIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.DistinctIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (DistinctIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (DistinctPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
@@ -60,7 +62,7 @@ class DistinctPublisherSpecification extends Specification {
         }
 
         def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new com.mongodb.async.client.DistinctIterableImpl<Document>(namespace, Document, codecRegistry, readPreference,
+        def wrapped = new DistinctIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
                 executor, 'field')
         def disinctPublisher = new DistinctPublisherImpl(wrapped)
 

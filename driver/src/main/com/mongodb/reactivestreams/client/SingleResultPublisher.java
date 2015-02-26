@@ -22,17 +22,17 @@ import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-abstract class SingleResultPublisher<T> implements Publisher<T> {
+abstract class SingleResultPublisher<TResult> implements Publisher<TResult> {
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
+    public void subscribe(final Subscriber<? super TResult> s) {
         new SingleResultSubscription(s).start();
     }
 
-    SingleResultCallback<T> getCallback(final SubscriptionSupport<T> subscription) {
-        return new SingleResultCallback<T>() {
+    SingleResultCallback<TResult> getCallback(final SubscriptionSupport<TResult> subscription) {
+        return new SingleResultCallback<TResult>() {
             @Override
-            public void onResult(final T result, final Throwable t) {
+            public void onResult(final TResult result, final Throwable t) {
                 subscription.log("result - " + result + " : " + t);
                 if (t != null) {
                     subscription.onError(t);
@@ -46,10 +46,10 @@ abstract class SingleResultPublisher<T> implements Publisher<T> {
         };
     }
 
-    private class SingleResultSubscription extends SubscriptionSupport<T> {
+    private class SingleResultSubscription extends SubscriptionSupport<TResult> {
         private final AtomicBoolean operationCompleted = new AtomicBoolean();
 
-        public SingleResultSubscription(final Subscriber<? super T> subscriber) {
+        public SingleResultSubscription(final Subscriber<? super TResult> subscriber) {
             super(subscriber);
         }
 
@@ -62,7 +62,7 @@ abstract class SingleResultPublisher<T> implements Publisher<T> {
         }
     }
 
-    abstract void execute(SingleResultCallback<T> callback);
+    abstract void execute(SingleResultCallback<TResult> callback);
 
     SingleResultPublisher() {
     }

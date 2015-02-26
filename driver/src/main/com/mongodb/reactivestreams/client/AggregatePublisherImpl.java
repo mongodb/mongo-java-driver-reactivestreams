@@ -25,29 +25,29 @@ import java.util.concurrent.TimeUnit;
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
-class AggregatePublisherImpl<T> implements AggregatePublisher<T> {
+class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
 
-    private final com.mongodb.async.client.AggregateIterable<T> wrapped;
+    private final com.mongodb.async.client.AggregateIterable<TResult> wrapped;
 
-    AggregatePublisherImpl(final com.mongodb.async.client.AggregateIterable<T> wrapped) {
+    AggregatePublisherImpl(final com.mongodb.async.client.AggregateIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
 
     @Override
-    public AggregatePublisher<T> allowDiskUse(final Boolean allowDiskUse) {
+    public AggregatePublisher<TResult> allowDiskUse(final Boolean allowDiskUse) {
         wrapped.allowDiskUse(allowDiskUse);
         return this;
     }
 
     @Override
-    public AggregatePublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public AggregatePublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public AggregatePublisher<T> useCursor(final Boolean useCursor) {
+    public AggregatePublisher<TResult> useCursor(final Boolean useCursor) {
         wrapped.useCursor(useCursor);
         return this;
     }
@@ -63,7 +63,7 @@ class AggregatePublisherImpl<T> implements AggregatePublisher<T> {
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
-        new MongoIterablePublisher<T>(wrapped).subscribe(s);
+    public void subscribe(final Subscriber<? super TResult> s) {
+        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
     }
 }

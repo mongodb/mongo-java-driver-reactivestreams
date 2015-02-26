@@ -18,7 +18,13 @@ package com.mongodb.reactivestreams.client;
 
 /**
  * An enum representing a successful operation.
+ *
+ * @since 1.0
  */
 public enum Success {
+
+    /**
+     * A Successful operation
+     */
     SUCCESS
 }

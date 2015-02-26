@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 
 import com.mongodb.client.model.MapReduceAction;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -25,10 +26,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Publisher for map reduce.
  *
- * @param <T> The type of the result.
- * @since 3.0
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface MapReducePublisher<T> extends Publisher<T> {
+public interface MapReducePublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Sets the collectionName for the output of the MapReduce
@@ -38,7 +39,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @param collectionName the name of the collection that you want the map-reduce operation to write its output.
      * @return this
      */
-    MapReducePublisher<T> collectionName(String collectionName);
+    MapReducePublisher<TResult> collectionName(String collectionName);
 
     /**
      * Sets the JavaScript function that follows the reduce method and modifies the output.
@@ -47,7 +48,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/command/mapReduce/#mapreduce-finalize-cmd Requirements for the finalize Function
      */
-    MapReducePublisher<T> finalizeFunction(String finalizeFunction);
+    MapReducePublisher<TResult> finalizeFunction(String finalizeFunction);
 
     /**
      * Sets the global variables that are accessible in the map, reduce and finalize functions.
@@ -56,7 +57,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/command/mapReduce mapReduce
      */
-    MapReducePublisher<T> scope(Object scope);
+    MapReducePublisher<TResult> scope(Bson scope);
 
     /**
      * Sets the sort criteria to apply to the query.
@@ -65,7 +66,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.sort/ Sort
      */
-    MapReducePublisher<T> sort(Object sort);
+    MapReducePublisher<TResult> sort(Bson sort);
 
     /**
      * Sets the query filter to apply to the query.
@@ -74,7 +75,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Filter
      */
-    MapReducePublisher<T> filter(Object filter);
+    MapReducePublisher<TResult> filter(Bson filter);
 
     /**
      * Sets the limit to apply.
@@ -83,7 +84,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.limit/#cursor.limit Limit
      */
-    MapReducePublisher<T> limit(int limit);
+    MapReducePublisher<TResult> limit(int limit);
 
     /**
      * Sets the flag that specifies whether to convert intermediate data into BSON format between the execution of the map and reduce
@@ -94,7 +95,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return jsMode
      * @mongodb.driver.manual reference/command/mapReduce mapReduce
      */
-    MapReducePublisher<T> jsMode(boolean jsMode);
+    MapReducePublisher<TResult> jsMode(boolean jsMode);
 
     /**
      * Sets whether to include the timing information in the result information.
@@ -102,7 +103,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @param verbose whether to include the timing information in the result information.
      * @return this
      */
-    MapReducePublisher<T> verbose(boolean verbose);
+    MapReducePublisher<TResult> verbose(boolean verbose);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -112,7 +113,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.maxTimeMS/#cursor.maxTimeMS Max Time
      */
-    MapReducePublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    MapReducePublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
     /**
      * Specify the {@code MapReduceAction} to be used when writing to a collection.
@@ -120,7 +121,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @param action an {@link com.mongodb.client.model.MapReduceAction} to perform on the collection
      * @return this
      */
-    MapReducePublisher<T> action(MapReduceAction action);
+    MapReducePublisher<TResult> action(MapReduceAction action);
 
     /**
      * Sets the name of the database to output into.
@@ -129,7 +130,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/command/mapReduce/#output-to-a-collection-with-an-action output with an action
      */
-    MapReducePublisher<T> databaseName(String databaseName);
+    MapReducePublisher<TResult> databaseName(String databaseName);
     /**
      * Sets if the output database is sharded
      *
@@ -137,7 +138,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/command/mapReduce/#output-to-a-collection-with-an-action output with an action
      */
-    MapReducePublisher<T> sharded(boolean sharded);
+    MapReducePublisher<TResult> sharded(boolean sharded);
 
     /**
      * Sets if the post-processing step will prevent MongoDB from locking the database.
@@ -148,7 +149,7 @@ public interface MapReducePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/command/mapReduce/#output-to-a-collection-with-an-action output with an action
      */
-    MapReducePublisher<T> nonAtomic(boolean nonAtomic);
+    MapReducePublisher<TResult> nonAtomic(boolean nonAtomic);
 
     /**
      * Aggregates documents to a collection according to the specified map-reduce function with the given options, which must specify a

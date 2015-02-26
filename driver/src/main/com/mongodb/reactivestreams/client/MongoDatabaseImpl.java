@@ -22,6 +22,7 @@ import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.CreateCollectionOptions;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import static com.mongodb.assertions.Assertions.notNull;
@@ -76,35 +77,36 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public <T> MongoCollection<T> getCollection(final String collectionName, final Class<T> clazz) {
-        return new MongoCollectionImpl<T>(wrapped.getCollection(collectionName, clazz));
+    public <TDocument> MongoCollection<TDocument> getCollection(final String collectionName, final Class<TDocument> clazz) {
+        return new MongoCollectionImpl<TDocument>(wrapped.getCollection(collectionName, clazz));
     }
 
     @Override
-    public Publisher<Document> executeCommand(final Object command) {
+    public Publisher<Document> executeCommand(final Bson command) {
         return executeCommand(command, Document.class);
     }
 
     @Override
-    public Publisher<Document> executeCommand(final Object command, final ReadPreference readPreference) {
+    public Publisher<Document> executeCommand(final Bson command, final ReadPreference readPreference) {
         return executeCommand(command, readPreference, Document.class);
     }
 
     @Override
-    public <T> Publisher<T> executeCommand(final Object command, final Class<T> clazz) {
-        return new SingleResultPublisher<T>() {
+    public <TResult> Publisher<TResult> executeCommand(final Bson command, final Class<TResult> clazz) {
+        return new SingleResultPublisher<TResult>() {
             @Override
-            void execute(final SingleResultCallback<T> callback) {
+            void execute(final SingleResultCallback<TResult> callback) {
                 wrapped.executeCommand(command, clazz, callback);
             }
         };
     }
 
     @Override
-    public <T> Publisher<T> executeCommand(final Object command, final ReadPreference readPreference, final Class<T> clazz) {
-        return new SingleResultPublisher<T>() {
+    public <TResult> Publisher<TResult> executeCommand(final Bson command, final ReadPreference readPreference,
+                                                       final Class<TResult> clazz) {
+        return new SingleResultPublisher<TResult>() {
             @Override
-            void execute(final SingleResultCallback<T> callback) {
+            void execute(final SingleResultCallback<TResult> callback) {
                 wrapped.executeCommand(command, readPreference, clazz, callback);
             }
         };

@@ -17,6 +17,8 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.async.client.MapReduceIterable
+import com.mongodb.async.client.MapReduceIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.client.model.MapReduceAction
 import com.mongodb.operation.FindOperation
@@ -30,7 +32,6 @@ import org.bson.codecs.BsonValueCodecProvider
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
 import org.bson.codecs.ValueCodecProvider
-import org.bson.codecs.configuration.RootCodecRegistry
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -38,20 +39,19 @@ import spock.lang.Specification
 import static com.mongodb.ReadPreference.secondary
 import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.bson.codecs.configuration.CodecRegistryHelper.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
 class MapReducePublisherSpecification extends Specification {
 
         def namespace = new MongoNamespace('db', 'coll')
-        def codecRegistry = new RootCodecRegistry([new ValueCodecProvider(),
-                                                   new DocumentCodecProvider(),
-                                                   new BsonValueCodecProvider()])
+        def codecRegistry = fromProviders([new ValueCodecProvider(), new DocumentCodecProvider(), new BsonValueCodecProvider()])
         def readPreference = secondary()
 
 
     def 'should have the same methods as the wrapped MapReduceIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.MapReduceIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (MapReduceIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (MapReducePublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
@@ -64,8 +64,8 @@ class MapReducePublisherSpecification extends Specification {
                 onSubscribe(_) >> { args -> args[0].request(100) }
             }
             def executor = new TestOperationExecutor([null, null]);
-            def wrapped = new com.mongodb.async.client.MapReduceIterableImpl(namespace, Document, codecRegistry, readPreference, executor,
-                    'map', 'reduce')
+            def wrapped = new MapReduceIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
+                    executor, 'map', 'reduce')
             def mapReducePublisher = new MapReducePublisherImpl(wrapped)
 
             when: 'default input should be as expected'
@@ -113,8 +113,8 @@ class MapReducePublisherSpecification extends Specification {
 
             when: 'mapReduce to a collection'
             def collectionNamespace = new MongoNamespace('dbName', 'collName')
-            def wrapped = new com.mongodb.async.client.MapReduceIterableImpl(namespace, Document, codecRegistry, readPreference, executor,
-                    'map', 'reduce')
+            def wrapped = new MapReduceIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
+                    executor, 'map', 'reduce')
             def mapReducePublisher = new MapReducePublisherImpl(wrapped)
             mapReducePublisher.collectionName(collectionNamespace.getCollectionName())
                     .databaseName(collectionNamespace.getDatabaseName())

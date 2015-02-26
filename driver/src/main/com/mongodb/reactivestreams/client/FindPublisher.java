@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.CursorType;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -24,16 +25,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * Publisher interface for find.
  *
- * @param <T> The type of the result.
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface FindPublisher<T> extends Publisher<T> {
+public interface FindPublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Helper to return a publisher limited first from the query.
      *
      * @return a Publisher which will
      */
-    Publisher<T> first();
+    Publisher<TResult> first();
 
     /**
      * Sets the query filter to apply to the query.
@@ -42,7 +44,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Filter
      */
-    FindPublisher<T> filter(Object filter);
+    FindPublisher<TResult> filter(Bson filter);
 
     /**
      * Sets the limit to apply.
@@ -51,7 +53,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.limit/#cursor.limit Limit
      */
-    FindPublisher<T> limit(int limit);
+    FindPublisher<TResult> limit(int limit);
     /**
      * Sets the number of documents to skip.
      *
@@ -59,7 +61,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.skip/#cursor.skip Skip
      */
-    FindPublisher<T> skip(int skip);
+    FindPublisher<TResult> skip(int skip);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -69,7 +71,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.maxTimeMS/#cursor.maxTimeMS Max Time
      */
-    FindPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    FindPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
     /**
      * Sets the query modifiers to apply to this operation.
@@ -78,7 +80,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/query-modifier/ Query Modifiers
      */
-    FindPublisher<T> modifiers(Object modifiers);
+    FindPublisher<TResult> modifiers(Bson modifiers);
 
     /**
      * Sets a document describing the fields to return for all matching documents.
@@ -87,7 +89,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Projection
      */
-    FindPublisher<T> projection(Object projection);
+    FindPublisher<TResult> projection(Bson projection);
     /**
      * Sets the sort criteria to apply to the query.
      *
@@ -95,7 +97,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.sort/ Sort
      */
-    FindPublisher<T> sort(Object sort);
+    FindPublisher<TResult> sort(Bson sort);
 
     /**
      * The server normally times out idle cursors after an inactivity period (10 minutes)
@@ -104,7 +106,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @param noCursorTimeout true if cursor timeout is disabled
      * @return this
      */
-    FindPublisher<T> noCursorTimeout(boolean noCursorTimeout);
+    FindPublisher<TResult> noCursorTimeout(boolean noCursorTimeout);
 
     /**
      * Users should not set this under normal circumstances.
@@ -112,7 +114,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @param oplogReplay if oplog replay is enabled
      * @return this
      */
-    FindPublisher<T> oplogReplay(boolean oplogReplay);
+    FindPublisher<TResult> oplogReplay(boolean oplogReplay);
 
     /**
      * Get partial results from a sharded cluster if one or more shards are unreachable (instead of throwing an error).
@@ -120,7 +122,7 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @param partial if partial results for sharded clusters is enabled
      * @return this
      */
-    FindPublisher<T> partial(boolean partial);
+    FindPublisher<TResult> partial(boolean partial);
 
 
     /**
@@ -129,5 +131,5 @@ public interface FindPublisher<T> extends Publisher<T> {
      * @param cursorType the cursor type
      * @return this
      */
-    FindPublisher<T> cursorType(CursorType cursorType);
+    FindPublisher<TResult> cursorType(CursorType cursorType);
 }

@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -23,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Iterable for distinct.
  *
- * @param <T> The type of the result.
- * @since 3.0
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface DistinctPublisher<T> extends Publisher<T> {
+public interface DistinctPublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Sets the query filter to apply to the query.
@@ -35,7 +36,7 @@ public interface DistinctPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Filter
      */
-    DistinctPublisher<T> filter(Object filter);
+    DistinctPublisher<TResult> filter(Bson filter);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -44,6 +45,6 @@ public interface DistinctPublisher<T> extends Publisher<T> {
      * @param timeUnit the time unit, which may not be null
      * @return this
      */
-    DistinctPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    DistinctPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

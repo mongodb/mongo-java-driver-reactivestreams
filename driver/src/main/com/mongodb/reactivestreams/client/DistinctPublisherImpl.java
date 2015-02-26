@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import org.bson.conversions.Bson;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -23,28 +24,28 @@ import java.util.concurrent.TimeUnit;
 import static com.mongodb.assertions.Assertions.notNull;
 
 
-class DistinctPublisherImpl<T> implements DistinctPublisher<T> {
+class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult> {
 
-    private final com.mongodb.async.client.DistinctIterable<T> wrapped;
+    private final com.mongodb.async.client.DistinctIterable<TResult> wrapped;
 
-    DistinctPublisherImpl(final com.mongodb.async.client.DistinctIterable<T> wrapped) {
+    DistinctPublisherImpl(final com.mongodb.async.client.DistinctIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
-    public DistinctPublisher<T> filter(final Object filter) {
+    public DistinctPublisher<TResult> filter(final Bson filter) {
         wrapped.filter(filter);
         return this;
     }
 
     @Override
-    public DistinctPublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public DistinctPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
-        new MongoIterablePublisher<T>(wrapped).subscribe(s);
+    public void subscribe(final Subscriber<? super TResult> s) {
+        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
     }
 }

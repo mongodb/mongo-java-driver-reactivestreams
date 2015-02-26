@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -23,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Publisher interface for ListCollections.
  *
- * @param <T> The type of the result.
- * @since 3.0
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface ListCollectionsPublisher<T> extends Publisher<T> {
+public interface ListCollectionsPublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Sets the query filter to apply to the query.
@@ -35,7 +36,7 @@ public interface ListCollectionsPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/db.collection.find/ Filter
      */
-    ListCollectionsPublisher<T> filter(Object filter);
+    ListCollectionsPublisher<TResult> filter(Bson filter);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -45,6 +46,6 @@ public interface ListCollectionsPublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
-    ListCollectionsPublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    ListCollectionsPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
 }

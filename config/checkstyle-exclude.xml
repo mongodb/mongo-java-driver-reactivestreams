@@ -24,6 +24,4 @@
 
     <!--Do not check test classes -->
     <suppress checks="Javadoc*" files=".*test.*"/>
-
-    <suppress files="AsyncIterablePublisher\.java" checks="[a-zA-Z0-9]*"/>
 </suppressions>

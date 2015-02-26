@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.MapReduceAction;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -27,90 +28,90 @@ import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
 
-class MapReducePublisherImpl<T> implements MapReducePublisher<T> {
+class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResult> {
 
 
-    private final com.mongodb.async.client.MapReduceIterable<T> wrapped;
+    private final com.mongodb.async.client.MapReduceIterable<TResult> wrapped;
 
-    MapReducePublisherImpl(final com.mongodb.async.client.MapReduceIterable<T> wrapped) {
+    MapReducePublisherImpl(final com.mongodb.async.client.MapReduceIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
 
     @Override
-    public MapReducePublisher<T> collectionName(final String collectionName) {
+    public MapReducePublisher<TResult> collectionName(final String collectionName) {
         wrapped.collectionName(collectionName);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> finalizeFunction(final String finalizeFunction) {
+    public MapReducePublisher<TResult> finalizeFunction(final String finalizeFunction) {
         wrapped.finalizeFunction(finalizeFunction);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> scope(final Object scope) {
+    public MapReducePublisher<TResult> scope(final Bson scope) {
         wrapped.scope(scope);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> sort(final Object sort) {
+    public MapReducePublisher<TResult> sort(final Bson sort) {
         wrapped.sort(sort);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> filter(final Object filter) {
+    public MapReducePublisher<TResult> filter(final Bson filter) {
         wrapped.filter(filter);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> limit(final int limit) {
+    public MapReducePublisher<TResult> limit(final int limit) {
         wrapped.limit(limit);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> jsMode(final boolean jsMode) {
+    public MapReducePublisher<TResult> jsMode(final boolean jsMode) {
         wrapped.jsMode(jsMode);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> verbose(final boolean verbose) {
+    public MapReducePublisher<TResult> verbose(final boolean verbose) {
         wrapped.verbose(verbose);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public MapReducePublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> action(final MapReduceAction action) {
+    public MapReducePublisher<TResult> action(final MapReduceAction action) {
         wrapped.action(action);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> databaseName(final String databaseName) {
+    public MapReducePublisher<TResult> databaseName(final String databaseName) {
         wrapped.databaseName(databaseName);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> sharded(final boolean sharded) {
+    public MapReducePublisher<TResult> sharded(final boolean sharded) {
         wrapped.sharded(sharded);
         return this;
     }
 
     @Override
-    public MapReducePublisher<T> nonAtomic(final boolean nonAtomic) {
+    public MapReducePublisher<TResult> nonAtomic(final boolean nonAtomic) {
         wrapped.nonAtomic(nonAtomic);
         return this;
     }
@@ -126,7 +127,7 @@ class MapReducePublisherImpl<T> implements MapReducePublisher<T> {
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
-        new MongoIterablePublisher<T>(wrapped).subscribe(s);
+    public void subscribe(final Subscriber<? super TResult> s) {
+        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
     }
 }

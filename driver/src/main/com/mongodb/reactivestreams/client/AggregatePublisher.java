@@ -23,10 +23,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Publisher for aggregate.
  *
- * @param <T> The type of the result.
- * @since 3.0
+ * @param <TResult> The type of the result.
+ * @since 1.0
  */
-public interface AggregatePublisher<T> extends Publisher<T> {
+public interface AggregatePublisher<TResult> extends Publisher<TResult> {
 
     /**
      * Enables writing to temporary files. A null value indicates that it's unspecified.
@@ -36,7 +36,7 @@ public interface AggregatePublisher<T> extends Publisher<T> {
      * @mongodb.driver.manual reference/command/aggregate/ Aggregation
      * @mongodb.server.release 2.6
      */
-    AggregatePublisher<T> allowDiskUse(Boolean allowDiskUse);
+    AggregatePublisher<TResult> allowDiskUse(Boolean allowDiskUse);
 
     /**
      * Sets the maximum execution time on the server for this operation.
@@ -46,7 +46,7 @@ public interface AggregatePublisher<T> extends Publisher<T> {
      * @return this
      * @mongodb.driver.manual reference/method/cursor.maxTimeMS/#cursor.maxTimeMS Max Time
      */
-    AggregatePublisher<T> maxTime(long maxTime, TimeUnit timeUnit);
+    AggregatePublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
     /**
      * Sets whether the server should use a cursor to return results.
@@ -56,7 +56,7 @@ public interface AggregatePublisher<T> extends Publisher<T> {
      * @mongodb.driver.manual reference/command/aggregate/ Aggregation
      * @mongodb.server.release 2.6
      */
-    AggregatePublisher<T> useCursor(Boolean useCursor);
+    AggregatePublisher<TResult> useCursor(Boolean useCursor);
 
     /**
      * Aggregates documents according to the specified aggregation pipeline, which must end with a $out stage.

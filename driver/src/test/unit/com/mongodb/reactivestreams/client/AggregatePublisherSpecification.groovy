@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.async.client.AggregateIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.AggregateOperation
 import com.mongodb.operation.AggregateToCollectionOperation
@@ -29,7 +30,6 @@ import org.bson.codecs.BsonValueCodecProvider
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
 import org.bson.codecs.ValueCodecProvider
-import org.bson.codecs.configuration.RootCodecRegistry
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -37,12 +37,13 @@ import spock.lang.Specification
 import static com.mongodb.ReadPreference.secondary
 import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.bson.codecs.configuration.CodecRegistryHelper.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
 class AggregatePublisherSpecification  extends Specification {
 
     def namespace = new MongoNamespace('db', 'coll')
-    def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
+    def codecRegistry = fromProviders([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
 
     def 'should have the same methods as the wrapped AggregateIterable'() {
         given:
@@ -61,7 +62,7 @@ class AggregatePublisherSpecification  extends Specification {
 
         def executor = new TestOperationExecutor([null, null]);
         def pipeline = [new Document('$match', 1)]
-        def wrapped = new com.mongodb.async.client.AggregateIterableImpl<Document>(namespace, Document, codecRegistry, secondary(),
+        def wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
                 executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
 
@@ -98,7 +99,7 @@ class AggregatePublisherSpecification  extends Specification {
         def collectionName = 'collectionName'
         def collectionNamespace = new MongoNamespace(namespace.getDatabaseName(), collectionName)
         def pipeline = [new Document('$match', 1), new Document('$out', collectionName)]
-        def wrapped = new com.mongodb.async.client.AggregateIterableImpl<Document>(namespace, Document, codecRegistry, secondary(),
+        def wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
                 executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
                 .maxTime(999, MILLISECONDS)
@@ -123,7 +124,7 @@ class AggregatePublisherSpecification  extends Specification {
         operation.getBatchSize() == 100
 
         when: 'toCollection should work as expected'
-        wrapped = new com.mongodb.async.client.AggregateIterableImpl<Document>(namespace, Document, codecRegistry, secondary(),
+        wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
                 executor, pipeline)
         new AggregatePublisherImpl<Document>(wrapped).toCollection().subscribe(subscriber)
         operation = executor.getWriteOperation() as AggregateToCollectionOperation

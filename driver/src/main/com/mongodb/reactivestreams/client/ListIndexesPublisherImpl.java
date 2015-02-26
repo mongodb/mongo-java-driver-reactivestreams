@@ -22,24 +22,24 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 
-final class ListIndexesPublisherImpl<T> implements ListIndexesPublisher<T> {
+final class ListIndexesPublisherImpl<TResult> implements ListIndexesPublisher<TResult> {
 
-    private final com.mongodb.async.client.ListIndexesIterable<T> wrapped;
+    private final com.mongodb.async.client.ListIndexesIterable<TResult> wrapped;
 
-    ListIndexesPublisherImpl(final com.mongodb.async.client.ListIndexesIterable<T> wrapped) {
+    ListIndexesPublisherImpl(final com.mongodb.async.client.ListIndexesIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
-    public ListIndexesPublisherImpl<T> maxTime(final long maxTime, final TimeUnit timeUnit) {
+    public ListIndexesPublisherImpl<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         notNull("timeUnit", timeUnit);
         wrapped.maxTime(maxTime, timeUnit);
         return this;
     }
 
     @Override
-    public void subscribe(final Subscriber<? super T> s) {
-        new MongoIterablePublisher<T>(wrapped).subscribe(s);
+    public void subscribe(final Subscriber<? super TResult> s) {
+        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
     }
 }
 

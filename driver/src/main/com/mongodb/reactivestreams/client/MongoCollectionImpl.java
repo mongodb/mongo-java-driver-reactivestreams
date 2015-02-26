@@ -36,6 +36,7 @@ import com.mongodb.client.result.UpdateResult;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.List;
@@ -43,11 +44,11 @@ import java.util.List;
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
-class MongoCollectionImpl<T> implements MongoCollection<T> {
+class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
 
-    private final com.mongodb.async.client.MongoCollection<T> wrapped;
+    private final com.mongodb.async.client.MongoCollection<TDocument> wrapped;
 
-    MongoCollectionImpl(final com.mongodb.async.client.MongoCollection<T> wrapped) {
+    MongoCollectionImpl(final com.mongodb.async.client.MongoCollection<TDocument> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
@@ -57,8 +58,8 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Class<T> getDefaultClass() {
-        return wrapped.getDefaultClass();
+    public Class<TDocument> getDocumentClass() {
+        return wrapped.getDocumentClass();
     }
 
     @Override
@@ -77,23 +78,23 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public <C> MongoCollection<C> withDefaultClass(final Class<C> clazz) {
-        return new MongoCollectionImpl<C>(wrapped.withDefaultClass(clazz));
+    public <NewTDocument> MongoCollection<NewTDocument> withDocumentClass(final Class<NewTDocument> clazz) {
+        return new MongoCollectionImpl<NewTDocument>(wrapped.withDocumentClass(clazz));
     }
 
     @Override
-    public MongoCollection<T> withCodecRegistry(final CodecRegistry codecRegistry) {
-        return new MongoCollectionImpl<T>(wrapped.withCodecRegistry(codecRegistry));
+    public MongoCollection<TDocument> withCodecRegistry(final CodecRegistry codecRegistry) {
+        return new MongoCollectionImpl<TDocument>(wrapped.withCodecRegistry(codecRegistry));
     }
 
     @Override
-    public MongoCollection<T> withReadPreference(final ReadPreference readPreference) {
-        return new MongoCollectionImpl<T>(wrapped.withReadPreference(readPreference));
+    public MongoCollection<TDocument> withReadPreference(final ReadPreference readPreference) {
+        return new MongoCollectionImpl<TDocument>(wrapped.withReadPreference(readPreference));
     }
 
     @Override
-    public MongoCollection<T> withWriteConcern(final WriteConcern writeConcern) {
-        return new MongoCollectionImpl<T>(wrapped.withWriteConcern(writeConcern));
+    public MongoCollection<TDocument> withWriteConcern(final WriteConcern writeConcern) {
+        return new MongoCollectionImpl<TDocument>(wrapped.withWriteConcern(writeConcern));
     }
 
     @Override
@@ -102,12 +103,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Long> count(final Object filter) {
+    public Publisher<Long> count(final Bson filter) {
         return count(filter, new CountOptions());
     }
 
     @Override
-    public Publisher<Long> count(final Object filter, final CountOptions options) {
+    public Publisher<Long> count(final Bson filter, final CountOptions options) {
         return new SingleResultPublisher<Long>() {
             @Override
             void execute(final SingleResultCallback<Long> callback) {
@@ -117,38 +118,38 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public <C> DistinctPublisher<C> distinct(final String fieldName, final Class<C> clazz) {
-        return new DistinctPublisherImpl<C>(wrapped.distinct(fieldName, clazz));
+    public <TResult> DistinctPublisher<TResult> distinct(final String fieldName, final Class<TResult> clazz) {
+        return new DistinctPublisherImpl<TResult>(wrapped.distinct(fieldName, clazz));
     }
 
     @Override
-    public FindPublisher<T> find() {
-        return find(new BsonDocument(), wrapped.getDefaultClass());
+    public FindPublisher<TDocument> find() {
+        return find(new BsonDocument(), getDocumentClass());
     }
 
     @Override
-    public <C> FindPublisher<C> find(final Class<C> clazz) {
+    public <TResult> FindPublisher<TResult> find(final Class<TResult> clazz) {
         return find(new BsonDocument(), clazz);
     }
 
     @Override
-    public FindPublisher<T> find(final Object filter) {
-        return find(filter, wrapped.getDefaultClass());
+    public FindPublisher<TDocument> find(final Bson filter) {
+        return find(filter, getDocumentClass());
     }
 
     @Override
-    public <C> FindPublisher<C> find(final Object filter, final Class<C> clazz) {
-        return new FindPublisherImpl<C>(wrapped.find(filter, clazz));
+    public <TResult> FindPublisher<TResult> find(final Bson filter, final Class<TResult> clazz) {
+        return new FindPublisherImpl<TResult>(wrapped.find(filter, clazz));
     }
 
     @Override
-    public AggregatePublisher<Document> aggregate(final List<?> pipeline) {
+    public AggregatePublisher<Document> aggregate(final List<? extends Bson> pipeline) {
         return aggregate(pipeline, Document.class);
     }
 
     @Override
-    public <C> AggregatePublisher<C> aggregate(final List<?> pipeline, final Class<C> clazz) {
-        return new AggregatePublisherImpl<C>(wrapped.aggregate(pipeline, clazz));
+    public <TResult> AggregatePublisher<TResult> aggregate(final List<? extends Bson> pipeline, final Class<TResult> clazz) {
+        return new AggregatePublisherImpl<TResult>(wrapped.aggregate(pipeline, clazz));
     }
 
     @Override
@@ -157,17 +158,18 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public <C> MapReducePublisher<C> mapReduce(final String mapFunction, final String reduceFunction, final Class<C> clazz) {
-        return new MapReducePublisherImpl<C>(wrapped.mapReduce(mapFunction, reduceFunction, clazz));
+    public <TResult> MapReducePublisher<TResult> mapReduce(final String mapFunction, final String reduceFunction,
+                                                           final Class<TResult> clazz) {
+        return new MapReducePublisherImpl<TResult>(wrapped.mapReduce(mapFunction, reduceFunction, clazz));
     }
 
     @Override
-    public Publisher<BulkWriteResult> bulkWrite(final List<? extends WriteModel<? extends T>> requests) {
+    public Publisher<BulkWriteResult> bulkWrite(final List<? extends WriteModel<? extends TDocument>> requests) {
         return bulkWrite(requests, new BulkWriteOptions());
     }
 
     @Override
-    public Publisher<BulkWriteResult> bulkWrite(final List<? extends WriteModel<? extends T>> requests,
+    public Publisher<BulkWriteResult> bulkWrite(final List<? extends WriteModel<? extends TDocument>> requests,
                                                 final BulkWriteOptions options) {
         return new SingleResultPublisher<BulkWriteResult>() {
             @Override
@@ -178,7 +180,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Success> insertOne(final T document) {
+    public Publisher<Success> insertOne(final TDocument document) {
         return new SingleResultPublisher<Success>() {
             @Override
             void execute(final SingleResultCallback<Success> callback) {
@@ -188,12 +190,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Success> insertMany(final List<? extends T> documents) {
+    public Publisher<Success> insertMany(final List<? extends TDocument> documents) {
         return insertMany(documents, new InsertManyOptions());
     }
 
     @Override
-    public Publisher<Success> insertMany(final List<? extends T> documents, final InsertManyOptions options) {
+    public Publisher<Success> insertMany(final List<? extends TDocument> documents, final InsertManyOptions options) {
         return new SingleResultPublisher<Success>() {
             @Override
             void execute(final SingleResultCallback<Success> callback) {
@@ -203,7 +205,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<DeleteResult> deleteOne(final Object filter) {
+    public Publisher<DeleteResult> deleteOne(final Bson filter) {
         return new SingleResultPublisher<DeleteResult>() {
             @Override
             void execute(final SingleResultCallback<DeleteResult> callback) {
@@ -213,7 +215,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<DeleteResult> deleteMany(final Object filter) {
+    public Publisher<DeleteResult> deleteMany(final Bson filter) {
         return new SingleResultPublisher<DeleteResult>() {
             @Override
             void execute(final SingleResultCallback<DeleteResult> callback) {
@@ -223,12 +225,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<UpdateResult> replaceOne(final Object filter, final T replacement) {
+    public Publisher<UpdateResult> replaceOne(final Bson filter, final TDocument replacement) {
         return replaceOne(filter, replacement, new UpdateOptions());
     }
 
     @Override
-    public Publisher<UpdateResult> replaceOne(final Object filter, final T replacement, final UpdateOptions options) {
+    public Publisher<UpdateResult> replaceOne(final Bson filter, final TDocument replacement, final UpdateOptions options) {
         return new SingleResultPublisher<UpdateResult>() {
             @Override
             void execute(final SingleResultCallback<UpdateResult> callback) {
@@ -238,12 +240,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<UpdateResult> updateOne(final Object filter, final Object update) {
+    public Publisher<UpdateResult> updateOne(final Bson filter, final Bson update) {
         return updateOne(filter, update, new UpdateOptions());
     }
 
     @Override
-    public Publisher<UpdateResult> updateOne(final Object filter, final Object update, final UpdateOptions options) {
+    public Publisher<UpdateResult> updateOne(final Bson filter, final Bson update, final UpdateOptions options) {
         return new SingleResultPublisher<UpdateResult>() {
             @Override
             void execute(final SingleResultCallback<UpdateResult> callback) {
@@ -253,12 +255,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<UpdateResult> updateMany(final Object filter, final Object update) {
+    public Publisher<UpdateResult> updateMany(final Bson filter, final Bson update) {
         return updateMany(filter, update, new UpdateOptions());
     }
 
     @Override
-    public Publisher<UpdateResult> updateMany(final Object filter, final Object update, final UpdateOptions options) {
+    public Publisher<UpdateResult> updateMany(final Bson filter, final Bson update, final UpdateOptions options) {
         return new SingleResultPublisher<UpdateResult>() {
             @Override
             void execute(final SingleResultCallback<UpdateResult> callback) {
@@ -268,45 +270,45 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<T> findOneAndDelete(final Object filter) {
+    public Publisher<TDocument> findOneAndDelete(final Bson filter) {
         return findOneAndDelete(filter, new FindOneAndDeleteOptions());
     }
 
     @Override
-    public Publisher<T> findOneAndDelete(final Object filter, final FindOneAndDeleteOptions options) {
-        return new SingleResultPublisher<T>() {
+    public Publisher<TDocument> findOneAndDelete(final Bson filter, final FindOneAndDeleteOptions options) {
+        return new SingleResultPublisher<TDocument>() {
             @Override
-            void execute(final SingleResultCallback<T> callback) {
+            void execute(final SingleResultCallback<TDocument> callback) {
                 wrapped.findOneAndDelete(filter, options, callback);
             }
         };
     }
 
     @Override
-    public Publisher<T> findOneAndReplace(final Object filter, final T replacement) {
+    public Publisher<TDocument> findOneAndReplace(final Bson filter, final TDocument replacement) {
         return findOneAndReplace(filter, replacement, new FindOneAndReplaceOptions());
     }
 
     @Override
-    public Publisher<T> findOneAndReplace(final Object filter, final T replacement, final FindOneAndReplaceOptions options) {
-        return new SingleResultPublisher<T>() {
+    public Publisher<TDocument> findOneAndReplace(final Bson filter, final TDocument replacement, final FindOneAndReplaceOptions options) {
+        return new SingleResultPublisher<TDocument>() {
             @Override
-            void execute(final SingleResultCallback<T> callback) {
+            void execute(final SingleResultCallback<TDocument> callback) {
                 wrapped.findOneAndReplace(filter, replacement, options, callback);
             }
         };
     }
 
     @Override
-    public Publisher<T> findOneAndUpdate(final Object filter, final Object update) {
+    public Publisher<TDocument> findOneAndUpdate(final Bson filter, final Bson update) {
         return findOneAndUpdate(filter, update, new FindOneAndUpdateOptions());
     }
 
     @Override
-    public Publisher<T> findOneAndUpdate(final Object filter, final Object update, final FindOneAndUpdateOptions options) {
-        return new SingleResultPublisher<T>() {
+    public Publisher<TDocument> findOneAndUpdate(final Bson filter, final Bson update, final FindOneAndUpdateOptions options) {
+        return new SingleResultPublisher<TDocument>() {
             @Override
-            void execute(final SingleResultCallback<T> callback) {
+            void execute(final SingleResultCallback<TDocument> callback) {
                 wrapped.findOneAndUpdate(filter, update, options, callback);
             }
         };
@@ -323,12 +325,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public Publisher<Success> createIndex(final Object key) {
+    public Publisher<Success> createIndex(final Bson key) {
         return createIndex(key, new CreateIndexOptions());
     }
 
     @Override
-    public Publisher<Success> createIndex(final Object key, final CreateIndexOptions options) {
+    public Publisher<Success> createIndex(final Bson key, final CreateIndexOptions options) {
         return new SingleResultPublisher<Success>() {
             @Override
             void execute(final SingleResultCallback<Success> callback) {
@@ -343,8 +345,8 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public <C> ListIndexesPublisher<C> listIndexes(final Class<C> clazz) {
-        return new ListIndexesPublisherImpl<C>(wrapped.listIndexes(clazz));
+    public <TResult> ListIndexesPublisher<TResult> listIndexes(final Class<TResult> clazz) {
+        return new ListIndexesPublisherImpl<TResult>(wrapped.listIndexes(clazz));
     }
 
     @Override

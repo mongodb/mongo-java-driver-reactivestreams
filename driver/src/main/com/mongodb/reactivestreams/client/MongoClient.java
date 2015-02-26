@@ -30,6 +30,8 @@ import java.io.Closeable;
  * <p>
  * Instance of this class server as factories for {@code MongoDatabase} instances.
  * </p>
+ *
+ * @since 1.0
  */
 @Immutable
 public interface MongoClient extends Closeable {
@@ -75,9 +77,9 @@ public interface MongoClient extends Closeable {
      * Gets the list of databases
      *
      * @param clazz the class to cast the database documents to
-     * @param <T>   the type of the class to use instead of {@code Document}.
+     * @param <TResult>   the type of the class to use instead of {@code Document}.
      * @return the fluent list databases interface
      */
-    <T> ListDatabasesPublisher<T> listDatabases(Class<T> clazz);
+    <TResult> ListDatabasesPublisher<TResult> listDatabases(Class<TResult> clazz);
 
 }

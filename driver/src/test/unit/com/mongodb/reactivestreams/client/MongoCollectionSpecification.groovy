@@ -65,12 +65,12 @@ class MongoCollectionSpecification extends Specification {
         1 * wrapped.getNamespace()
     }
 
-    def 'should use the underlying getDefaultClass'() {
+    def 'should use the underlying getDocumentClass'() {
         when:
-        mongoCollection.getDefaultClass()
+        mongoCollection.getDocumentClass()
 
         then:
-        1 * wrapped.getDefaultClass()
+        1 * wrapped.getDocumentClass()
     }
 
     def 'should call the underlying getCodecRegistry'() {
@@ -98,16 +98,16 @@ class MongoCollectionSpecification extends Specification {
         1 * wrapped.getWriteConcern()
     }
 
-    def 'should use the underlying withDefaultClass'() {
+    def 'should use the underlying withDocumentClass'() {
         given:
         def wrappedResult = Stub(WrappedMongoCollection)
         def wrapped = Mock(WrappedMongoCollection) {
-            1 * withDefaultClass(BsonDocument) >> wrappedResult
+            1 * withDocumentClass(BsonDocument) >> wrappedResult
         }
         def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
-        def result = mongoCollection.withDefaultClass(BsonDocument)
+        def result = mongoCollection.withDocumentClass(BsonDocument)
 
         then:
         expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
@@ -213,7 +213,7 @@ class MongoCollectionSpecification extends Specification {
             1 * find(new BsonDocument(), BsonDocument) >> wrappedResult
             1 * find(new Document(), Document) >> wrappedResult
             1 * find(new Document(), BsonDocument) >> wrappedResult
-            2 * getDefaultClass() >> Document
+            2 * getDocumentClass() >> Document
         }
         def collection = new MongoCollectionImpl(wrapped)
 
@@ -569,7 +569,7 @@ class MongoCollectionSpecification extends Specification {
     def 'should use the underlying listIndexes'() {
         def wrapped = Stub(WrappedMongoCollection) {
             listIndexes(_) >> Stub(com.mongodb.async.client.ListIndexesIterable)
-            getDefaultClass() >> Document
+            getDocumentClass() >> Document
         }
         def mongoCollection = new MongoCollectionImpl(wrapped)
 

@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.async.client.ListIndexesIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.ListIndexesOperation
 import org.bson.Document
@@ -24,14 +25,14 @@ import org.bson.codecs.BsonValueCodecProvider
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
 import org.bson.codecs.ValueCodecProvider
-import org.bson.codecs.configuration.RootCodecRegistry
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static com.mongodb.ReadPreference.secondary
+import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.bson.codecs.configuration.CodecRegistryHelper.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
 class ListIndexesPublisherSpecification extends Specification {
@@ -51,9 +52,9 @@ class ListIndexesPublisherSpecification extends Specification {
             onSubscribe(_) >> { args -> args[0].request(100) }
         }
         def namespace = new MongoNamespace('db', 'coll')
-        def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
+        def codecRegistry = fromProviders([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
         def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new com.mongodb.async.client.ListIndexesIterableImpl(namespace, Document, codecRegistry, secondary(), executor)
+        def wrapped = new ListIndexesIterableImpl(namespace, Document, codecRegistry, secondary(), executor)
         def listIndexesPublisher = new ListIndexesPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'

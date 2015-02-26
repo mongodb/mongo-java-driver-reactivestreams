@@ -22,14 +22,14 @@ import com.mongodb.operation.ListDatabasesOperation
 import org.bson.Document
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
-import org.bson.codecs.configuration.RootCodecRegistry
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static com.mongodb.ReadPreference.secondary
+import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.bson.codecs.configuration.CodecRegistryHelper.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
 class ListDatabasesPublisherSpecification extends Specification {
@@ -45,7 +45,7 @@ class ListDatabasesPublisherSpecification extends Specification {
 
     def 'should build the expected ListDatabasesOperation'() {
         given:
-        def codecRegistry = new RootCodecRegistry([new DocumentCodecProvider()])
+        def codecRegistry = fromProviders([new DocumentCodecProvider()])
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(100) }
         }
