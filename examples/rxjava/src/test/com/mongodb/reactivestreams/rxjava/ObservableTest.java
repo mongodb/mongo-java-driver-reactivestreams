@@ -38,7 +38,7 @@ public class ObservableTest {
 
         MongoDatabase database = Fixture.getDefaultDatabase();
 
-        toObservable(database.dropDatabase()).timeout(10, SECONDS).toBlocking().single();
+        toObservable(database.drop()).timeout(10, SECONDS).toBlocking().single();
 
         List<Observable<Success>> observers = new ArrayList<Observable<Success>>();
         List<String> uppercaseNames = new ArrayList<String>();
@@ -65,7 +65,7 @@ public class ObservableTest {
 
         assertThat(collectionNames.toList().timeout(10, SECONDS).toBlocking().single(), containsInAnyOrder(uppercaseNames.toArray()));
 
-        toObservable(database.dropDatabase()).timeout(10, SECONDS).toBlocking().single();
+        toObservable(database.drop()).timeout(10, SECONDS).toBlocking().single();
     }
 
 

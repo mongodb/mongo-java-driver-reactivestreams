@@ -158,7 +158,7 @@ class MongoDatabaseSpecification extends Specification {
         expect result, isTheSameAs(new MongoDatabaseImpl(wrappedResult))
     }
 
-    def 'should call the underlying executeCommand when writing'() {
+    def 'should call the underlying runCommand when writing'() {
         given:
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(1) }
@@ -167,24 +167,24 @@ class MongoDatabaseSpecification extends Specification {
         def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        mongoDatabase.executeCommand(new Document())
+        mongoDatabase.runCommand(new Document())
 
         then: 'only executed when requested'
-        0 * wrapped.executeCommand(_, _, _)
+        0 * wrapped.runCommand(_, _, _)
 
         when:
-        mongoDatabase.executeCommand(new Document()).subscribe(subscriber)
+        mongoDatabase.runCommand(new Document()).subscribe(subscriber)
 
         then:
-        1 * wrapped.executeCommand(new Document(), Document, _)
+        1 * wrapped.runCommand(new Document(), Document, _)
 
         when:
-        mongoDatabase.executeCommand(new BsonDocument(), BsonDocument).subscribe(subscriber)
+        mongoDatabase.runCommand(new BsonDocument(), BsonDocument).subscribe(subscriber)
 
         then:
-        1 * wrapped.executeCommand(new BsonDocument(), BsonDocument, _)
+        1 * wrapped.runCommand(new BsonDocument(), BsonDocument, _)
     }
-    def 'should call the underlying executeCommand for read operations'() {
+    def 'should call the underlying runCommand for read operations'() {
         given:
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(1) }
@@ -194,25 +194,25 @@ class MongoDatabaseSpecification extends Specification {
         def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        mongoDatabase.executeCommand(new Document(), readPreference)
+        mongoDatabase.runCommand(new Document(), readPreference)
 
         then: 'only executed when requested'
-        0 * wrapped.executeCommand(_, _, _, _)
+        0 * wrapped.runCommand(_, _, _, _)
 
         when:
-        mongoDatabase.executeCommand(new Document(), readPreference).subscribe(subscriber)
+        mongoDatabase.runCommand(new Document(), readPreference).subscribe(subscriber)
 
         then:
-        1 * wrapped.executeCommand(new Document(), readPreference, Document, _)
+        1 * wrapped.runCommand(new Document(), readPreference, Document, _)
 
         when:
-        mongoDatabase.executeCommand(new BsonDocument(), readPreference, BsonDocument).subscribe(subscriber)
+        mongoDatabase.runCommand(new BsonDocument(), readPreference, BsonDocument).subscribe(subscriber)
 
         then:
-        1 * wrapped.executeCommand(new BsonDocument(), readPreference, BsonDocument, _)
+        1 * wrapped.runCommand(new BsonDocument(), readPreference, BsonDocument, _)
     }
 
-    def 'should call the underlying dropDatabase'() {
+    def 'should call the underlying drop'() {
         given:
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(1) }
@@ -221,16 +221,16 @@ class MongoDatabaseSpecification extends Specification {
         def mongoDatabase = new MongoDatabaseImpl(wrapped)
 
         when:
-        mongoDatabase.dropDatabase()
+        mongoDatabase.drop()
 
         then: 'only executed when requested'
-        0 * wrapped.dropDatabase(_)
+        0 * wrapped.drop(_)
 
         when:
-        mongoDatabase.dropDatabase().subscribe(subscriber)
+        mongoDatabase.drop().subscribe(subscriber)
 
         then:
-        1 * wrapped.dropDatabase(_)
+        1 * wrapped.drop(_)
     }
     def 'should call the underlying listCollectionNames'() {
         given:

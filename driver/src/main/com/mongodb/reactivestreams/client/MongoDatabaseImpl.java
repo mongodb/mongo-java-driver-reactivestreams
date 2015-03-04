@@ -82,42 +82,42 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public Publisher<Document> executeCommand(final Bson command) {
-        return executeCommand(command, Document.class);
+    public Publisher<Document> runCommand(final Bson command) {
+        return runCommand(command, Document.class);
     }
 
     @Override
-    public Publisher<Document> executeCommand(final Bson command, final ReadPreference readPreference) {
-        return executeCommand(command, readPreference, Document.class);
+    public Publisher<Document> runCommand(final Bson command, final ReadPreference readPreference) {
+        return runCommand(command, readPreference, Document.class);
     }
 
     @Override
-    public <TResult> Publisher<TResult> executeCommand(final Bson command, final Class<TResult> clazz) {
+    public <TResult> Publisher<TResult> runCommand(final Bson command, final Class<TResult> clazz) {
         return new SingleResultPublisher<TResult>() {
             @Override
             void execute(final SingleResultCallback<TResult> callback) {
-                wrapped.executeCommand(command, clazz, callback);
+                wrapped.runCommand(command, clazz, callback);
             }
         };
     }
 
     @Override
-    public <TResult> Publisher<TResult> executeCommand(final Bson command, final ReadPreference readPreference,
+    public <TResult> Publisher<TResult> runCommand(final Bson command, final ReadPreference readPreference,
                                                        final Class<TResult> clazz) {
         return new SingleResultPublisher<TResult>() {
             @Override
             void execute(final SingleResultCallback<TResult> callback) {
-                wrapped.executeCommand(command, readPreference, clazz, callback);
+                wrapped.runCommand(command, readPreference, clazz, callback);
             }
         };
     }
 
     @Override
-    public Publisher<Success> dropDatabase() {
+    public Publisher<Success> drop() {
         return new SingleResultPublisher<Success>() {
             @Override
             void execute(final SingleResultCallback<Success> callback) {
-                wrapped.dropDatabase(voidToSuccessCallback(callback));
+                wrapped.drop(voidToSuccessCallback(callback));
             }
         };
     }

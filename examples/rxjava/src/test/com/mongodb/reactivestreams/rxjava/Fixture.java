@@ -71,7 +71,7 @@ public final class Fixture {
     public static MongoCollection<Document> initializeCollection(final MongoNamespace namespace) throws Throwable {
         MongoDatabase database = getMongoClient().getDatabase(namespace.getDatabaseName());
         try {
-            RxReactiveStreams.toObservable(database.executeCommand(new Document("drop", namespace.getCollectionName())))
+            RxReactiveStreams.toObservable(database.runCommand(new Document("drop", namespace.getCollectionName())))
                     .timeout(10, SECONDS).toBlocking().toIterable();
         } catch (MongoCommandException e) {
             if (!e.getErrorMessage().startsWith("ns not found")) {
@@ -86,7 +86,7 @@ public final class Fixture {
             return;
         }
         try {
-            RxReactiveStreams.toObservable(getMongoClient().getDatabase(name).executeCommand(new Document("dropDatabase", 1)))
+            RxReactiveStreams.toObservable(getMongoClient().getDatabase(name).runCommand(new Document("dropDatabase", 1)))
                     .timeout(10, SECONDS).toBlocking().toIterable();
         } catch (MongoCommandException e) {
             if (!e.getErrorMessage().startsWith("ns not found")) {
@@ -98,7 +98,7 @@ public final class Fixture {
     public static void drop(final MongoNamespace namespace) throws Throwable {
         try {
             RxReactiveStreams.toObservable(getMongoClient().getDatabase(namespace.getDatabaseName())
-                    .executeCommand(new Document("drop", namespace.getCollectionName()))).timeout(10, SECONDS).toBlocking().toIterable();
+                    .runCommand(new Document("drop", namespace.getCollectionName()))).timeout(10, SECONDS).toBlocking().toIterable();
         } catch (MongoCommandException e) {
             if (!e.getErrorMessage().contains("ns not found")) {
                 throw e;

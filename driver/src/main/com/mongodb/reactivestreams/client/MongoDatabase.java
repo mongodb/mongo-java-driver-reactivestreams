@@ -109,7 +109,7 @@ public interface MongoDatabase {
      * @param command the command to be run
      * @return a publisher containing the command result
      */
-    Publisher<Document> executeCommand(Bson command);
+    Publisher<Document> runCommand(Bson command);
 
     /**
      * Executes command in the context of the current database.
@@ -118,7 +118,7 @@ public interface MongoDatabase {
      * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
      * @return a publisher containing the command result
      */
-    Publisher<Document> executeCommand(Bson command, ReadPreference readPreference);
+    Publisher<Document> runCommand(Bson command, ReadPreference readPreference);
 
     /**
      * Executes command in the context of the current database.
@@ -128,7 +128,7 @@ public interface MongoDatabase {
      * @param <TResult> the type of the class to use instead of {@code Document}.
      * @return a publisher containing the command result
      */
-    <TResult> Publisher<TResult> executeCommand(Bson command, Class<TResult> clazz);
+    <TResult> Publisher<TResult> runCommand(Bson command, Class<TResult> clazz);
 
     /**
      * Executes command in the context of the current database.
@@ -139,7 +139,7 @@ public interface MongoDatabase {
      * @param <TResult>      the type of the class to use instead of {@code Document}.
      * @return a publisher containing the command result
      */
-    <TResult> Publisher<TResult> executeCommand(Bson command, ReadPreference readPreference, Class<TResult> clazz);
+    <TResult> Publisher<TResult> runCommand(Bson command, ReadPreference readPreference, Class<TResult> clazz);
 
     /**
      * Drops this database.
@@ -147,7 +147,7 @@ public interface MongoDatabase {
      * @return a publisher identifying when the database has been dropped
      * @mongodb.driver.manual reference/commands/dropDatabase/#dbcmd.dropDatabase Drop database
      */
-    Publisher<Success> dropDatabase();
+    Publisher<Success> drop();
 
     /**
      * Gets the names of all the collections in this database.

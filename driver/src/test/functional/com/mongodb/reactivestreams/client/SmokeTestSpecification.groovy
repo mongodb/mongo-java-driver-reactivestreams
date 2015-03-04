@@ -35,7 +35,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         def updatedDocument = new Document('_id', 1).append('a', 1)
 
         when:
-        run('clean up old database', mongoClient.getDatabase(databaseName).&dropDatabase) == Success.SUCCESS
+        run('clean up old database', mongoClient.getDatabase(databaseName).&drop) == Success.SUCCESS
         def names = run('get database names', mongoClient.&listDatabaseNames)
 
         then: 'Get Database Names'
@@ -116,7 +116,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         collection = database.getCollection(newCollectionName)
 
         then:
-        run('drop the collection', collection.&dropCollection)[0] == Success.SUCCESS
+        run('drop the collection', collection.&drop)[0] == Success.SUCCESS
 
         then:
         run('there are no indexes', collection.&listIndexes).size == 0

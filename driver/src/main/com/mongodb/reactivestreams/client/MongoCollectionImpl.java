@@ -23,10 +23,10 @@ import com.mongodb.async.SingleResultCallback;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
-import com.mongodb.client.model.CreateIndexOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
 import com.mongodb.client.model.UpdateOptions;
@@ -315,22 +315,22 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
     }
 
     @Override
-    public Publisher<Success> dropCollection() {
+    public Publisher<Success> drop() {
         return new SingleResultPublisher<Success>() {
             @Override
             void execute(final SingleResultCallback<Success> callback) {
-                wrapped.dropCollection(voidToSuccessCallback(callback));
+                wrapped.drop(voidToSuccessCallback(callback));
             }
         };
     }
 
     @Override
     public Publisher<Success> createIndex(final Bson key) {
-        return createIndex(key, new CreateIndexOptions());
+        return createIndex(key, new IndexOptions());
     }
 
     @Override
-    public Publisher<Success> createIndex(final Bson key, final CreateIndexOptions options) {
+    public Publisher<Success> createIndex(final Bson key, final IndexOptions options) {
         return new SingleResultPublisher<Success>() {
             @Override
             void execute(final SingleResultCallback<Success> callback) {

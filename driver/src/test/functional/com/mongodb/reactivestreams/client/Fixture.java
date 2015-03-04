@@ -75,7 +75,7 @@ public final class Fixture {
         MongoDatabase database = getMongoClient().getDatabase(namespace.getDatabaseName());
         try {
             ObservableSubscriber<Document> subscriber = new ObservableSubscriber<Document>();
-            database.executeCommand(new Document("drop", namespace.getCollectionName())).subscribe(subscriber);
+            database.runCommand(new Document("drop", namespace.getCollectionName())).subscribe(subscriber);
             subscriber.await(10, SECONDS);
         } catch (MongoCommandException e) {
             if (!e.getErrorMessage().startsWith("ns not found")) {
@@ -91,7 +91,7 @@ public final class Fixture {
         }
         try {
             ObservableSubscriber<Document> subscriber = new ObservableSubscriber<Document>();
-            getMongoClient().getDatabase(name).executeCommand(new Document("dropDatabase", 1)).subscribe(subscriber);
+            getMongoClient().getDatabase(name).runCommand(new Document("dropDatabase", 1)).subscribe(subscriber);
             subscriber.await(10, SECONDS);
         } catch (MongoCommandException e) {
             if (!e.getErrorMessage().startsWith("ns not found")) {
@@ -104,7 +104,7 @@ public final class Fixture {
         try {
             ObservableSubscriber<Document> subscriber = new ObservableSubscriber<Document>();
             getMongoClient().getDatabase(namespace.getDatabaseName())
-                    .executeCommand(new Document("drop", namespace.getCollectionName()))
+                    .runCommand(new Document("drop", namespace.getCollectionName()))
                     .subscribe(subscriber);
             subscriber.await(20, SECONDS);
         } catch (MongoCommandException e) {

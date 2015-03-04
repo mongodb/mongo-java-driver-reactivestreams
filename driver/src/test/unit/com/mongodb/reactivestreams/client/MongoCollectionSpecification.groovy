@@ -22,10 +22,10 @@ import com.mongodb.WriteConcern
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
 import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.CountOptions
-import com.mongodb.client.model.CreateIndexOptions
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.FindOneAndUpdateOptions
+import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneModel
 import com.mongodb.client.model.RenameCollectionOptions
@@ -528,24 +528,24 @@ class MongoCollectionSpecification extends Specification {
         1 * wrapped.findOneAndUpdate(filter, update, options, _)
     }
 
-    def 'should use the underlying dropCollection'() {
+    def 'should use the underlying drop'() {
         when:
-        mongoCollection.dropCollection()
+        mongoCollection.drop()
 
         then: 'only executed when requested'
-        0 * wrapped.dropCollection(_)
+        0 * wrapped.drop(_)
 
         when:
-        mongoCollection.dropCollection().subscribe(subscriber)
+        mongoCollection.drop().subscribe(subscriber)
 
         then:
-        1 * wrapped.dropCollection(_)
+        1 * wrapped.drop(_)
     }
 
     def 'should use the underlying createIndex'() {
         given:
         def index = new Document('index', 1)
-        def options = new CreateIndexOptions()
+        def options = new IndexOptions()
 
         when:
         mongoCollection.createIndex(index)

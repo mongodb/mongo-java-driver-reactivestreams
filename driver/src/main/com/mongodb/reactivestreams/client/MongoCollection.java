@@ -23,10 +23,10 @@ import com.mongodb.annotations.ThreadSafe;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
-import com.mongodb.client.model.CreateIndexOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
 import com.mongodb.client.model.UpdateOptions;
@@ -437,7 +437,7 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/command/drop/ Drop Collection
      */
-    Publisher<Success> dropCollection();
+    Publisher<Success> drop();
 
     /**
      * Creates an index.
@@ -456,7 +456,7 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Success> createIndex(Bson key, CreateIndexOptions options);
+    Publisher<Success> createIndex(Bson key, IndexOptions options);
 
     /**
      * Get all the indexes in this collection.
