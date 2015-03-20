@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
@@ -335,6 +336,16 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
             @Override
             void execute(final SingleResultCallback<Success> callback) {
                 wrapped.createIndex(key, options, voidToSuccessCallback(callback));
+            }
+        };
+    }
+
+    @Override
+    public Publisher<Success> createIndexes(final List<IndexModel> indexes) {
+        return new SingleResultPublisher<Success>() {
+            @Override
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.createIndexes(indexes, voidToSuccessCallback(callback));
             }
         };
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.async.client.MongoClientOptions;
+import com.mongodb.async.client.MongoClientSettings;
 
 
 /**
@@ -31,7 +31,7 @@ public final class MongoClients {
      * @param settings the settings
      * @return the client
      */
-    public static MongoClient create(final MongoClientOptions settings) {
+    public static MongoClient create(final MongoClientSettings settings) {
         return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(settings));
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,12 @@ class MongoClientSpecification extends Specification {
         wrapped == local
     }
 
-    def 'should call the underlying getOptions'(){
+    def 'should call the underlying getSettings'(){
         when:
-        mongoClient.getOptions()
+        mongoClient.getSettings()
 
         then:
-        1 * wrapped.getOptions()
+        1 * wrapped.getSettings()
     }
 
     def 'should call the underlying listDatabases'() {

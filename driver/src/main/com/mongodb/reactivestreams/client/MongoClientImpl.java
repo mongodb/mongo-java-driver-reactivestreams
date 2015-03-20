@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.async.client.MongoClientOptions;
+import com.mongodb.async.client.MongoClientSettings;
 import org.bson.Document;
 import org.reactivestreams.Publisher;
 
@@ -40,8 +40,8 @@ class MongoClientImpl implements MongoClient {
     }
 
     @Override
-    public MongoClientOptions getOptions() {
-        return wrapped.getOptions();
+    public MongoClientSettings getSettings() {
+        return wrapped.getSettings();
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
@@ -457,6 +458,17 @@ public interface MongoCollection<TDocument> {
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
     Publisher<Success> createIndex(Bson key, IndexOptions options);
+
+
+    /**
+     * Create multiple indexes.
+     *
+     * @param indexes the list of indexes
+     * @mongodb.driver.manual reference/command/createIndexes Create indexes
+     * @return a publisher with a single element indicating when the operation has completed
+     * @mongodb.server.release 2.6
+     */
+    Publisher<Success> createIndexes(List<IndexModel> indexes);
 
     /**
      * Get all the indexes in this collection.
