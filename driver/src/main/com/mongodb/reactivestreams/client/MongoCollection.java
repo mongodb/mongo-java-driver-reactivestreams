@@ -20,6 +20,7 @@ import com.mongodb.MongoNamespace;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
@@ -496,6 +497,15 @@ public interface MongoCollection<TDocument> {
      * @mongodb.driver.manual reference/command/dropIndexes/ Drop Indexes
      */
     Publisher<Success> dropIndex(String indexName);
+
+    /**
+     * Drops the index given the keys used to create it.
+     *
+     * @param keys the keys of the index to remove
+     * @return a publisher with a single element indicating when the operation has completed
+     * @mongodb.driver.manual reference/command/dropIndexes/ Drop indexes
+     */
+    Publisher<Success> dropIndex(Bson keys);
 
     /**
      * Drop all the indexes on this collection, except for the default on _id.

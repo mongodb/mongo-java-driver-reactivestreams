@@ -371,6 +371,16 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
     }
 
     @Override
+    public Publisher<Success> dropIndex(final Bson keys) {
+        return new SingleResultPublisher<Success>() {
+            @Override
+            void execute(final SingleResultCallback<Success> callback) {
+                wrapped.dropIndex(keys, voidToSuccessCallback(callback));
+            }
+        };
+    }
+
+    @Override
     public Publisher<Success> dropIndexes() {
         return dropIndex("*");
     }

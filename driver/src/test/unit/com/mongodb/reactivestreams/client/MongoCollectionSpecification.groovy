@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 package com.mongodb.reactivestreams.client
-
 import com.mongodb.MongoNamespace
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
@@ -25,6 +24,7 @@ import com.mongodb.client.model.CountOptions
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.FindOneAndUpdateOptions
+import com.mongodb.client.model.IndexModel
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneModel
@@ -566,6 +566,23 @@ class MongoCollectionSpecification extends Specification {
         1 * wrapped.createIndex(index, options, _)
     }
 
+    def 'should use the underlying createIndexes'() {
+        given:
+        def indexes = [new IndexModel(new Document('index', 1))]
+
+        when:
+        mongoCollection.createIndexes(indexes)
+
+        then: 'only executed when requested'
+        0 * wrapped.createIndexes(_, _)
+
+        when:
+        mongoCollection.createIndexes(indexes).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndexes(indexes, _)
+    }
+
     def 'should use the underlying listIndexes'() {
         def wrapped = Stub(WrappedMongoCollection) {
             listIndexes(_) >> Stub(com.mongodb.async.client.ListIndexesIterable)
@@ -601,6 +618,13 @@ class MongoCollectionSpecification extends Specification {
 
         then:
         1 * wrapped.dropIndex(index, _)
+
+        when:
+        index = new Document('index', 1)
+        mongoCollection.dropIndex(index).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(_, _)
 
         when:
         mongoCollection.dropIndexes().subscribe(subscriber)
