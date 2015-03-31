@@ -326,26 +326,26 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
     }
 
     @Override
-    public Publisher<Success> createIndex(final Bson key) {
+    public Publisher<String> createIndex(final Bson key) {
         return createIndex(key, new IndexOptions());
     }
 
     @Override
-    public Publisher<Success> createIndex(final Bson key, final IndexOptions options) {
-        return new SingleResultPublisher<Success>() {
+    public Publisher<String> createIndex(final Bson key, final IndexOptions options) {
+        return new SingleResultPublisher<String>() {
             @Override
-            void execute(final SingleResultCallback<Success> callback) {
-                wrapped.createIndex(key, options, voidToSuccessCallback(callback));
+            void execute(final SingleResultCallback<String> callback) {
+                wrapped.createIndex(key, options, callback);
             }
         };
     }
 
     @Override
-    public Publisher<Success> createIndexes(final List<IndexModel> indexes) {
-        return new SingleResultPublisher<Success>() {
+    public Publisher<String> createIndexes(final List<IndexModel> indexes) {
+        return new SingleResultListPublisher<String>() {
             @Override
-            void execute(final SingleResultCallback<Success> callback) {
-                wrapped.createIndexes(indexes, voidToSuccessCallback(callback));
+            void execute(final SingleResultCallback<List<String>> callback) {
+                wrapped.createIndexes(indexes, callback);
             }
         };
     }

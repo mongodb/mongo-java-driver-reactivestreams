@@ -15,6 +15,7 @@
  */
 
 package com.mongodb.reactivestreams.client
+
 import com.mongodb.MongoNamespace
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern

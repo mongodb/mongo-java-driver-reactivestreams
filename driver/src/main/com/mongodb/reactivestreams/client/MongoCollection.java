@@ -20,7 +20,6 @@ import com.mongodb.MongoNamespace;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
@@ -448,7 +447,7 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Success> createIndex(Bson key);
+    Publisher<String> createIndex(Bson key);
 
     /**
      * Creates an index.
@@ -458,7 +457,7 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Publisher<Success> createIndex(Bson key, IndexOptions options);
+    Publisher<String> createIndex(Bson key, IndexOptions options);
 
 
     /**
@@ -469,7 +468,7 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating when the operation has completed
      * @mongodb.server.release 2.6
      */
-    Publisher<Success> createIndexes(List<IndexModel> indexes);
+    Publisher<String> createIndexes(List<IndexModel> indexes);
 
     /**
      * Get all the indexes in this collection.

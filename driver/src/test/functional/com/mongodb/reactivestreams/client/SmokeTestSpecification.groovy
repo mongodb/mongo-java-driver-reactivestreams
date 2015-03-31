@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.client.model.IndexModel
 import com.mongodb.diagnostics.logging.Loggers
 import org.bson.Document
 
@@ -89,13 +90,28 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('The count is zero', collection.&count)[0] == 0
 
         then:
-        run('create an index', collection.&createIndex, new Document('test', 1))[0] == Success.SUCCESS
+        run('create an index', collection.&createIndex, new Document('test', 1))[0] == 'test_1'
 
         then:
         def indexNames = run('has the newly created index', collection.&listIndexes)*.name
 
         then:
         indexNames.containsAll('_id_', 'test_1')
+
+        then:
+        run('create multiple indexes', collection.&createIndexes, [new IndexModel(new Document('multi', 1))])[0] == 'multi_1'
+
+        then:
+        def indexNamesUpdated = run('has the newly created index', collection.&listIndexes)*.name
+
+        then:
+        indexNamesUpdated.containsAll('_id_', 'test_1', 'multi_1')
+
+        then:
+        run('drop the index', collection.&dropIndex, 'multi_1')[0] == Success.SUCCESS
+
+        then:
+        run('has a single index left "_id" ', collection.&listIndexes).size == 2
 
         then:
         run('drop the index', collection.&dropIndex, 'test_1')[0] == Success.SUCCESS
