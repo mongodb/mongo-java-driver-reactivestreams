@@ -8,4 +8,5 @@ This project depends on the Mongo Java Driver new core driver (3.0.0) and the re
 so should be considered unstable until updated to released versions.
 
 [![Build Status](https://travis-ci.org/rozza/mongo-java-driver-reactivestreams.svg?branch=master)]
-(https://travis-ci.org/rozza/mongo-java-driver-reactivestreams)
+(https://travis-ci.org/rozza/mongo-java-driver-reactivestreams)  | [![Build Status](https://jenkins.10gen.com/job/mongo-java-driver-reactivestreams/badge/icon)](https://jenkins.10gen.com/job/mongo-java-driver-reactivestreams/)
+
