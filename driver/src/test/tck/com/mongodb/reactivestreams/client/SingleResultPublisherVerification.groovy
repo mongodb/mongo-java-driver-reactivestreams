@@ -43,7 +43,7 @@ class SingleResultPublisherVerification extends PublisherVerification<Document> 
     }
 
     @Override
-    Publisher<Document> createErrorStatePublisher() {
+    Publisher<Document> createFailedPublisher() {
         null
     }
 

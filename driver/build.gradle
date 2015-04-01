@@ -21,9 +21,9 @@ archivesBaseName = 'mongodb-driver-reactivestreams'
 
 dependencies {
     compile 'org.mongodb:mongodb-driver-async:3.0.0'
-    compile 'org.reactivestreams:reactive-streams:1.0.0.RC3'
+    compile 'org.reactivestreams:reactive-streams:1.0.0.RC4'
 
-    testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0.RC3'
+    testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0.RC4'
 }
 
 task uberJar(type: Jar) {

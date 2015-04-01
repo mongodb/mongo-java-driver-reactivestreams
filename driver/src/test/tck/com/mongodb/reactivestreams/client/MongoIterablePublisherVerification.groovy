@@ -103,7 +103,7 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
     }
 
     @Override
-    Publisher<Integer> createErrorStatePublisher() {
+    Publisher<Document> createFailedPublisher() {
         null
     }
 
