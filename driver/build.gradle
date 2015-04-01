@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB, Inc.
+ * Copyright 2014-2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ description = "A Reactive Streams implementation of the MongoDB Java driver"
 archivesBaseName = 'mongodb-driver-reactivestreams'
 
 dependencies {
-    compile 'org.mongodb:mongodb-driver-async:3.0.0-SNAPSHOT'
+    compile 'org.mongodb:mongodb-driver-async:3.0.0'
     compile 'org.reactivestreams:reactive-streams:1.0.0.RC3'
 
     testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0.RC3'
