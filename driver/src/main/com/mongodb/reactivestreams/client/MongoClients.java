@@ -25,6 +25,16 @@ import com.mongodb.async.client.MongoClientSettings;
  *
  */
 public final class MongoClients {
+
+    /**
+     * Creates a new client with the default connection string "mongodb://localhost".
+     *
+     * @return the client
+     */
+    public static MongoClient create() {
+        return create(new ConnectionString("mongodb://localhost"));
+    }
+
     /**
      * Create a new client with the given client settings.
      *
@@ -33,6 +43,16 @@ public final class MongoClients {
      */
     public static MongoClient create(final MongoClientSettings settings) {
         return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(settings));
+    }
+
+    /**
+     * Create a new client with the given connection string.
+     *
+     * @param connectionString the connection
+     * @return the client
+     */
+    public static MongoClient create(final String connectionString) {
+        return create(new ConnectionString(connectionString));
     }
 
     /**
