@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/</loc>
+    <lastmod>2015-10-08T09:56:14+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/changelog/</loc>
+    <lastmod>2015-10-08T09:56:14+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/getting-started/installation-guide/</loc>
+    <lastmod>2015-10-08T09:30:56+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/reference/</loc>
+    <lastmod>2015-03-18T16:56:14+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/issues-help/</loc>
+    <lastmod>2015-03-18T16:56:14+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/getting-started/quick-tour-admin/</loc>
+    <lastmod>2015-03-17T15:36:56+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/getting-started/</loc>
+    <lastmod>2015-03-17T15:36:56+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/getting-started/quick-tour-primer/</loc>
+    <lastmod>2015-03-17T15:36:56+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/</loc>
+    <lastmod>2015-03-17T15:36:56+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/mongo-java-driver-reactivestreams/1.8/getting-started/quick-tour/</loc>
+    <lastmod>2015-03-17T15:36:56+00:00</lastmod>
+  </url>
+  
+</urlset>
