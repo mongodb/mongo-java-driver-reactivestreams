@@ -1,0 +1,8 @@
+baseurl = "/mongo-java-driver-reactivestreams/1.0"
+languageCode = "en-us"
+title = "Reactive Streams Java Driver"
+theme = "mongodb"
+canonifyurls = false
+
+[blackfriday]
+  plainIdAnchors = true

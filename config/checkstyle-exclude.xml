@@ -22,6 +22,11 @@
 
 <suppressions>
 
+    <suppress checks="Regexp" files="QuickTour"/>
+    <suppress checks="Regexp" files="QuickTourAdmin"/>
+    <suppress checks="Regexp" files="SubscriberHelpers"/>
+    <suppress checks="Javadoc*" files="SubscriberHelpers"/>
+
     <!--Do not check test classes -->
     <suppress checks="Javadoc*" files=".*test.*"/>
 </suppressions>

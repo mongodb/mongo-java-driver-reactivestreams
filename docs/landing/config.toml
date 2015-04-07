@@ -1,0 +1,6 @@
+baseurl = "/mongo-java-driver-reactivestreams//"
+languageCode = "en-us"
+title = "MongoDB Java Driver"
+canonifyurls = false
+
+githubRepo = "mongo-java-driver-reactivestreams"

@@ -1,0 +1,7 @@
+githubUser = "rozza"
+githubRepo = "mongo-java-driver-reactivestreams"
+githubBranch = "master"
+currentVersion = "1.0"
+highlightTheme = "idea.css"
+apiUrl = "/javadoc"
+coreApiUrl = "http://api.mongodb.org/java/3.0/"
