@@ -64,10 +64,10 @@ class DistinctPublisherSpecification extends Specification {
         def executor = new TestOperationExecutor([null, null]);
         def wrapped = new DistinctIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
                 executor, 'field')
-        def disinctPublisher = new DistinctPublisherImpl(wrapped)
+        def distinctPublisher = new DistinctPublisherImpl(wrapped)
 
         when: 'default input should be as expected'
-        disinctPublisher.subscribe(subscriber)
+        distinctPublisher.subscribe(subscriber)
 
         def operation = executor.getReadOperation() as DistinctOperation<Document>
         def readPreference = executor.getReadPreference()
@@ -77,7 +77,7 @@ class DistinctPublisherSpecification extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        disinctPublisher.filter(new Document('field', 1)).maxTime(999, MILLISECONDS).subscribe(subscriber)
+        distinctPublisher.filter(new Document('field', 1)).maxTime(999, MILLISECONDS).subscribe(subscriber)
 
         operation = executor.getReadOperation() as DistinctOperation<Document>
 
