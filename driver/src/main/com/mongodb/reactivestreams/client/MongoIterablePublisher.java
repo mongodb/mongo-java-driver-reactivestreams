@@ -63,6 +63,8 @@ class MongoIterablePublisher<TResult> implements Publisher<TResult> {
                     mongoIterable.batchSize(2);
                 } else if (n < Integer.MAX_VALUE) {
                     mongoIterable.batchSize((int) n);
+                } else {
+                    mongoIterable.batchSize(Integer.MAX_VALUE);
                 }
                 mongoIterable.batchCursor(new SingleResultCallback<AsyncBatchCursor<TResult>>() {
                     @Override
