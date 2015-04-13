@@ -156,12 +156,13 @@ publisher.subscribe(new Subscriber<Success>() {
     }
 });
 ```
-{{% /note %}}
-
 
 Once the document has been inserted the `onNext` method will be called and it will
 print "Inserted!" followed by the `onComplete` method which will print "Completed".  
 If there was an error for any reason the `onError` method would print "Failed".
+
+{{% /note %}}
+
 
 ## Add Multiple Documents
 

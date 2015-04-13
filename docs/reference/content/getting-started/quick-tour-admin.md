@@ -107,9 +107,7 @@ Use the `listIndexes()` method to get a list of indexes. The following uses the
 `PrintDocumentSubscriber` to print the json version of each index document:
 
 ```java
-subscriber = new PrintDocumentSubscriber()
 collection.listIndexes().subscribe(new PrintDocumentSubscriber());
-subscriber.await();
 ```
 
 The example should print the following indexes:

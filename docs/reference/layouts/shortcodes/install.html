@@ -1,4 +1,4 @@
-{{ $artifactId := .Get "artifactId"}}{{ $version := .Get "version"}}
+{{ $artifactId := .Get "artifactId"}}{{ $version := .Get "version"}}{{ $mongoDriverVersion := .Get "mongoDriverVersion"}}{{ $reactiveStreamsVersion := .Get "reactiveStreamsVersion"}}
 <section class="maven">
 <pre><code class="ini">
 &lt;dependencies&gt;
@@ -23,5 +23,13 @@
 <p class="small">You can also download the jars
   <a href="https://oss.sonatype.org/content/repositories/releases/org/mongodb/{{$artifactId}}/{{$version}}" target="_blank">directly</a>
   from sonatype.</a>
+</p>
+<p>
+    <strong>Note:</strong> <code>{{$artifactId}}</code> requires the following dependencies:
+    <a href="https://oss.sonatype.org/content/repositories/releases/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank"><code>reactive-streams</code></a>,
+    <a href="https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/{{$mongoDriverVersion}}" target="_blank"><code>bson</code></a>,
+    <a href="https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/{{$mongoDriverVersion}}" target="_blank"><code>mongodb-driver-core</code></a>
+    and
+    <a href="https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/{{$mongoDriverVersion}}" target="_blank"><code>mongodb-driver-async</code></a>.
 </p>
 </section>
