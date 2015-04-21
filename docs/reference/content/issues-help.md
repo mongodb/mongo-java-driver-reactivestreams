@@ -20,10 +20,10 @@ If you think you’ve found a bug or want to see a new feature in the Java drive
 please open a case in our issue management tool, JIRA:
 
 - [Create an account and login](https://jira.mongodb.org).
-- Navigate to [the JAVA project](https://jira.mongodb.org/browse/JAVA).
+- Navigate to [the JAVARS project](https://jira.mongodb.org/browse/JAVARS).
 - Click **Create Issue** - Please provide as much information as possible about the issue type and how to reproduce it.
 
-Bug reports in JIRA for the Java driver and the Core Server (i.e. SERVER) project are **public**.
+Bug reports in JIRA for the Java Reactive Streams driver and the Core Server (i.e. SERVER) project are **public**.
 
 If you’ve identified a security vulnerability in a driver or any other
 MongoDB project, please report it according to the [instructions here](http://docs.mongodb.org/manual/tutorial/create-a-vulnerability-report).
@@ -38,7 +38,7 @@ a the gradle checks.
 To get started check out the source and work on a branch:
 
 ```bash
-$ git clone https://github.com/rozza/mongo-java-driver-reactivestreams.git
+$ git clone https://github.com/mongodb/mongo-java-driver-reactivestreams.git
 $ cd mongo-java-driver
 $ git checkout -b myNewFeature
 ```
