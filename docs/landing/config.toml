@@ -1,4 +1,4 @@
-baseurl = "/mongo-java-driver-reactivestreams//"
+baseurl = "/mongo-java-driver-reactivestreams/"
 languageCode = "en-us"
 title = "MongoDB Java Driver"
 canonifyurls = false

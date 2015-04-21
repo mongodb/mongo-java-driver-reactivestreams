@@ -50,3 +50,11 @@ task tckTest(type: Test) {
 
     maxParallelForks = 1
 }
+
+modifyPom {
+    project {
+        name 'MongoDB Reactive Streams Driver'
+        description 'The MongoDB Reactive Streams Driver'
+        url 'http://www.mongodb.org'
+    }
+}
