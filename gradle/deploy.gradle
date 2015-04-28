@@ -25,12 +25,12 @@ configure(subprojects - project(':util') - project(':examples') - project(':exam
     modifyPom {
         project {
 
-            url 'https://github.com/rozza/mongo-java-driver-reactivestreams'
+            url 'https://github.com/mongodb/mongo-java-driver-reactivestreams'
 
             scm {
-                url 'https://github.com/rozza/mongo-java-driver-reactivestreams'
-                connection 'scm:https://github.com/rozza/mongo-java-driver-reactivestreams.git'
-                developerConnection 'scm:git@github.com:rozza/mongo-java-driver-reactivestreams.git'
+                url 'https://github.com/mongodb/mongo-java-driver-reactivestreams'
+                connection 'scm:https://github.com/mongodb/mongo-java-driver-reactivestreams.git'
+                developerConnection 'scm:git@github.com:mongodb/mongo-java-driver-reactivestreams.git'
             }
 
             licenses {
