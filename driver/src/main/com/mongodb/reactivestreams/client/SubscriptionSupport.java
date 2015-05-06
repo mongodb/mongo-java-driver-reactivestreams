@@ -237,8 +237,8 @@ abstract class SubscriptionSupport<TResult> implements Subscription {
         return this.getClass().getSimpleName();
     }
     protected void log(final String msg) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getName() + ": " + msg);
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(getName() + ": " + msg);
         }
     }
 

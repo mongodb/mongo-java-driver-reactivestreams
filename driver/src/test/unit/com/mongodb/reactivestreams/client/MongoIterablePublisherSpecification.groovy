@@ -120,9 +120,8 @@ class MongoIterablePublisherSpecification extends Specification {
         def cursor = {
             Stub(AsyncBatchCursor) {
                 next(_) >> {
-                    it[0].onResult(cursorResults.remove(0), null)
+                    it[0].onResult(cursorResults.isEmpty() ? null : cursorResults.remove(0), null)
                 }
-                isClosed() >> { cursorResults.isEmpty() }
             }
         }
         def subscriber = new Fixture.ObservableSubscriber()

@@ -82,7 +82,7 @@ class MongoIterablePublisherVerification extends PublisherVerification<Document>
                                 cachedRange = start..end
                             }
                             totalCount = end
-                            pool.submit { batchCallback.onResult(cachedRange, null) }
+                            batchCallback.onResult(cachedRange, null)
                         }
                     }
 
