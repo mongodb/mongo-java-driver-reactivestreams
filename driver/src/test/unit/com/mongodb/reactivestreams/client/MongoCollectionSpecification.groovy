@@ -53,8 +53,6 @@ class MongoCollectionSpecification extends Specification {
         given:
         def wrapped = WrappedMongoCollection.methods*.name.sort()
         def local = MongoCollection.methods*.name.sort()
-        // Extra distinct not added until 3.1
-        local.remove('distinct')
 
         expect:
         wrapped == local

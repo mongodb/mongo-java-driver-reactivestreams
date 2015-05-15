@@ -63,7 +63,7 @@ class DistinctPublisherSpecification extends Specification {
 
         def executor = new TestOperationExecutor([null, null]);
         def wrapped = new DistinctIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
-                executor, 'field')
+                executor, 'field', new BsonDocument())
         def distinctPublisher = new DistinctPublisherImpl(wrapped)
 
         when: 'default input should be as expected'
@@ -73,7 +73,7 @@ class DistinctPublisherSpecification extends Specification {
         def readPreference = executor.getReadPreference()
 
         then:
-        expect operation, isTheSameAs(new DistinctOperation<Document>(namespace, 'field', new DocumentCodec()));
+        expect operation, isTheSameAs(new DistinctOperation<Document>(namespace, 'field', new DocumentCodec()).filter(new BsonDocument()));
         readPreference == secondary()
 
         when: 'overriding initial options'

@@ -21,6 +21,7 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.async.client.Observables.observe;
 
 final class ListIndexesPublisherImpl<TResult> implements ListIndexesPublisher<TResult> {
 
@@ -39,7 +40,7 @@ final class ListIndexesPublisherImpl<TResult> implements ListIndexesPublisher<TR
 
     @Override
     public void subscribe(final Subscriber<? super TResult> s) {
-        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
+        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }
 }
 

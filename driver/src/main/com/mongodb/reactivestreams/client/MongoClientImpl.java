@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.reactivestreams.Publisher;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.async.client.Observables.observe;
 
 class MongoClientImpl implements MongoClient {
     private final com.mongodb.async.client.MongoClient wrapped;
@@ -46,7 +47,7 @@ class MongoClientImpl implements MongoClient {
 
     @Override
     public Publisher<String> listDatabaseNames() {
-        return new MongoIterablePublisher<String>(wrapped.listDatabaseNames());
+        return new ObservableToPublisher<String>(observe(wrapped.listDatabaseNames()));
     }
 
     @Override

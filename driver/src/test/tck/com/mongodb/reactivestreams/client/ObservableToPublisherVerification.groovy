@@ -16,30 +16,35 @@
 
 package com.mongodb.reactivestreams.client
 
+import com.mongodb.Block
 import com.mongodb.async.SingleResultCallback
 import org.bson.Document
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.PublisherVerification
 import org.reactivestreams.tck.TestEnvironment
 
-class SingleResultPublisherVerification extends PublisherVerification<Document> {
+import static com.mongodb.async.client.Observables.observeAndFlatten
 
-    public static final long DEFAULT_TIMEOUT_MILLIS = 10000L
+@SuppressWarnings(['CloseWithoutCloseable', 'UnusedMethodParameter', 'EmptyMethod'])
+class ObservableToPublisherVerification extends PublisherVerification<Integer> {
+
+    public static final long DEFAULT_TIMEOUT_MILLIS = 5000L
     public static final long PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS = 1000L
 
-    SingleResultPublisherVerification() {
+    ObservableToPublisherVerification() {
         super(new TestEnvironment(DEFAULT_TIMEOUT_MILLIS), PUBLISHER_REFERENCE_CLEANUP_TIMEOUT_MILLIS)
     }
 
     @Override
     Publisher<Document> createPublisher(long elements) {
         assert (elements <= maxElementsFromPublisher())
-        new SingleResultPublisher<Integer>() {
+
+        new ObservableToPublisher<Integer>(observeAndFlatten(new Block<SingleResultCallback<List<Integer>>>(){
             @Override
-            void execute(final SingleResultCallback<Integer> callback) {
-                callback.onResult(1, null)
+            void apply(final SingleResultCallback<List<Integer>> callback) {
+                callback.onResult((0..<elements), null)
             }
-        }
+        }))
     }
 
     @Override
@@ -49,6 +54,6 @@ class SingleResultPublisherVerification extends PublisherVerification<Document> 
 
     @Override
     long maxElementsFromPublisher() {
-        1
+        100
     }
 }

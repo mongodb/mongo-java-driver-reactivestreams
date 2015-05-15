@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.Block;
 import com.mongodb.async.SingleResultCallback;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -23,6 +24,7 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
 class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
@@ -54,16 +56,16 @@ class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
 
     @Override
     public Publisher<Success> toCollection() {
-        return new SingleResultPublisher<Success>() {
+        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>(){
             @Override
-            void execute(final SingleResultCallback<Success> callback) {
+            public void apply(final SingleResultCallback<Success> callback) {
                 wrapped.toCollection(voidToSuccessCallback(callback));
             }
-        };
+        }));
     }
 
     @Override
     public void subscribe(final Subscriber<? super TResult> s) {
-        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
+        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }
 }

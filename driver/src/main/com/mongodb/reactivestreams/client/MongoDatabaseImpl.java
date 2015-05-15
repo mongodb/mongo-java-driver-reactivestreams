@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.Block;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
@@ -26,6 +27,7 @@ import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
 
 class MongoDatabaseImpl implements MongoDatabase {
@@ -93,38 +95,38 @@ class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public <TResult> Publisher<TResult> runCommand(final Bson command, final Class<TResult> clazz) {
-        return new SingleResultPublisher<TResult>() {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
             @Override
-            void execute(final SingleResultCallback<TResult> callback) {
+            public void apply(final SingleResultCallback<TResult> callback) {
                 wrapped.runCommand(command, clazz, callback);
             }
-        };
+        }));
     }
 
     @Override
     public <TResult> Publisher<TResult> runCommand(final Bson command, final ReadPreference readPreference,
-                                                       final Class<TResult> clazz) {
-        return new SingleResultPublisher<TResult>() {
+                                                   final Class<TResult> clazz) {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
             @Override
-            void execute(final SingleResultCallback<TResult> callback) {
+            public void apply(final SingleResultCallback<TResult> callback) {
                 wrapped.runCommand(command, readPreference, clazz, callback);
             }
-        };
+        }));
     }
 
     @Override
     public Publisher<Success> drop() {
-        return new SingleResultPublisher<Success>() {
+        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
-            void execute(final SingleResultCallback<Success> callback) {
+            public void apply(final SingleResultCallback<Success> callback) {
                 wrapped.drop(voidToSuccessCallback(callback));
             }
-        };
+        }));
     }
 
     @Override
     public Publisher<String> listCollectionNames() {
-        return new MongoIterablePublisher<String>(wrapped.listCollectionNames());
+        return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames()));
     }
 
     @Override
@@ -144,11 +146,11 @@ class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public Publisher<Success> createCollection(final String collectionName, final CreateCollectionOptions options) {
-        return new SingleResultPublisher<Success>() {
+        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
-            void execute(final SingleResultCallback<Success> callback) {
+            public void apply(final SingleResultCallback<Success> callback) {
                 wrapped.createCollection(collectionName, options, voidToSuccessCallback(callback));
             }
-        };
+        }));
     }
 }

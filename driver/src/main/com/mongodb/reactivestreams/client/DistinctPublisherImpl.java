@@ -22,6 +22,7 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.async.client.Observables.observe;
 
 
 class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult> {
@@ -46,6 +47,6 @@ class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult> {
 
     @Override
     public void subscribe(final Subscriber<? super TResult> s) {
-        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
+        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }
 }

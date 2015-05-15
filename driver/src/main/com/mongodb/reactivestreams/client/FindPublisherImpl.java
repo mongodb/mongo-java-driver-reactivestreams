@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.Block;
 import com.mongodb.CursorType;
 import com.mongodb.async.SingleResultCallback;
 import org.bson.conversions.Bson;
@@ -25,6 +26,7 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
+import static com.mongodb.async.client.Observables.observe;
 
 class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
 
@@ -36,12 +38,12 @@ class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
 
     @Override
     public Publisher<TResult> first() {
-        return new SingleResultPublisher<TResult>() {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>(){
             @Override
-            void execute(final SingleResultCallback<TResult> callback) {
+            public void apply(final SingleResultCallback<TResult> callback) {
                 wrapped.first(callback);
             }
-        };
+        }));
     }
 
     @Override
@@ -112,6 +114,6 @@ class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
 
     @Override
     public void subscribe(final Subscriber<? super TResult> s) {
-        new MongoIterablePublisher<TResult>(wrapped).subscribe(s);
+        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }
 }
