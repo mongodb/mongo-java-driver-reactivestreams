@@ -26,15 +26,21 @@ function initializeJS() {
 };
 
 var toggleDownload = function() {
-  downloadLink = 'https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-reactivestreams';
-  prefix = $('.distroPicker').prop('checked') ? "#maven" : "#gradle"
+  activeDriver = 'mongodb-driver-reactivestreams';
+  downloadLink = 'https://oss.sonatype.org/content/repositories/releases/org/mongodb/';
+  downloadSnapshotLink = 'https://oss.sonatype.org/content/repositories/snapshots/org/mongodb/';
+  prefix = $('.distroPicker').prop('checked') ? "#maven" : "#gradle";
   releaseVersion = $('.releasePicker').selectpicker().val();
   activeVersion = $('.releasePicker option:selected').text();
 
   $('.releasePicker').selectpicker('refresh');
 
   activeSample = prefix + "-" + releaseVersion;
-  activeLink = downloadLink +'/' + activeVersion + '/';
+  if (activeVersion.indexOf("SNAPSHOT") > -1) {
+    activeLink = downloadSnapshotLink + activeDriver + '/' + activeVersion + '/';
+  } else {
+    activeLink = downloadLink + activeDriver + '/' + activeVersion + '/';
+  }
 
   $('.download').addClass('hidden');
   $(activeSample).removeClass('hidden');
