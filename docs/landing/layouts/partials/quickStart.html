@@ -24,7 +24,7 @@
     {{ with $.Site.Data.releases.versions }}
       <select class="releasePicker">
         {{ range . }}
-        <option value="{{$.Scratch.Get "qs.pos"}}">{{.version}}</option>
+        <option value="{{$.Scratch.Get "qs.pos"}}" {{ if eq .status "current"}}selected{{end}}>{{.version}}</option>
         {{ $.Scratch.Add "qs.pos" 1 }}
         {{ end }}
       </select>
@@ -54,7 +54,7 @@
       {{ $currentVersion := . }}
       {{ $firstDriver := $.Scratch.Get "qs.firstDriver"}}
       {{ $versionPos := $.Scratch.Get "qs.versionPos" }}
-<div id="maven-{{$versionPos}}" class="download{{ if eq $firstDriver false}} hidden{{end}}">
+<div id="maven-{{$versionPos}}" class="download{{if or (ne $firstDriver true) (ne $currentVersion.status "current") }} hidden{{end}}">
 <pre><code>
 &lt;dependencies&gt;
     &lt;dependency&gt;
@@ -74,7 +74,9 @@
 
 </code></pre>
 </div>
-          {{ $.Scratch.Set "qs.firstDriver" false }}
+      {{ if eq $currentVersion.status "current" }}
+        {{ $.Scratch.Set "qs.firstDriver" false }}
+      {{end}}
           {{ $.Scratch.Add "qs.versionPos" 1 }}
           {{ end }}
       {{ end }}
