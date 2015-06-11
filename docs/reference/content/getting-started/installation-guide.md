@@ -17,4 +17,4 @@ The recommended way to get started using one of the drivers in your project is w
 ## MongoDB Reactive Streams Driver
 The Reactive Streams implementation for asynchronous stream processing with non-blocking back pressure.
 
-{{< install artifactId="mongodb-driver-reactivestreams" version="1.0.0" mongoDriverVersion="3.0.1" reactiveStreamsVerison="1.0.0">}}
+{{< install artifactId="mongodb-driver-reactivestreams" version="1.0.1" mongoDriverVersion="3.0.2" reactiveStreamsVerison="1.0.0">}}
