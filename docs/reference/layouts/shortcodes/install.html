@@ -37,18 +37,16 @@
 </section>
 <section class="downloadInfo small">
     <p>You can also download the jars
-        <a href="{{$ossUrl}}/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank">directly</a>
+        <a href="{{$ossUrl}}/org/mongodb/{{$artifactId}}" target="_blank">directly</a>
         from sonatype.</a></p>
-    {{ with $dependencies}}
     <p>
         <strong>Note:</strong> <code>{{$artifactId}}</code> requires the following dependencies:
-        <a href="{{$ossUrl}}/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank"><code>reactive-streams</code></a>,
+        <a href="https://oss.sonatype.org/content/repositories/releases/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank"><code>reactive-streams</code></a>,
         <a href="{{$ossUrl}}/org/mongodb/bson/{{$mongoDriverVersion}}" target="_blank"><code>bson</code></a>,
         <a href="{{$ossUrl}}/org/mongodb/mongodb-driver-core/{{$mongoDriverVersion}}" target="_blank"><code>mongodb-driver-core</code></a>
         and
         <a href="{{$ossUrl}}/org/mongodb/mongodb-driver-async/{{$mongoDriverVersion}}" target="_blank"><code>mongodb-driver-async</code></a>.
     </p>
-    {{end}}
 </section>
 {{ else }}
 {{$ossUrl := "https://oss.sonatype.org/content/repositories/releases"}}
@@ -74,17 +72,15 @@
 </section>
 <section class="downloadInfo small">
     <p>You can also download the jars
-        <a href="{{$ossUrl}}/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank">directly</a>
+        <a href="{{$ossUrl}}/org/mongodb/{{$reactiveStreamsVersion}}" target="_blank">directly</a>
         from sonatype.</a></p>
-    {{ with $dependencies}}
     <p>
         <strong>Note:</strong> <code>{{$artifactId}}</code> requires the following dependencies:
-        <a href="{{$ossUrl}}/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank"><code>reactive-streams</code></a>,
+        <a href="https://oss.sonatype.org/content/repositories/releases/org/reactivestreams/reactive-streams/{{$reactiveStreamsVersion}}" target="_blank"><code>reactive-streams</code></a>,
         <a href="{{$ossUrl}}/org/mongodb/bson/{{$mongoDriverVersion}}" target="_blank"><code>bson</code></a>,
         <a href="{{$ossUrl}}/org/mongodb/mongodb-driver-core/{{$mongoDriverVersion}}" target="_blank"><code>mongodb-driver-core</code></a>
         and
         <a href="{{$ossUrl}}/org/mongodb/mongodb-driver-async/{{$mongoDriverVersion}}" target="_blank"><code>mongodb-driver-async</code></a>.
     </p>
-    {{end}}
 </section>
 {{ end }}
