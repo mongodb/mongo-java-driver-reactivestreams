@@ -10,7 +10,7 @@ title = "Installation Guide"
 
 # Installation
 
-The recommended way to get started using one of the drivers in your project is with a dependency management system.
+The recommended way to get started using the driver in your project is with a dependency management system.
 
 {{< distroPicker >}}
 

@@ -10,8 +10,8 @@ title = "Quick Tour Primer"
 
 # Quick Tour Primer
 
-The following code snippets come from the `SubscriberHelpers.java` example code
-that can be found with the [examples source]({{< srcref "examples/tour/src/main/tour/SubscriberHelpers.java">}}).
+The aim of this guide is to provide background about the Scala driver and its asynchronous API before going onto 
+looking at how to use the driver and MongoDB.
 
 {{% note %}}
 See the [installation guide]({{< relref "getting-started/installation-guide.md" >}})
@@ -53,12 +53,12 @@ return a [`Success`]({{< apiref "com/mongodb/reactivestreams/client/Success.html
 
 {{% note %}}
 All [`Publishers`](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Publisher.html) returned 
-from the API are cold, meaning that nothing happens until they are subscribed to and the subscription makes a request. So just creating a 
+from the API are cold, meaning that no I/O happens until they are subscribed to and the subscription makes a request. So just creating a 
 `Publisher` won't cause any network IO. It's not util `Subscription.request()` is called that the driver executes the operation.
 
 Publishers in this implementation are unicast. Each [`Subscription`](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Subscription.html) 
-to a `Publisher` relates to a single MongoDB operation and it's ['Subscriber'](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Subscriber.html)  
-will receive it's own specific set of results. 
+to a `Publisher` relates to a single MongoDB operation and its ['Subscriber'](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Subscriber.html)  
+will receive its own specific set of results. 
 {{% /note %}}
 
 
