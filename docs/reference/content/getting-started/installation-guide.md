@@ -1,5 +1,5 @@
 +++
-date = "2015-03-17T15:36:56Z"
+date = "2015-10-08T09:30:56Z"
 title = "Installation Guide"
 [menu.main]
   parent = "Getting Started"
@@ -17,4 +17,4 @@ The recommended way to get started using the driver in your project is with a de
 ## MongoDB Reactive Streams Driver
 The Reactive Streams implementation for asynchronous stream processing with non-blocking back pressure.
 
-{{< install artifactId="mongodb-driver-reactivestreams" version="1.1.0-SNAPSHOT" mongoDriverVersion="3.1.0-SNAPSHOT" reactiveStreamsVersion="1.0.0">}}
+{{< install artifactId="mongodb-driver-reactivestreams" version="1.1.0" mongoDriverVersion="3.1.0" reactiveStreamsVersion="1.0.0">}}
