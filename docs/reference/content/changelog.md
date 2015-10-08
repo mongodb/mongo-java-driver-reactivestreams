@@ -2,7 +2,7 @@
 date = "2015-10-08T09:56:14Z"
 title = "Changelog"
 [menu.main]
-  weight = 50
+  weight = 55
   pre = "<i class='fa fa-cog'></i>"
 +++
 

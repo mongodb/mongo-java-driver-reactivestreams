@@ -39,7 +39,7 @@ To get started check out the source and work on a branch:
 
 ```bash
 $ git clone https://github.com/mongodb/mongo-java-driver-reactivestreams.git
-$ cd mongo-java-driver
+$ cd mongo-java-driver-reactivestreams
 $ git checkout -b myNewFeature
 ```
 

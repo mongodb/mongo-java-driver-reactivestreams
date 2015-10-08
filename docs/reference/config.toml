@@ -20,4 +20,4 @@ canonifyurls = false
     pre = "<i class='fa fa-github'></i>"
     weight = 90
     identifier = "githubLink"
-    url = "https://github.com/mongodb/mongo-java-driver-reactive-streams/tree/1.0.x"
+    url = "https://github.com/mongodb/mongo-java-driver-reactive-streams/tree/master"
