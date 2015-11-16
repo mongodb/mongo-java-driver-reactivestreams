@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.ReadConcern
 import com.mongodb.async.client.AggregateIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.AggregateOperation
@@ -63,7 +64,7 @@ class AggregatePublisherSpecification  extends Specification {
         def executor = new TestOperationExecutor([null, null]);
         def pipeline = [new Document('$match', 1)]
         def wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
-                executor, pipeline)
+                ReadConcern.DEFAULT, executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
@@ -100,11 +101,12 @@ class AggregatePublisherSpecification  extends Specification {
         def collectionNamespace = new MongoNamespace(namespace.getDatabaseName(), collectionName)
         def pipeline = [new Document('$match', 1), new Document('$out', collectionName)]
         def wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
-                executor, pipeline)
+                ReadConcern.DEFAULT, executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
                 .maxTime(999, MILLISECONDS)
                 .allowDiskUse(true)
                 .useCursor(true)
+                .bypassDocumentValidation(true)
 
         when: 'aggregation includes $out'
         aggregatePublisher.subscribe(subscriber)
@@ -114,7 +116,8 @@ class AggregatePublisherSpecification  extends Specification {
         expect operation, isTheSameAs(new AggregateToCollectionOperation(namespace,
                 [new BsonDocument('$match', new BsonInt32(1)), new BsonDocument('$out', new BsonString(collectionName))])
                 .maxTime(999, MILLISECONDS)
-                .allowDiskUse(true))
+                .allowDiskUse(true)
+                .bypassDocumentValidation(true))
 
         when: 'the subsequent read should have the batchSize set'
         operation = executor.getReadOperation() as FindOperation<Document>
@@ -125,7 +128,7 @@ class AggregatePublisherSpecification  extends Specification {
 
         when: 'toCollection should work as expected'
         wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
-                executor, pipeline)
+                ReadConcern.DEFAULT, executor, pipeline)
         new AggregatePublisherImpl<Document>(wrapped).toCollection().subscribe(subscriber)
         operation = executor.getWriteOperation() as AggregateToCollectionOperation
 

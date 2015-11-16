@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.ReadConcern
 import com.mongodb.async.client.DistinctIterable
 import com.mongodb.async.client.DistinctIterableImpl
 import com.mongodb.async.client.MongoIterable
@@ -63,7 +64,7 @@ class DistinctPublisherSpecification extends Specification {
 
         def executor = new TestOperationExecutor([null, null]);
         def wrapped = new DistinctIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
-                executor, 'field', new BsonDocument())
+                ReadConcern.DEFAULT, executor, 'field', new BsonDocument())
         def distinctPublisher = new DistinctPublisherImpl(wrapped)
 
         when: 'default input should be as expected'

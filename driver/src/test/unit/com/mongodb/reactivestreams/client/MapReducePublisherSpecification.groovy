@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.ReadConcern
 import com.mongodb.async.client.MapReduceIterable
 import com.mongodb.async.client.MapReduceIterableImpl
 import com.mongodb.async.client.MongoIterable
@@ -65,7 +66,7 @@ class MapReducePublisherSpecification extends Specification {
             }
             def executor = new TestOperationExecutor([null, null]);
             def wrapped = new MapReduceIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
-                    executor, 'map', 'reduce')
+                    ReadConcern.DEFAULT, executor, 'map', 'reduce')
             def mapReducePublisher = new MapReducePublisherImpl(wrapped)
 
             when: 'default input should be as expected'
@@ -114,7 +115,7 @@ class MapReducePublisherSpecification extends Specification {
             when: 'mapReduce to a collection'
             def collectionNamespace = new MongoNamespace('dbName', 'collName')
             def wrapped = new MapReduceIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
-                    executor, 'map', 'reduce')
+                    ReadConcern.DEFAULT, executor, 'map', 'reduce')
             def mapReducePublisher = new MapReducePublisherImpl(wrapped)
             mapReducePublisher.collectionName(collectionNamespace.getCollectionName())
                     .databaseName(collectionNamespace.getDatabaseName())

@@ -71,6 +71,12 @@ class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
     }
 
     @Override
+    public FindPublisher<TResult> maxAwaitTime(final long maxAwaitTime, final TimeUnit timeUnit) {
+        wrapped.maxAwaitTime(maxAwaitTime, timeUnit);
+        return this;
+    }
+
+    @Override
     public FindPublisher<TResult> modifiers(final Bson modifiers) {
         wrapped.modifiers(modifiers);
         return this;

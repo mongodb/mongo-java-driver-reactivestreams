@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.MongoNamespace;
+import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
@@ -29,6 +30,7 @@ import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -89,6 +91,15 @@ public interface MongoCollection<TDocument> {
     WriteConcern getWriteConcern();
 
     /**
+     * Get the read concern for the MongoCollection.
+     *
+     * @return the {@link com.mongodb.ReadConcern}
+     * @mongodb.server.release 3.2
+     * @since 1.2
+     */
+    ReadConcern getReadConcern();
+
+    /**
      * Create a new MongoCollection instance with a different default class to cast any documents returned from the database into..
      *
      * @param clazz          the default class to cast any documents returned from the database into.
@@ -120,6 +131,16 @@ public interface MongoCollection<TDocument> {
      * @return a new MongoCollection instance with the different writeConcern
      */
     MongoCollection<TDocument> withWriteConcern(WriteConcern writeConcern);
+
+    /**
+     * Create a new MongoCollection instance with a different read concern.
+     *
+     * @param readConcern the new {@link ReadConcern} for the collection
+     * @return a new MongoCollection instance with the different ReadConcern
+     * @mongodb.server.release 3.2
+     * @since 1.2
+     */
+    MongoCollection<TDocument> withReadConcern(ReadConcern readConcern);
 
     /**
      * Counts the number of documents in the collection.
@@ -274,6 +295,17 @@ public interface MongoCollection<TDocument> {
      * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
      */
     Publisher<Success> insertOne(TDocument document);
+
+    /**
+     * Inserts the provided document. If the document is missing an identifier, the driver should generate one.
+     *
+     * @param document the document to insert
+     * @param options  the options to apply to the operation
+     * @return a publisher with a single element indicating when the operation has completed or with either a
+     * com.mongodb.DuplicateKeyException or com.mongodb.MongoException
+     * @since 1.2
+     */
+    Publisher<Success> insertOne(TDocument document, InsertOneOptions options);
 
     /**
      * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when talking with a

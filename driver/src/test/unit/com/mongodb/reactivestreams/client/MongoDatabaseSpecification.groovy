@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client
 
+import com.mongodb.ReadConcern
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
@@ -98,6 +99,7 @@ class MongoDatabaseSpecification extends Specification {
         1 * wrapped.getReadPreference()
 
     }
+
     def 'should call the underlying getWriteConcern'() {
         given:
         def wrapped = Mock(WrappedMongoDatabase)
@@ -108,6 +110,18 @@ class MongoDatabaseSpecification extends Specification {
 
         then:
         1 * wrapped.getWriteConcern()
+    }
+
+    def 'should call the underlying getReadConcern'() {
+        given:
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        mongoDatabase.getReadConcern()
+
+        then:
+        1 * wrapped.getReadConcern()
     }
 
     def 'should call the underlying withCodecRegistry'() {
@@ -153,6 +167,23 @@ class MongoDatabaseSpecification extends Specification {
 
         when:
         def result = mongoDatabase.withWriteConcern(writeConcern)
+
+        then:
+        expect result, isTheSameAs(new MongoDatabaseImpl(wrappedResult))
+    }
+
+
+    def 'should call the underlying withReadConcern'() {
+        given:
+        def readConcern = ReadConcern.DEFAULT
+        def wrappedResult = Stub(WrappedMongoDatabase)
+        def wrapped = Mock(WrappedMongoDatabase) {
+            1 * withReadConcern(readConcern) >> wrappedResult
+        }
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+
+        when:
+        def result = mongoDatabase.withReadConcern(readConcern)
 
         then:
         expect result, isTheSameAs(new MongoDatabaseImpl(wrappedResult))

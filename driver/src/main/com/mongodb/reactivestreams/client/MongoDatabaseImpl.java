@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.Block;
+import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
@@ -59,6 +60,11 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
+    public ReadConcern getReadConcern() {
+        return wrapped.getReadConcern();
+    }
+
+    @Override
     public MongoDatabase withCodecRegistry(final CodecRegistry codecRegistry) {
         return new MongoDatabaseImpl(wrapped.withCodecRegistry(codecRegistry));
     }
@@ -71,6 +77,11 @@ class MongoDatabaseImpl implements MongoDatabase {
     @Override
     public MongoDatabase withWriteConcern(final WriteConcern writeConcern) {
         return new MongoDatabaseImpl(wrapped.withWriteConcern(writeConcern));
+    }
+
+    @Override
+    public MongoDatabase withReadConcern(final ReadConcern readConcern) {
+        return new MongoDatabaseImpl(wrapped.withReadConcern(readConcern));
     }
 
     @Override

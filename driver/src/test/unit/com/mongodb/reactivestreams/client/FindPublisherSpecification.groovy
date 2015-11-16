@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client
 
 import com.mongodb.CursorType
 import com.mongodb.MongoNamespace
+import com.mongodb.ReadConcern
 import com.mongodb.async.AsyncBatchCursor
 import com.mongodb.async.client.FindIterable
 import com.mongodb.async.client.FindIterableImpl
@@ -39,6 +40,7 @@ import static com.mongodb.ReadPreference.primary
 import static com.mongodb.ReadPreference.secondary
 import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static java.util.concurrent.TimeUnit.SECONDS
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders
 import static spock.util.matcher.HamcrestSupport.expect
 
@@ -66,6 +68,7 @@ class FindPublisherSpecification extends Specification {
                 .modifiers(new Document('modifier', 1))
                 .projection(new Document('projection', 1))
                 .maxTime(1000, MILLISECONDS)
+                .maxAwaitTime(2000, MILLISECONDS)
                 .batchSize(1) // Overriden by the subscriber
                 .limit(100)
                 .skip(10)
@@ -73,8 +76,8 @@ class FindPublisherSpecification extends Specification {
                 .oplogReplay(false)
                 .noCursorTimeout(false)
                 .partial(false)
-        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(), executor,
-                new Document('filter', 1), findOptions)
+        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
+                ReadConcern.DEFAULT, executor, new Document('filter', 1), findOptions)
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
@@ -89,7 +92,8 @@ class FindPublisherSpecification extends Specification {
                 .sort(new BsonDocument('sort', new BsonInt32(1)))
                 .modifiers(new BsonDocument('modifier', new BsonInt32(1)))
                 .projection(new BsonDocument('projection', new BsonInt32(1)))
-                .maxTime(1000, MILLISECONDS)
+                .maxTime(1, SECONDS)
+                .maxAwaitTime(2, SECONDS)
                 .batchSize(100)
                 .limit(100)
                 .skip(10)
@@ -155,8 +159,8 @@ class FindPublisherSpecification extends Specification {
             }
         }
         def executor = new TestOperationExecutor([cursor()]);
-        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, primary(), executor,
-                new Document(), new FindOptions())
+        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, primary(),
+                ReadConcern.DEFAULT, executor, new Document(), new FindOptions())
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
@@ -179,8 +183,8 @@ class FindPublisherSpecification extends Specification {
 
         def executor = new TestOperationExecutor([null]);
         def findOptions = new FindOptions()
-        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(), executor,
-                new Document('filter', 1), findOptions)
+        def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
+                ReadConcern.DEFAULT, executor, new Document('filter', 1), findOptions)
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
 
         when:

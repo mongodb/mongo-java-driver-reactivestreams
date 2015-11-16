@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
+import com.mongodb.ReadConcern
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
@@ -29,6 +30,7 @@ import com.mongodb.client.model.IndexModel
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneModel
+import com.mongodb.client.model.InsertOneOptions
 import com.mongodb.client.model.RenameCollectionOptions
 import com.mongodb.client.model.UpdateOptions
 import org.bson.BsonDocument
@@ -99,6 +101,14 @@ class MongoCollectionSpecification extends Specification {
         1 * wrapped.getWriteConcern()
     }
 
+    def 'should call the underlying getReadConcern'() {
+        when:
+        mongoCollection.getReadConcern()
+
+        then:
+        1 * wrapped.getReadConcern()
+    }
+
     def 'should use the underlying withDocumentClass'() {
         given:
         def wrappedResult = Stub(WrappedMongoCollection)
@@ -157,6 +167,22 @@ class MongoCollectionSpecification extends Specification {
 
         when:
         def result = mongoCollection.withWriteConcern(writeConcern)
+
+        then:
+        expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
+    }
+
+    def 'should call the underlying withReadConcern'() {
+        given:
+        def readConcern = ReadConcern.MAJORITY
+        def wrappedResult = Stub(WrappedMongoCollection)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * withReadConcern(readConcern) >> wrappedResult
+        }
+        def mongoCollection = new MongoCollectionImpl(wrapped)
+
+        when:
+        def result = mongoCollection.withReadConcern(readConcern)
 
         then:
         expect result, isTheSameAs(new MongoCollectionImpl(wrappedResult))
@@ -318,6 +344,7 @@ class MongoCollectionSpecification extends Specification {
     def 'should use the underlying insertOne'() {
         given:
         def insert = new Document('_id', 1)
+        def options = new InsertOneOptions()
 
         when:
         mongoCollection.insertOne(insert)
@@ -329,7 +356,13 @@ class MongoCollectionSpecification extends Specification {
         mongoCollection.insertOne(insert).subscribe(subscriber)
 
         then:
-        1 * wrapped.insertOne(insert, _)
+        1 * wrapped.insertOne(insert, _, _)
+
+        when:
+        mongoCollection.insertOne(insert, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertOne(insert, options, _)
     }
 
     def 'should use the underlying insertMany'() {

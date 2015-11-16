@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.Block;
 import com.mongodb.MongoNamespace;
+import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
@@ -30,6 +31,7 @@ import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -82,6 +84,11 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
     }
 
     @Override
+    public ReadConcern getReadConcern() {
+        return wrapped.getReadConcern();
+    }
+
+    @Override
     public <NewTDocument> MongoCollection<NewTDocument> withDocumentClass(final Class<NewTDocument> clazz) {
         return new MongoCollectionImpl<NewTDocument>(wrapped.withDocumentClass(clazz));
     }
@@ -99,6 +106,11 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
     @Override
     public MongoCollection<TDocument> withWriteConcern(final WriteConcern writeConcern) {
         return new MongoCollectionImpl<TDocument>(wrapped.withWriteConcern(writeConcern));
+    }
+
+    @Override
+    public MongoCollection<TDocument> withReadConcern(final ReadConcern readConcern) {
+        return new MongoCollectionImpl<TDocument>(wrapped.withReadConcern(readConcern));
     }
 
     @Override
@@ -190,10 +202,15 @@ class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument> {
 
     @Override
     public Publisher<Success> insertOne(final TDocument document) {
+        return insertOne(document, new InsertOneOptions());
+    }
+
+    @Override
+    public Publisher<Success> insertOne(final TDocument document, final InsertOneOptions options) {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.insertOne(document, voidToSuccessCallback(callback));
+                wrapped.insertOne(document, options, voidToSuccessCallback(callback));
             }
         }));
     }

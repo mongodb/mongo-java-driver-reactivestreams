@@ -59,6 +59,19 @@ public interface AggregatePublisher<TResult> extends Publisher<TResult> {
     AggregatePublisher<TResult> useCursor(Boolean useCursor);
 
     /**
+     * Sets the bypass document level validation flag.
+     *
+     * <p>Note: This only applies when an $out stage is specified</p>.
+     *
+     * @param bypassDocumentValidation If true, allows the write to opt-out of document level validation.
+     * @return this
+     * @since 1.2
+     * @mongodb.driver.manual reference/command/aggregate/ Aggregation
+     * @mongodb.server.release 3.2
+     */
+    AggregatePublisher<TResult> bypassDocumentValidation(Boolean bypassDocumentValidation);
+
+    /**
      * Aggregates documents according to the specified aggregation pipeline, which must end with a $out stage.
      *
      * @return a publisher with a single element indicating when the operation has completed

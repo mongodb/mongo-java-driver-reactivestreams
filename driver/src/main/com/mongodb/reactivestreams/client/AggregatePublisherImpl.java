@@ -55,6 +55,12 @@ class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
     }
 
     @Override
+    public AggregatePublisher<TResult> bypassDocumentValidation(final Boolean bypassDocumentValidation) {
+        wrapped.bypassDocumentValidation(bypassDocumentValidation);
+        return this;
+    }
+
+    @Override
     public Publisher<Success> toCollection() {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>(){
             @Override
