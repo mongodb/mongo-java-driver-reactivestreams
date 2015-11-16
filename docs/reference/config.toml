@@ -1,4 +1,4 @@
-baseurl = "/mongo-java-driver-reactivestreams/1.1"
+baseurl = "/mongo-java-driver-reactivestreams/1.2"
 languageCode = "en-us"
 title = "Reactive Streams Java Driver"
 theme = "mongodb"
