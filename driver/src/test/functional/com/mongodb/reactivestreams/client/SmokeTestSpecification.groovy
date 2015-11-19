@@ -22,6 +22,7 @@ import com.mongodb.diagnostics.logging.Loggers
 import org.bson.Document
 
 import static Fixture.getMongoClient
+import static com.mongodb.reactivestreams.client.Fixture.getConnectionString
 import static java.util.concurrent.TimeUnit.SECONDS
 
 class SmokeTestSpecification extends FunctionalSpecification {
@@ -139,6 +140,18 @@ class SmokeTestSpecification extends FunctionalSpecification {
 
         then:
         !run('the collection name is no longer in the collectionNames list', database.&listCollectionNames).contains(collectionName)
+    }
+
+    def 'should not leak exceptions when a client is closed'() {
+        given:
+        def mongoClient = MongoClients.create(getConnectionString())
+
+        when:
+        mongoClient.close()
+        run('get database names', mongoClient.&listDatabaseNames)
+
+        then:
+        thrown(IllegalStateException)
     }
 
     @SuppressWarnings('BusyWait')

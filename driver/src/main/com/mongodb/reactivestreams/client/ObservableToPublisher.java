@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.MongoException;
 import com.mongodb.async.client.Observable;
 import com.mongodb.async.client.Observer;
 import com.mongodb.async.client.Subscription;
@@ -38,6 +39,7 @@ class ObservableToPublisher<TResult> implements org.reactivestreams.Publisher<TR
             public void onSubscribe(final Subscription subscription) {
                 subscriber.onSubscribe(new org.reactivestreams.Subscription() {
                     private final AtomicBoolean cancelled = new AtomicBoolean();
+
                     @Override
                     public void request(final long n) {
                         if (!subscription.isUnsubscribed() && n < 1) {
@@ -45,7 +47,11 @@ class ObservableToPublisher<TResult> implements org.reactivestreams.Publisher<TR
                                     + "Subscription.request(long n) MUST throw a java.lang.IllegalArgumentException if the "
                                     + "argument is <= 0."));
                         } else {
-                            subscription.request(n);
+                            try {
+                                subscription.request(n);
+                            } catch (Throwable t) {
+                                subscriber.onError(t);
+                            }
                         }
                     }
 
@@ -73,6 +79,5 @@ class ObservableToPublisher<TResult> implements org.reactivestreams.Publisher<TR
                 subscriber.onComplete();
             }
         });
-
     }
 }
