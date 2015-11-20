@@ -16,7 +16,6 @@
 
 package com.mongodb.reactivestreams.client;
 
-import com.mongodb.MongoException;
 import com.mongodb.async.client.Observable;
 import com.mongodb.async.client.Observer;
 import com.mongodb.async.client.Subscription;
