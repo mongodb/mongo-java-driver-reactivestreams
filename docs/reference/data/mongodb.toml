@@ -5,5 +5,5 @@ currentVersion = "1.2"
 highlightTheme = "idea.css"
 apiUrl = "/javadoc"
 coreApiUrl = "http://api.mongodb.org/java/3.2/"
-mongoDriverVersion = "3.2.0-rc0"                    # Update in installation-guide.md
+mongoDriverVersion = "3.2.0"                        # Update in installation-guide.md
 reactiveStreamsVersion = "1.0.0"                    # Update in installation-guide.md

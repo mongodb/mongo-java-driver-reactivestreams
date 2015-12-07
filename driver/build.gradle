@@ -20,7 +20,7 @@ description = "A Reactive Streams implementation of the MongoDB Java driver"
 archivesBaseName = 'mongodb-driver-reactivestreams'
 
 dependencies {
-    compile 'org.mongodb:mongodb-driver-async:3.2.0-rc0'
+    compile 'org.mongodb:mongodb-driver-async:3.2.0'
     compile 'org.reactivestreams:reactive-streams:1.0.0'
 
     testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0'
