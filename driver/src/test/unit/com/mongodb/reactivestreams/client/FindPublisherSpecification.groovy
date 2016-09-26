@@ -54,7 +54,7 @@ class FindPublisherSpecification extends Specification {
 
     def 'should have the same methods as the wrapped FindIterable'() {
         given:
-        def wrapped = (FindIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (FindIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
         def local = (FindPublisher.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
 
         expect:

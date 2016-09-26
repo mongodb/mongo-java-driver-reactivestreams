@@ -35,7 +35,7 @@ class MongoDatabaseSpecification extends Specification {
 
     def 'should have the same methods as the wrapped MongoDatabase'() {
         given:
-        def wrapped = WrappedMongoDatabase.methods*.name.sort()
+        def wrapped = WrappedMongoDatabase.methods*.name.sort() - 'createView'
         def local = MongoDatabase.methods*.name.sort()
 
         expect:

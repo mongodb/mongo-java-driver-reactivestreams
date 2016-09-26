@@ -42,14 +42,12 @@ import static spock.util.matcher.HamcrestSupport.expect
 class DistinctPublisherSpecification extends Specification {
 
     def namespace = new MongoNamespace('db', 'coll')
-    def codecRegistry = fromProviders([new ValueCodecProvider(),
-                                               new DocumentCodecProvider(),
-                                               new BsonValueCodecProvider()])
+    def codecRegistry = fromProviders([new ValueCodecProvider(), new DocumentCodecProvider(), new BsonValueCodecProvider()])
     def readPreference = secondary()
 
     def 'should have the same methods as the wrapped DistinctIterable'() {
         given:
-        def wrapped = (DistinctIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (DistinctIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
         def local = (DistinctPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:

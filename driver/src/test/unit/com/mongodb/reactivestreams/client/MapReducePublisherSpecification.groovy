@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
 import com.mongodb.ReadConcern
+import com.mongodb.WriteConcern
 import com.mongodb.async.client.MapReduceIterable
 import com.mongodb.async.client.MapReduceIterableImpl
 import com.mongodb.async.client.MongoIterable
@@ -52,7 +53,7 @@ class MapReducePublisherSpecification extends Specification {
 
     def 'should have the same methods as the wrapped MapReduceIterable'() {
         given:
-        def wrapped = (MapReduceIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (MapReduceIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
         def local = (MapReducePublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
@@ -66,7 +67,7 @@ class MapReducePublisherSpecification extends Specification {
             }
             def executor = new TestOperationExecutor([null, null]);
             def wrapped = new MapReduceIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
-                    ReadConcern.DEFAULT, executor, 'map', 'reduce')
+                    ReadConcern.DEFAULT, WriteConcern.ACKNOWLEDGED, executor, 'map', 'reduce')
             def mapReducePublisher = new MapReducePublisherImpl(wrapped)
 
             when: 'default input should be as expected'
@@ -115,7 +116,7 @@ class MapReducePublisherSpecification extends Specification {
             when: 'mapReduce to a collection'
             def collectionNamespace = new MongoNamespace('dbName', 'collName')
             def wrapped = new MapReduceIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, readPreference,
-                    ReadConcern.DEFAULT, executor, 'map', 'reduce')
+                    ReadConcern.DEFAULT, WriteConcern.ACKNOWLEDGED, executor, 'map', 'reduce')
             def mapReducePublisher = new MapReducePublisherImpl(wrapped)
             mapReducePublisher.collectionName(collectionNamespace.getCollectionName())
                     .databaseName(collectionNamespace.getDatabaseName())
@@ -134,7 +135,7 @@ class MapReducePublisherSpecification extends Specification {
 
             def operation = executor.getWriteOperation() as MapReduceToCollectionOperation
             def expectedOperation = new MapReduceToCollectionOperation(namespace, new BsonJavaScript('map'),
-                    new BsonJavaScript('reduce'), 'collName')
+                    new BsonJavaScript('reduce'), 'collName', WriteConcern.ACKNOWLEDGED)
                     .databaseName(collectionNamespace.getDatabaseName())
                     .filter(new BsonDocument('filter', new BsonInt32(1)))
                     .finalizeFunction(new BsonJavaScript('finalize'))

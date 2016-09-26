@@ -16,12 +16,15 @@
 
 package com.mongodb.reactivestreams.client
 
+import com.mongodb.async.client.ListDatabasesIterable
 import com.mongodb.async.client.ListDatabasesIterableImpl as WrappedListDatabasesIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.ListDatabasesOperation
 import org.bson.Document
+import org.bson.codecs.BsonValueCodecProvider
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.DocumentCodecProvider
+import org.bson.codecs.ValueCodecProvider
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -36,7 +39,7 @@ class ListDatabasesPublisherSpecification extends Specification {
 
     def 'should have the same methods as the wrapped ListDatabasesIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.ListDatabasesIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (ListDatabasesIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (ListDatabasesPublisher.methods*.name - Publisher.methods*.name  - 'batchSize').sort()
 
         expect:
@@ -45,10 +48,11 @@ class ListDatabasesPublisherSpecification extends Specification {
 
     def 'should build the expected ListDatabasesOperation'() {
         given:
-        def codecRegistry = fromProviders([new DocumentCodecProvider()])
+        def codecRegistry = fromProviders([new ValueCodecProvider(), new DocumentCodecProvider(), new BsonValueCodecProvider()])
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(100) }
         }
+
         def executor = new TestOperationExecutor([null, null]);
         def wrapped = new WrappedListDatabasesIterableImpl(Document, codecRegistry, secondary(), executor)
         def listDatabasesPublisher = new ListDatabasesPublisherImpl<Document>(wrapped)

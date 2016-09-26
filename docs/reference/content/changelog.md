@@ -10,6 +10,19 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.3
+
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.3)
+
+  * Updated MongoDB Driver Async to 3.4.0-beta1
+
+### 1.2
+
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARX%20AND%20fixVersion%20%3D%201.2)
+
+  * Updated MongoDB Driver Async to 3.2.0
+  * Added support for MongoDB 3.2.0 features
+
 ### 1.1 
 
   * Updated MongoDB Driver Async to 3.1.0

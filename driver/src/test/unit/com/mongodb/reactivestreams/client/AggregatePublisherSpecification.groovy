@@ -18,6 +18,8 @@ package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
 import com.mongodb.ReadConcern
+import com.mongodb.WriteConcern
+import com.mongodb.async.client.AggregateIterable
 import com.mongodb.async.client.AggregateIterableImpl
 import com.mongodb.async.client.MongoIterable
 import com.mongodb.operation.AggregateOperation
@@ -48,7 +50,7 @@ class AggregatePublisherSpecification  extends Specification {
 
     def 'should have the same methods as the wrapped AggregateIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.AggregateIterable.methods*.name - MongoIterable.methods*.name).sort()
+        def wrapped = (AggregateIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
         def local = (AggregatePublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
@@ -64,7 +66,7 @@ class AggregatePublisherSpecification  extends Specification {
         def executor = new TestOperationExecutor([null, null]);
         def pipeline = [new Document('$match', 1)]
         def wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
-                ReadConcern.DEFAULT, executor, pipeline)
+                ReadConcern.DEFAULT, WriteConcern.ACKNOWLEDGED, executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
 
         when: 'default input should be as expected'
@@ -101,7 +103,7 @@ class AggregatePublisherSpecification  extends Specification {
         def collectionNamespace = new MongoNamespace(namespace.getDatabaseName(), collectionName)
         def pipeline = [new Document('$match', 1), new Document('$out', collectionName)]
         def wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
-                ReadConcern.DEFAULT, executor, pipeline)
+                ReadConcern.DEFAULT, WriteConcern.ACKNOWLEDGED, executor, pipeline)
         def aggregatePublisher = new AggregatePublisherImpl<Document>(wrapped)
                 .maxTime(999, MILLISECONDS)
                 .allowDiskUse(true)
@@ -114,7 +116,8 @@ class AggregatePublisherSpecification  extends Specification {
 
         then: 'should use the overrides'
         expect operation, isTheSameAs(new AggregateToCollectionOperation(namespace,
-                [new BsonDocument('$match', new BsonInt32(1)), new BsonDocument('$out', new BsonString(collectionName))])
+                [new BsonDocument('$match', new BsonInt32(1)), new BsonDocument('$out', new BsonString(collectionName))],
+                WriteConcern.ACKNOWLEDGED)
                 .maxTime(999, MILLISECONDS)
                 .allowDiskUse(true)
                 .bypassDocumentValidation(true))
@@ -128,12 +131,13 @@ class AggregatePublisherSpecification  extends Specification {
 
         when: 'toCollection should work as expected'
         wrapped = new AggregateIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
-                ReadConcern.DEFAULT, executor, pipeline)
+                ReadConcern.DEFAULT, WriteConcern.ACKNOWLEDGED, executor, pipeline)
         new AggregatePublisherImpl<Document>(wrapped).toCollection().subscribe(subscriber)
         operation = executor.getWriteOperation() as AggregateToCollectionOperation
 
         then:
         expect operation, isTheSameAs(new AggregateToCollectionOperation(namespace,
-                [new BsonDocument('$match', new BsonInt32(1)), new BsonDocument('$out', new BsonString(collectionName))]))
+                [new BsonDocument('$match', new BsonInt32(1)), new BsonDocument('$out', new BsonString(collectionName))],
+                WriteConcern.ACKNOWLEDGED))
     }
 }
