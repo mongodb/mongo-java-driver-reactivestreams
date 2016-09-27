@@ -21,10 +21,13 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
 import com.mongodb.client.model.CreateCollectionOptions;
+import com.mongodb.client.model.CreateViewOptions;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
+
+import java.util.List;
 
 /**
  * The MongoDatabase interface.
@@ -212,4 +215,31 @@ public interface MongoDatabase {
      * @mongodb.driver.manual reference/commands/create Create Command
      */
     Publisher<Success> createCollection(String collectionName, CreateCollectionOptions options);
+
+    /**
+     * Creates a view with the given name, backing collection/view name, and aggregation pipeline that defines the view.
+     *
+     * @param viewName the name of the view to create
+     * @param viewOn   the backing collection/view for the view
+     * @param pipeline the pipeline that defines the view
+     * @return an observable identifying when the collection view has been created
+     * @since 1.3
+     * @mongodb.server.release 3.4
+     * @mongodb.driver.manual reference/command/create Create Command
+     */
+    Publisher<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline);
+
+    /**
+     * Creates a view with the given name, backing collection/view name, aggregation pipeline, and options that defines the view.
+     *
+     * @param viewName the name of the view to create
+     * @param viewOn   the backing collection/view for the view
+     * @param pipeline the pipeline that defines the view
+     * @param createViewOptions various options for creating the view
+     * @return an observable identifying when the collection view has been created
+     * @since 1.3
+     * @mongodb.server.release 3.4
+     * @mongodb.driver.manual reference/command/create Create Command
+     */
+    Publisher<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline, CreateViewOptions createViewOptions);
 }
