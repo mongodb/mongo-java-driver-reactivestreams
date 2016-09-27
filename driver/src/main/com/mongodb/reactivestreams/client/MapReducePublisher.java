@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 
+import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.MapReduceAction;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
@@ -172,4 +173,15 @@ public interface MapReducePublisher<TResult> extends Publisher<TResult> {
      * @mongodb.driver.manual aggregation/ Aggregation
      */
     Publisher<Success> toCollection();
+
+    /**
+     * Sets the collation options
+     *
+     * <p>A null value represents the server default.</p>
+     * @param collation the collation options to use
+     * @return this
+     * @since 1.3
+     * @mongodb.server.release 3.4
+     */
+    MapReducePublisher<TResult> collation(Collation collation);
 }

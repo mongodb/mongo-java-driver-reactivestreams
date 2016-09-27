@@ -19,6 +19,7 @@ package com.mongodb.reactivestreams.client;
 import com.mongodb.Block;
 import com.mongodb.CursorType;
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.client.model.Collation;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -115,6 +116,12 @@ class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
     @Override
     public FindPublisher<TResult> cursorType(final CursorType cursorType) {
         wrapped.cursorType(cursorType);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> collation(final Collation collation) {
+        wrapped.collation(collation);
         return this;
     }
 

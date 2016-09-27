@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.client.model.Collation;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
@@ -46,5 +47,16 @@ public interface DistinctPublisher<TResult> extends Publisher<TResult> {
      * @return this
      */
     DistinctPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
+
+    /**
+     * Sets the collation options
+     *
+     * <p>A null value represents the server default.</p>
+     * @param collation the collation options to use
+     * @return this
+     * @since 1.3
+     * @mongodb.server.release 3.4
+     */
+    DistinctPublisher<TResult> collation(Collation collation);
 
 }

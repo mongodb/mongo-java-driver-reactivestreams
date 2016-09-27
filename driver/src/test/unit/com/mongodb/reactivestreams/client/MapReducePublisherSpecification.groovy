@@ -22,6 +22,7 @@ import com.mongodb.WriteConcern
 import com.mongodb.async.client.MapReduceIterable
 import com.mongodb.async.client.MapReduceIterableImpl
 import com.mongodb.async.client.MongoIterable
+import com.mongodb.client.model.Collation
 import com.mongodb.client.model.MapReduceAction
 import com.mongodb.operation.FindOperation
 import com.mongodb.operation.MapReduceToCollectionOperation
@@ -46,14 +47,14 @@ import static spock.util.matcher.HamcrestSupport.expect
 
 class MapReducePublisherSpecification extends Specification {
 
-        def namespace = new MongoNamespace('db', 'coll')
-        def codecRegistry = fromProviders([new ValueCodecProvider(), new DocumentCodecProvider(), new BsonValueCodecProvider()])
-        def readPreference = secondary()
-
+    def namespace = new MongoNamespace('db', 'coll')
+    def codecRegistry = fromProviders([new ValueCodecProvider(), new DocumentCodecProvider(), new BsonValueCodecProvider()])
+    def readPreference = secondary()
+    def collation = Collation.builder().locale('en').build()
 
     def 'should have the same methods as the wrapped MapReduceIterable'() {
         given:
-        def wrapped = (MapReduceIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
+        def wrapped = (MapReduceIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (MapReducePublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
@@ -89,6 +90,7 @@ class MapReducePublisherSpecification extends Specification {
                     .scope(new Document('scope', 1))
                     .sort(new Document('sort', 1))
                     .verbose(false)
+                    .collation(collation)
                     .subscribe(subscriber)
 
             operation = executor.getReadOperation() as MapReduceWithInlineResultsOperation<Document>
@@ -103,6 +105,7 @@ class MapReducePublisherSpecification extends Specification {
                     .scope(new BsonDocument('scope', new BsonInt32(1)))
                     .sort(new BsonDocument('sort', new BsonInt32(1)))
                     .verbose(false)
+                    .collation(collation)
             )
         }
 
@@ -131,6 +134,8 @@ class MapReducePublisherSpecification extends Specification {
                     .action(MapReduceAction.MERGE)
                     .sharded(true)
                     .jsMode(true)
+                    .bypassDocumentValidation(true)
+                    .collation(collation)
                     .subscribe(subscriber)
 
             def operation = executor.getWriteOperation() as MapReduceToCollectionOperation
@@ -147,6 +152,8 @@ class MapReducePublisherSpecification extends Specification {
                     .nonAtomic(true)
                     .action(MapReduceAction.MERGE.getValue())
                     .jsMode(true)
+                    .bypassDocumentValidation(true)
+                    .collation(collation)
                     .sharded(true)
 
             then: 'should use the overrides'

@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.client.model.Collation;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -78,5 +79,16 @@ public interface AggregatePublisher<TResult> extends Publisher<TResult> {
      * @mongodb.driver.manual aggregation/ Aggregation
      */
     Publisher<Success> toCollection();
+
+    /**
+     * Sets the collation options
+     *
+     * <p>A null value represents the server default.</p>
+     * @param collation the collation options to use
+     * @return this
+     * @since 1.3
+     * @mongodb.server.release 3.4
+     */
+    AggregatePublisher<TResult> collation(Collation collation);
 
 }

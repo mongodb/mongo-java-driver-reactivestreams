@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.Block;
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.MapReduceAction;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
@@ -132,6 +133,12 @@ class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResult> {
                 wrapped.toCollection(voidToSuccessCallback(callback));
             }
         }));
+    }
+
+    @Override
+    public MapReducePublisher<TResult> collation(final Collation collation) {
+        wrapped.collation(collation);
+        return this;
     }
 
     @Override

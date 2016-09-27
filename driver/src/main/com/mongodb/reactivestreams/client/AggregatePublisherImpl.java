@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.Block;
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.client.model.Collation;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -68,6 +69,12 @@ class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
                 wrapped.toCollection(voidToSuccessCallback(callback));
             }
         }));
+    }
+
+    @Override
+    public AggregatePublisher<TResult> collation(final Collation collation) {
+        wrapped.collation(collation);
+        return this;
     }
 
     @Override

@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.client.model.Collation;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Subscriber;
 
@@ -42,6 +43,12 @@ class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult> {
     @Override
     public DistinctPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
+        return this;
+    }
+
+    @Override
+    public DistinctPublisher<TResult> collation(final Collation collation) {
+        wrapped.collation(collation);
         return this;
     }
 

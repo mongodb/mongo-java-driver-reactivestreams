@@ -22,6 +22,7 @@ import com.mongodb.WriteConcern
 import com.mongodb.async.client.AggregateIterable
 import com.mongodb.async.client.AggregateIterableImpl
 import com.mongodb.async.client.MongoIterable
+import com.mongodb.client.model.Collation
 import com.mongodb.operation.AggregateOperation
 import com.mongodb.operation.AggregateToCollectionOperation
 import com.mongodb.operation.FindOperation
@@ -47,10 +48,11 @@ class AggregatePublisherSpecification  extends Specification {
 
     def namespace = new MongoNamespace('db', 'coll')
     def codecRegistry = fromProviders([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
+    def collation = Collation.builder().locale('en').build()
 
     def 'should have the same methods as the wrapped AggregateIterable'() {
         given:
-        def wrapped = (AggregateIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
+        def wrapped = (AggregateIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (AggregatePublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
 
         expect:
@@ -81,7 +83,7 @@ class AggregatePublisherSpecification  extends Specification {
         readPreference == secondary()
 
         when: 'overriding initial options'
-        aggregatePublisher.maxTime(999, MILLISECONDS).useCursor(true).subscribe(subscriber)
+        aggregatePublisher.maxTime(999, MILLISECONDS).useCursor(true).collation(collation).subscribe(subscriber)
 
         operation = executor.getReadOperation() as AggregateOperation<Document>
 
@@ -90,7 +92,8 @@ class AggregatePublisherSpecification  extends Specification {
                 new DocumentCodec())
                 .batchSize(100)
                 .maxTime(999, MILLISECONDS)
-                .useCursor(true))
+                .useCursor(true)
+                .collation(collation))
     }
 
     def 'should build the expected AggregateToCollectionOperation'() {
@@ -109,6 +112,7 @@ class AggregatePublisherSpecification  extends Specification {
                 .allowDiskUse(true)
                 .useCursor(true)
                 .bypassDocumentValidation(true)
+                .collation(collation)
 
         when: 'aggregation includes $out'
         aggregatePublisher.subscribe(subscriber)
@@ -120,7 +124,8 @@ class AggregatePublisherSpecification  extends Specification {
                 WriteConcern.ACKNOWLEDGED)
                 .maxTime(999, MILLISECONDS)
                 .allowDiskUse(true)
-                .bypassDocumentValidation(true))
+                .bypassDocumentValidation(true)
+                .collation(collation))
 
         when: 'the subsequent read should have the batchSize set'
         operation = executor.getReadOperation() as FindOperation<Document>

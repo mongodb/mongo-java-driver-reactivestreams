@@ -23,6 +23,7 @@ import com.mongodb.async.AsyncBatchCursor
 import com.mongodb.async.client.FindIterable
 import com.mongodb.async.client.FindIterableImpl
 import com.mongodb.async.client.MongoIterable
+import com.mongodb.client.model.Collation
 import com.mongodb.client.model.FindOptions
 import com.mongodb.operation.FindOperation
 import org.bson.BsonDocument
@@ -51,10 +52,11 @@ class FindPublisherSpecification extends Specification {
     }
     def namespace = new MongoNamespace('db', 'coll')
     def codecRegistry = fromProviders([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
+    def collation = Collation.builder().locale('en').build()
 
     def 'should have the same methods as the wrapped FindIterable'() {
         given:
-        def wrapped = (FindIterable.methods*.name - MongoIterable.methods*.name).sort() - 'collation'
+        def wrapped = (FindIterable.methods*.name - MongoIterable.methods*.name).sort()
         def local = (FindPublisher.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
 
         expect:
@@ -76,6 +78,7 @@ class FindPublisherSpecification extends Specification {
                 .oplogReplay(false)
                 .noCursorTimeout(false)
                 .partial(false)
+                .collation(collation)
         def wrapped = new FindIterableImpl<Document, Document>(namespace, Document, Document, codecRegistry, secondary(),
                 ReadConcern.DEFAULT, executor, new Document('filter', 1), findOptions)
         def findPublisher = new FindPublisherImpl<Document>(wrapped)
@@ -99,10 +102,12 @@ class FindPublisherSpecification extends Specification {
                 .skip(10)
                 .cursorType(CursorType.NonTailable)
                 .slaveOk(true)
+                .collation(collation)
         )
         readPreference == secondary()
 
         when: 'overriding initial options'
+        def frenchCollation = Collation.builder().locale('fr').build()
         findPublisher.filter(new Document('filter', 2))
                 .sort(new Document('sort', 2))
                 .modifiers(new Document('modifier', 2))
@@ -115,6 +120,7 @@ class FindPublisherSpecification extends Specification {
                 .oplogReplay(true)
                 .noCursorTimeout(true)
                 .partial(true)
+                .collation(frenchCollation)
                 .subscribe(subscriber)
 
         operation = executor.getReadOperation() as FindOperation<Document>
@@ -135,6 +141,7 @@ class FindPublisherSpecification extends Specification {
                 .noCursorTimeout(true)
                 .partial(true)
                 .slaveOk(true)
+                .collation(frenchCollation)
         )
     }
 
