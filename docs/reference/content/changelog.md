@@ -17,6 +17,7 @@ Changes between released versions
   * Updated MongoDB Driver Async to 3.4.0-beta1
   * Added Collation support [JAVARS-21](https://jira.mongodb.org/browse/JAVARS-21)
   * Added support for views [JAVARS-22](https://jira.mongodb.org/browse/JAVARS-22)
+  * Added support for extending handshake metadata [JAVARS-20](https://jira.mongodb.org/browse/JAVARS-20)
 
 ### 1.2
 

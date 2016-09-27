@@ -31,6 +31,25 @@ task uberJar(type: Jar) {
     from sourceSets.main.output
 }
 
+def getGitVersion() {
+    def outputAsString
+    new ByteArrayOutputStream().withStream { os ->
+        def result = exec {
+            executable 'git'
+            args 'describe', '--tags', '--always', '--dirty'
+            standardOutput = os
+        }
+        outputAsString = os.toString().substring(1).trim()
+    }
+    return outputAsString
+}
+
+jar {
+    manifest {
+        instruction 'Build-Version', getGitVersion()
+    }
+}
+
 // Reactive Streams TCK uses TestNG, and Gradle can't run TestNG and JUnit in the same run.
 task tckTest(type: Test) {
     tasks.check.dependsOn it

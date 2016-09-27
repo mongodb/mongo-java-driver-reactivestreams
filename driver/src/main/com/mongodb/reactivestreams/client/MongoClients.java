@@ -18,6 +18,14 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.client.MongoDriverInformation;
+
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.security.CodeSource;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 
 /**
@@ -42,7 +50,7 @@ public final class MongoClients {
      * @return the client
      */
     public static MongoClient create(final MongoClientSettings settings) {
-        return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(settings));
+        return create(settings, null);
     }
 
     /**
@@ -62,7 +70,78 @@ public final class MongoClients {
      * @return the client
      */
     public static MongoClient create(final ConnectionString connectionString) {
-        return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(connectionString));
+        return create(connectionString, null);
+    }
+
+
+    /**
+     * Create a new client with the given connection string.
+     *
+     * <p>Note: Intended for driver and library authors to associate extra driver metadata with the connections.</p>
+     *
+     * @param connectionString the settings
+     * @param mongoDriverInformation any driver information to associate with the MongoClient
+     * @return the client
+     * @since 1.3
+     */
+    public static MongoClient create(final ConnectionString connectionString, final MongoDriverInformation mongoDriverInformation) {
+        return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(connectionString,
+                getMongoDriverInformation(mongoDriverInformation)));
+    }
+
+    /**
+     * Creates a new client with the given client settings.
+     *
+     * <p>Note: Intended for driver and library authors to associate extra driver metadata with the connections.</p>
+     *
+     * @param settings the settings
+     * @param mongoDriverInformation any driver information to associate with the MongoClient
+     * @return the client
+     * @since 1.3
+     */
+    public static MongoClient create(final MongoClientSettings settings, final MongoDriverInformation mongoDriverInformation) {
+        return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(settings,
+                getMongoDriverInformation(mongoDriverInformation)));
+    }
+
+    private static MongoDriverInformation getMongoDriverInformation(final MongoDriverInformation mongoDriverInformation) {
+        if (mongoDriverInformation == null) {
+            return DEFAULT_DRIVER_INFORMATION;
+        } else {
+            return MongoDriverInformation.builder(mongoDriverInformation)
+                    .driverName(DRIVER_NAME)
+                    .driverVersion(DRIVER_VERSION).build();
+        }
+    }
+
+    private static final String DRIVER_NAME = "mongo-java-driver-reactivestreams";
+    private static final String DRIVER_VERSION = getDriverVersion();
+    private static final MongoDriverInformation DEFAULT_DRIVER_INFORMATION = MongoDriverInformation.builder().driverName(DRIVER_NAME)
+            .driverVersion(DRIVER_VERSION).build();
+
+    private static String getDriverVersion() {
+        String driverVersion = "unknown";
+
+        try {
+            CodeSource codeSource = MongoClients.class.getProtectionDomain().getCodeSource();
+            if (codeSource != null) {
+                String path = codeSource.getLocation().getPath();
+                URL jarUrl = path.endsWith(".jar") ? new URL("jar:file:" + path + "!/") : null;
+                if (jarUrl != null) {
+                    JarURLConnection jarURLConnection = (JarURLConnection) jarUrl.openConnection();
+                    Manifest manifest = jarURLConnection.getManifest();
+                    String version = (String) manifest.getMainAttributes().get(new Attributes.Name("Build-Version"));
+                    if (version != null) {
+                        driverVersion = version;
+                    }
+                }
+            }
+        } catch (SecurityException e) {
+            // do nothing
+        } catch (IOException e) {
+            // do nothing
+        }
+        return driverVersion;
     }
 
     private MongoClients() {
