@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
 
-class ListDatabasesPublisherImpl<TResult> implements ListDatabasesPublisher<TResult> {
+final class ListDatabasesPublisherImpl<TResult> implements ListDatabasesPublisher<TResult> {
 
     private final com.mongodb.async.client.ListDatabasesIterable<TResult> wrapped;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 MongoDB, Inc.
+ * Copyright 2016 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client
-
-import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
-import spock.lang.Specification
-
-class MongoCollectionSpecification extends Specification {
-
-    def 'should have the same methods as the wrapped MongoCollection'() {
-        given:
-        def wrapped = WrappedMongoCollection.methods*.name.sort().toSet()
-        def local = MongoCollection.methods*.name.sort().toSet()
-
-        expect:
-        wrapped == local
-    }
-
-}
+/**
+ * Utility classes for internal library use only.
+ *
+ * <p>This should not be considered a part of the public API.</p>
+ */
+package com.mongodb.reactivestreams.client.internal;

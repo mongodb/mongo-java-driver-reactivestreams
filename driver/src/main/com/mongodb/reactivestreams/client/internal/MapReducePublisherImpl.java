@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.MapReduceAction;
+import com.mongodb.reactivestreams.client.MapReducePublisher;
+import com.mongodb.reactivestreams.client.Success;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -28,10 +30,9 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
-import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
+import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
 
-
-class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResult> {
+final class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResult> {
 
 
     private final com.mongodb.async.client.MapReduceIterable<TResult> wrapped;

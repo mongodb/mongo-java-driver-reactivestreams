@@ -19,6 +19,7 @@ package com.mongodb.reactivestreams.client;
 import com.mongodb.ConnectionString;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.client.MongoDriverInformation;
+import com.mongodb.reactivestreams.client.internal.MongoClientImpl;
 
 import java.io.IOException;
 import java.net.JarURLConnection;

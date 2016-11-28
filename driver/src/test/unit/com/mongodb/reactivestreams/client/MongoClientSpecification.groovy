@@ -17,17 +17,9 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.async.client.MongoClient as WrappedMongoClient
-import org.bson.BsonDocument
-import org.bson.Document
 import spock.lang.Specification
 
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
-import static spock.util.matcher.HamcrestSupport.expect
-
 class MongoClientSpecification extends Specification {
-
-    def wrapped = Mock(WrappedMongoClient)
-    def mongoClient = new MongoClientImpl(wrapped)
 
     def 'should have the same methods as the wrapped MongoClient'() {
         given:
@@ -36,47 +28,6 @@ class MongoClientSpecification extends Specification {
 
         expect:
         wrapped == local
-    }
-
-    def 'should call the underlying getSettings'(){
-        when:
-        mongoClient.getSettings()
-
-        then:
-        1 * wrapped.getSettings()
-    }
-
-    def 'should call the underlying listDatabases'() {
-        given:
-        def wrappedResult = Stub(com.mongodb.async.client.ListDatabasesIterable)
-        def wrapped = Mock(WrappedMongoClient) {
-            1 * listDatabases(Document) >> wrappedResult
-            1 * listDatabases(BsonDocument) >> wrappedResult
-        }
-        def mongoClient = new MongoClientImpl(wrapped)
-
-
-        when:
-        def publisher = mongoClient.listDatabases()
-
-        then:
-        expect publisher, isTheSameAs(new ListDatabasesPublisherImpl(wrappedResult))
-
-        when:
-        publisher = mongoClient.listDatabases(BsonDocument)
-
-        then:
-        expect publisher, isTheSameAs(new ListDatabasesPublisherImpl(wrappedResult))
-
-
-    }
-
-    def 'should call the underlying listDatabaseNames'() {
-        when:
-        mongoClient.listDatabaseNames()
-
-        then:
-        1 * wrapped.listDatabaseNames()
     }
 
 }

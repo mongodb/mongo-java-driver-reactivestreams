@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client
+package com.mongodb.reactivestreams.client.internal
 
 import com.mongodb.MongoException
 import com.mongodb.async.client.Observable
 import com.mongodb.async.client.Observer
 import com.mongodb.async.client.Subscription
-import com.mongodb.reactivestreams.client.internal.ObservableToPublisher
+import com.mongodb.reactivestreams.client.TestSubscriber
 import spock.lang.Specification
 
 class ObservableToPublisherSpecification extends Specification {
@@ -28,7 +28,7 @@ class ObservableToPublisherSpecification extends Specification {
     def 'should be cold and nothing should happen until request is called'() {
         given:
         def subscriber = new TestSubscriber()
-        def requested = false;
+        def requested = false
 
         when:
         def publisher = new ObservableToPublisher(new Observable() {

@@ -17,23 +17,9 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.async.client.ListDatabasesIterable
-import com.mongodb.async.client.ListDatabasesIterableImpl as WrappedListDatabasesIterableImpl
 import com.mongodb.async.client.MongoIterable
-import com.mongodb.operation.ListDatabasesOperation
-import org.bson.Document
-import org.bson.codecs.BsonValueCodecProvider
-import org.bson.codecs.DocumentCodec
-import org.bson.codecs.DocumentCodecProvider
-import org.bson.codecs.ValueCodecProvider
 import org.reactivestreams.Publisher
-import org.reactivestreams.Subscriber
 import spock.lang.Specification
-
-import static com.mongodb.ReadPreference.secondary
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
-import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders
-import static spock.util.matcher.HamcrestSupport.expect
 
 class ListDatabasesPublisherSpecification extends Specification {
 
@@ -44,36 +30,6 @@ class ListDatabasesPublisherSpecification extends Specification {
 
         expect:
         wrapped == local
-    }
-
-    def 'should build the expected ListDatabasesOperation'() {
-        given:
-        def codecRegistry = fromProviders([new ValueCodecProvider(), new DocumentCodecProvider(), new BsonValueCodecProvider()])
-        def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(100) }
-        }
-
-        def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new WrappedListDatabasesIterableImpl(Document, codecRegistry, secondary(), executor)
-        def listDatabasesPublisher = new ListDatabasesPublisherImpl<Document>(wrapped)
-
-        when: 'default input should be as expected'
-        listDatabasesPublisher.subscribe(subscriber)
-
-        def operation = executor.getReadOperation() as ListDatabasesOperation<Document>
-        def readPreference = executor.getReadPreference()
-
-        then:
-        expect operation, isTheSameAs(new ListDatabasesOperation<Document>(new DocumentCodec()))
-        readPreference == secondary()
-
-        when: 'overriding initial options'
-        listDatabasesPublisher.maxTime(999, MILLISECONDS).subscribe(subscriber)
-
-        operation = executor.getReadOperation() as ListDatabasesOperation<Document>
-
-        then: 'should use the overrides'
-        expect operation, isTheSameAs(new ListDatabasesOperation<Document>(new DocumentCodec()).maxTime(999, MILLISECONDS))
     }
 
 }

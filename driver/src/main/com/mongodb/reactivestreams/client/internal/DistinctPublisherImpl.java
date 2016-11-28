@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.client.model.Collation;
+import com.mongodb.reactivestreams.client.DistinctPublisher;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Subscriber;
 
@@ -24,25 +26,30 @@ import java.util.concurrent.TimeUnit;
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
 
-final class ListCollectionsPublisherImpl<TResult> implements ListCollectionsPublisher<TResult> {
 
-    private final com.mongodb.async.client.ListCollectionsIterable<TResult> wrapped;
+final class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult> {
 
-    ListCollectionsPublisherImpl(final com.mongodb.async.client.ListCollectionsIterable<TResult> wrapped) {
+    private final com.mongodb.async.client.DistinctIterable<TResult> wrapped;
+
+    DistinctPublisherImpl(final com.mongodb.async.client.DistinctIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 
     @Override
-    public ListCollectionsPublisher<TResult> filter(final Bson filter) {
-        notNull("filter", filter);
+    public DistinctPublisher<TResult> filter(final Bson filter) {
         wrapped.filter(filter);
         return this;
     }
 
     @Override
-    public ListCollectionsPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
-        notNull("timeUnit", timeUnit);
+    public DistinctPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         wrapped.maxTime(maxTime, timeUnit);
+        return this;
+    }
+
+    @Override
+    public DistinctPublisher<TResult> collation(final Collation collation) {
+        wrapped.collation(collation);
         return this;
     }
 

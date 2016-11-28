@@ -14,19 +14,33 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoDatabase;
 import org.bson.Document;
 import org.reactivestreams.Publisher;
 
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
 
-class MongoClientImpl implements MongoClient {
+/**
+ * The internal MongoClient implementation.
+ *
+ * <p>This should not be considered a part of the public API.</p>
+ */
+public final class MongoClientImpl implements MongoClient {
     private final com.mongodb.async.client.MongoClient wrapped;
 
-    MongoClientImpl(final com.mongodb.async.client.MongoClient wrapped) {
+    /**
+     * The internal MongoClientImpl constructor.
+     *
+     * <p>This should not be considered a part of the public API.</p>
+     * @param wrapped the underlying MongoClient
+     */
+    public MongoClientImpl(final com.mongodb.async.client.MongoClient wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
     }
 

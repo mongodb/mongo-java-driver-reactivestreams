@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.async.client.Observable;
 import com.mongodb.async.client.Observer;
