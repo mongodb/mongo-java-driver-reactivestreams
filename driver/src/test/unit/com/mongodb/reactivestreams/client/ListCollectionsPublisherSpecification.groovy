@@ -17,23 +17,8 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.async.client.MongoIterable
-import com.mongodb.operation.ListCollectionsOperation
-import org.bson.BsonDocument
-import org.bson.BsonInt32
-import org.bson.Document
-import org.bson.codecs.BsonValueCodecProvider
-import org.bson.codecs.DocumentCodec
-import org.bson.codecs.DocumentCodecProvider
-import org.bson.codecs.ValueCodecProvider
 import org.reactivestreams.Publisher
-import org.reactivestreams.Subscriber
 import spock.lang.Specification
-
-import static com.mongodb.ReadPreference.secondary
-import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
-import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders
-import static spock.util.matcher.HamcrestSupport.expect
 
 class ListCollectionsPublisherSpecification extends Specification {
 
@@ -43,36 +28,6 @@ class ListCollectionsPublisherSpecification extends Specification {
         def local = (ListCollectionsPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
         expect:
         wrapped == local
-    }
-
-    def 'should build the expected listCollectionOperation'() {
-        given:
-        def codecRegistry = fromProviders([new DocumentCodecProvider(), new BsonValueCodecProvider(), new ValueCodecProvider()])
-        def subscriber = Stub(Subscriber) {
-            onSubscribe(_) >> { args -> args[0].request(100) }
-        }
-        def executor = new TestOperationExecutor([null, null]);
-        def wrapped = new com.mongodb.async.client.ListCollectionsIterableImpl('db', Document, codecRegistry, secondary(), executor)
-        def listCollectionPublisher = new ListCollectionsPublisherImpl<Document>(wrapped)
-
-        when: 'default input should be as expected'
-        listCollectionPublisher.subscribe(subscriber)
-
-        def operation = executor.getReadOperation() as ListCollectionsOperation<Document>
-        def readPreference = executor.getReadPreference()
-
-        then:
-        expect operation, isTheSameAs(new ListCollectionsOperation<Document>('db', new DocumentCodec()).batchSize(100))
-        readPreference == secondary()
-
-        when: 'overriding initial options'
-        listCollectionPublisher.filter(new Document('filter', 2)).maxTime(999, MILLISECONDS).subscribe(subscriber)
-
-        operation = executor.getReadOperation() as ListCollectionsOperation<Document>
-
-        then: 'should use the overrides'
-        expect operation, isTheSameAs(new ListCollectionsOperation<Document>('db', new DocumentCodec())
-                .filter(new BsonDocument('filter', new BsonInt32(2))).batchSize(100).maxTime(999, MILLISECONDS))
     }
 
 }

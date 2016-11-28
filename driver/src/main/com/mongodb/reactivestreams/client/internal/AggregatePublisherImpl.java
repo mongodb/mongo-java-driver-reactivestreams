@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.Collation;
+import com.mongodb.reactivestreams.client.AggregatePublisher;
+import com.mongodb.reactivestreams.client.Success;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -26,9 +28,10 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
-import static com.mongodb.reactivestreams.client.PublisherHelper.voidToSuccessCallback;
+import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
 
-class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
+
+final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
 
     private final com.mongodb.async.client.AggregateIterable<TResult> wrapped;
 

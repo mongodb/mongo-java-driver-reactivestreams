@@ -1,11 +1,11 @@
 /*
- * Copyright 2015 MongoDB, Inc.
+ * Copyright 2016 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client
+package com.mongodb.reactivestreams.client.gridfs
 
-import com.mongodb.async.client.DistinctIterable
-import com.mongodb.async.client.MongoIterable
-import org.reactivestreams.Publisher
 import spock.lang.Specification
+import com.mongodb.async.client.gridfs.GridFSDownloadStream as WrappedGridFSDownloadStream
 
-class DistinctPublisherSpecification extends Specification {
+class GridFSDownloadStreamSpecification extends Specification {
 
-    def 'should have the same methods as the wrapped DistinctIterable'() {
+    def 'should have the same methods as the wrapped GridFSDownloadStream'() {
         given:
-        def wrapped = (DistinctIterable.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (DistinctPublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
+        def wrapped = (WrappedGridFSDownloadStream.methods*.name).sort()
+        def local = (GridFSDownloadStream.methods*.name).sort()
 
         expect:
         wrapped == local
     }
-
 
 }

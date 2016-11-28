@@ -18,6 +18,7 @@ package com.mongodb.reactivestreams.client
 
 import com.mongodb.Block
 import com.mongodb.async.SingleResultCallback
+import com.mongodb.reactivestreams.client.internal.ObservableToPublisher
 import org.bson.Document
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.PublisherVerification

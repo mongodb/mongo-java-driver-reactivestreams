@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.reactivestreams.client.ListIndexesPublisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;

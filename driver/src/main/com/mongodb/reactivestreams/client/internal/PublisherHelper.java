@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package com.mongodb.reactivestreams.client;
+package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.reactivestreams.client.Success;
 
-/**
- * A helper class for publishers
- */
 final class PublisherHelper {
-
-    private PublisherHelper() {
-    }
 
     /**
      * Helper to trigger Boolean SingleResultCallbacks for Void operations
@@ -32,13 +27,16 @@ final class PublisherHelper {
      * @param callback the boolean single result callback.
      * @return the results callback for an operation that returns null to signal success.
      */
-    static SingleResultCallback<Void> voidToSuccessCallback(final SingleResultCallback<Success> callback) {
+    public static SingleResultCallback<Void> voidToSuccessCallback(final SingleResultCallback<Success> callback) {
         return new SingleResultCallback<Void>() {
             @Override
             public void onResult(final Void result, final Throwable t) {
                 callback.onResult(Success.SUCCESS, t);
             }
         };
+    }
+
+    private PublisherHelper() {
     }
 
 }
