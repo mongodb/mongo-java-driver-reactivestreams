@@ -20,6 +20,8 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 import com.mongodb.reactivestreams.client.internal.GridFSBucketImpl;
 import com.mongodb.reactivestreams.client.internal.MongoDatabaseImpl;
 
+import static com.mongodb.assertions.Assertions.notNull;
+
 /**
  * A factory for GridFSBucket instances.
  *
@@ -38,6 +40,7 @@ public final class GridFSBuckets {
      * @return the GridFSBucket
      */
     public static GridFSBucket create(final MongoDatabase database) {
+        notNull("database", database);
         if (database instanceof MongoDatabaseImpl) {
             return new GridFSBucketImpl(com.mongodb.async.client.gridfs.GridFSBuckets.create(((MongoDatabaseImpl) database).getWrapped()));
         } else {
@@ -55,6 +58,8 @@ public final class GridFSBuckets {
      * @return the GridFSBucket
      */
     public static GridFSBucket create(final MongoDatabase database, final String bucketName) {
+        notNull("database", database);
+        notNull("bucketName", bucketName);
         if (database instanceof MongoDatabaseImpl) {
             return new GridFSBucketImpl(com.mongodb.async.client.gridfs.GridFSBuckets.create(((MongoDatabaseImpl) database).getWrapped(),
                     bucketName));

@@ -11,6 +11,7 @@ import org.reactivestreams.Subscription;
 
 import java.nio.ByteBuffer;
 
+import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
 
@@ -29,6 +30,7 @@ public final class GridFSAsyncStreamHelper {
      * @return the Publisher AsyncInputStream
      */
     public static AsyncInputStream toAsyncInputStream(final com.mongodb.async.client.gridfs.AsyncInputStream wrapper) {
+        notNull("wrapper", wrapper);
         return new AsyncInputStream() {
             @Override
             public Publisher<Integer> read(final ByteBuffer dst) {
@@ -60,6 +62,7 @@ public final class GridFSAsyncStreamHelper {
      * @return the Publisher AsyncOutputStream
      */
     public static AsyncOutputStream toAsyncOutputStream(final com.mongodb.async.client.gridfs.AsyncOutputStream wrapper) {
+        notNull("wrapper", wrapper);
         return new AsyncOutputStream() {
 
             @Override
@@ -85,6 +88,7 @@ public final class GridFSAsyncStreamHelper {
     }
 
     static com.mongodb.async.client.gridfs.AsyncInputStream toCallbackAsyncInputStream(final AsyncInputStream wrapped) {
+        notNull("wrapped", wrapped);
         return new com.mongodb.async.client.gridfs.AsyncInputStream() {
 
             @Override
@@ -142,6 +146,7 @@ public final class GridFSAsyncStreamHelper {
     }
 
     static com.mongodb.async.client.gridfs.AsyncOutputStream toCallbackAsyncOutputStream(final AsyncOutputStream wrapped) {
+        notNull("wrapped", wrapped);
         return new com.mongodb.async.client.gridfs.AsyncOutputStream() {
 
             @Override
