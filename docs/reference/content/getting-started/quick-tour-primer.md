@@ -10,7 +10,7 @@ title = "Quick Tour Primer"
 
 # Quick Tour Primer
 
-The aim of this guide is to provide background about the Scala driver and its asynchronous API before going onto 
+The aim of this guide is to provide background about the Java driver and its asynchronous API before going onto 
 looking at how to use the driver and MongoDB.
 
 {{% note %}}
