@@ -20,6 +20,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.client.MongoDriverInformation;
 import com.mongodb.reactivestreams.client.internal.MongoClientImpl;
+import org.bson.codecs.configuration.CodecRegistry;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -103,6 +104,17 @@ public final class MongoClients {
     public static MongoClient create(final MongoClientSettings settings, final MongoDriverInformation mongoDriverInformation) {
         return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(settings,
                 getMongoDriverInformation(mongoDriverInformation)));
+    }
+
+    /**
+     * Gets the default codec registry.
+     *
+     * @return the default codec registry
+     * @see MongoClientSettings#getCodecRegistry()
+     * @since 1.4
+     */
+    public static CodecRegistry getDefaultCodecRegistry() {
+        return com.mongodb.async.client.MongoClients.getDefaultCodecRegistry();
     }
 
     private static MongoDriverInformation getMongoDriverInformation(final MongoDriverInformation mongoDriverInformation) {
