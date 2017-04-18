@@ -18,7 +18,7 @@ dependencies {
 
     compile project(':driver')
 
-    testCompile 'io.reactivex:rxjava-reactive-streams:0.3.0'
+    testCompile 'io.reactivex:rxjava-reactive-streams:1.2.1'
     testCompile 'junit:junit:4.11'
 
     sourceSets {
