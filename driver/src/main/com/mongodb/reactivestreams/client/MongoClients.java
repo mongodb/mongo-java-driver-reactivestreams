@@ -87,8 +87,7 @@ public final class MongoClients {
      * @since 1.3
      */
     public static MongoClient create(final ConnectionString connectionString, final MongoDriverInformation mongoDriverInformation) {
-        return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(connectionString,
-                getMongoDriverInformation(mongoDriverInformation)));
+        return create(com.mongodb.async.client.MongoClients.create(connectionString, getMongoDriverInformation(mongoDriverInformation)));
     }
 
     /**
@@ -102,8 +101,20 @@ public final class MongoClients {
      * @since 1.3
      */
     public static MongoClient create(final MongoClientSettings settings, final MongoDriverInformation mongoDriverInformation) {
-        return new MongoClientImpl(com.mongodb.async.client.MongoClients.create(settings,
-                getMongoDriverInformation(mongoDriverInformation)));
+        return create(com.mongodb.async.client.MongoClients.create(settings, getMongoDriverInformation(mongoDriverInformation)));
+    }
+
+    /**
+     * Creates a new client with the given async MongoClient.
+     *
+     * <p>Note: This shares the {@code MongoClient} between two APIs. Calling close from either API will close the client.</p>
+     *
+     * @param asyncMongoClient the async MongoClient
+     * @return the client
+     * @since 1.4
+     */
+    public static MongoClient create(final com.mongodb.async.client.MongoClient asyncMongoClient) {
+        return new MongoClientImpl(asyncMongoClient);
     }
 
     /**

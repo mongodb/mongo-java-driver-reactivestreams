@@ -16,6 +16,8 @@ Changes between released versions
   * Updated MongoDB Driver Async to 3.4.2
   * Added GridFS support [JAVARS-21](https://jira.mongodb.org/browse/JAVARS-21)
   * Added `MongoClients.getDefaultCodecRegistry()` [JAVARS-16](https://jira.mongodb.org/browse/JAVARS-16)
+  * Added a static factory method to MongoClients to taking an already constructed async.client.MongoClient [JAVARS-26](https://jira.mongodb.org/browse/JAVARS-26)
+
 
 ### 1.3
 
