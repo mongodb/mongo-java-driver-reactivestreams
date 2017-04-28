@@ -22,7 +22,10 @@ import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
 import com.mongodb.client.model.BulkWriteOptions
+import com.mongodb.client.model.Collation
+import com.mongodb.client.model.CollationStrength
 import com.mongodb.client.model.CountOptions
+import com.mongodb.client.model.DeleteOptions
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -50,6 +53,7 @@ class MongoCollectionImplSpecification extends Specification {
     def wrapped = Mock(WrappedMongoCollection)
     def mongoCollection = new MongoCollectionImpl(wrapped)
     def filter = new Document('_id', 1)
+    def collation =  Collation.builder().locale('en').collationStrength(CollationStrength.SECONDARY).build()
 
     def 'should use the underlying getNamespace'() {
         when:
@@ -394,6 +398,21 @@ class MongoCollectionImplSpecification extends Specification {
         1 * wrapped.deleteOne(filter, _)
     }
 
+    def 'should use the underlying deleteOne with options'() {
+        when:
+        def options = new DeleteOptions().collation(collation)
+        mongoCollection.deleteOne(filter, options)
+
+        then: 'only executed when requested'
+        0 * wrapped.deleteOne(_, _, _)
+
+        when:
+        mongoCollection.deleteOne(filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteOne(filter, options, _)
+    }
+
     def 'should use the underlying deleteMany'() {
         when:
         mongoCollection.deleteMany(filter)
@@ -406,6 +425,21 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.deleteMany(filter, _)
+    }
+
+    def 'should use the underlying deleteMany with options'() {
+        when:
+        def options = new DeleteOptions().collation(collation)
+        mongoCollection.deleteMany(filter, options)
+
+        then: 'only executed when requested'
+        0 * wrapped.deleteMany(_, _, _)
+
+        when:
+        mongoCollection.deleteMany(filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteMany(filter, options, _)
     }
 
     def 'should use the underlying replaceOne'() {

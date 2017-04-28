@@ -25,6 +25,7 @@ import com.mongodb.async.SingleResultCallback;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -249,11 +250,31 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     }
 
     @Override
+    public Publisher<DeleteResult> deleteOne(final Bson filter, final DeleteOptions options) {
+        return new ObservableToPublisher<DeleteResult>(observe(new Block<SingleResultCallback<DeleteResult>>() {
+            @Override
+            public void apply(final SingleResultCallback<DeleteResult> callback) {
+                wrapped.deleteOne(filter, options, callback);
+            }
+        }));
+    }
+
+    @Override
     public Publisher<DeleteResult> deleteMany(final Bson filter) {
         return new ObservableToPublisher<DeleteResult>(observe(new Block<SingleResultCallback<DeleteResult>>() {
             @Override
             public void apply(final SingleResultCallback<DeleteResult> callback) {
                 wrapped.deleteMany(filter, callback);
+            }
+        }));
+    }
+
+    @Override
+    public Publisher<DeleteResult> deleteMany(final Bson filter, final DeleteOptions options) {
+        return new ObservableToPublisher<DeleteResult>(observe(new Block<SingleResultCallback<DeleteResult>>() {
+            @Override
+            public void apply(final SingleResultCallback<DeleteResult> callback) {
+                wrapped.deleteMany(filter, options, callback);
             }
         }));
     }

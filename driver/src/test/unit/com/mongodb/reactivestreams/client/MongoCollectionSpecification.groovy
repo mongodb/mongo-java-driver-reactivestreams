@@ -23,8 +23,8 @@ class MongoCollectionSpecification extends Specification {
 
     def 'should have the same methods as the wrapped MongoCollection'() {
         given:
-        def wrapped = WrappedMongoCollection.methods*.name.sort().toSet()
-        def local = MongoCollection.methods*.name.sort().toSet()
+        def wrapped = WrappedMongoCollection.methods*.name.sort()
+        def local = MongoCollection.methods*.name.sort()
 
         expect:
         wrapped == local

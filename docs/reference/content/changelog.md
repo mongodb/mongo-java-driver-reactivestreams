@@ -10,11 +10,16 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.5
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.5)
+
+  * Added Collation support to delete operations [JAVARS-27](https://jira.mongodb.org/browse/JAVARS-27)
+
 ### 1.4
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.4)
 
   * Updated MongoDB Driver Async to 3.4.2
-  * Added GridFS support [JAVARS-21](https://jira.mongodb.org/browse/JAVARS-21)
+  * Added GridFS support [JAVARS-23](https://jira.mongodb.org/browse/JAVARS-23)
   * Added `MongoClients.getDefaultCodecRegistry()` [JAVARS-16](https://jira.mongodb.org/browse/JAVARS-16)
   * Added a static factory method to MongoClients to taking an already constructed async.client.MongoClient [JAVARS-26](https://jira.mongodb.org/browse/JAVARS-26)
 
