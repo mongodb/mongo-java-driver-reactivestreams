@@ -1,9 +1,9 @@
 githubUser = "mongodb"
 githubRepo = "mongo-java-driver-reactivestreams"
 githubBranch = "master"
-currentVersion = "1.4"
+currentVersion = "1.5"
 highlightTheme = "idea.css"
 apiUrl = "/javadoc"
-coreApiUrl = "http://api.mongodb.org/java/3.4/"
+coreApiUrl = "http://mongodb.github.io/mongo-java-driver/3.4/javadoc/"
 mongoDriverVersion = "3.4.2"                        # Update in installation-guide.md
 reactiveStreamsVersion = "1.0.0"                    # Update in installation-guide.md

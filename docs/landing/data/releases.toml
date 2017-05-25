@@ -1,9 +1,14 @@
 driverName = "mongodb-driver-reactivestreams"
-current = "1.4.0"
+current = "1.5.0"
+
+[[versions]]
+  version = "1.5.0"
+  status = "current"
+  docs = "./1.5"
+  api = "./1.5/javadoc"
 
 [[versions]]
   version = "1.4.0"
-  status = "current"
   docs = "./1.4"
   api = "./1.4/javadoc"
 
