@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 - 2013 10gen, Inc. <http://10gen.com>
+ * Copyright 2014 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,4 +14,13 @@
  * limitations under the License.
  */
 
-include 'util', 'driver', 'examples:documentation', 'examples:rxjava', 'examples:tour'
+dependencies {
+
+    compile project(':driver')
+    testCompile project(':driver').sourceSets.test.output
+    testCompile 'junit:junit:4.11'
+
+    sourceSets {
+        test.java.srcDirs += 'src'
+    }
+}
