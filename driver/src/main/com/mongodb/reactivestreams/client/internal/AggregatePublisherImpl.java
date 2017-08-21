@@ -53,6 +53,12 @@ final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResul
     }
 
     @Override
+    public AggregatePublisher<TResult> maxAwaitTime(final long maxAwaitTime, final TimeUnit timeUnit) {
+        wrapped.maxAwaitTime(maxAwaitTime, timeUnit);
+        return this;
+    }
+
+    @Override
     public AggregatePublisher<TResult> useCursor(final Boolean useCursor) {
         wrapped.useCursor(useCursor);
         return this;

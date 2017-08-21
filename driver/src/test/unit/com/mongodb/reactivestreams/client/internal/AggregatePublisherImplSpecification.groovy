@@ -48,6 +48,7 @@ class AggregatePublisherImplSpecification  extends Specification {
                 .bypassDocumentValidation(true)
                 .collation(collation)
                 .maxTime(1, TimeUnit.SECONDS)
+                .maxAwaitTime(2, TimeUnit.SECONDS)
                 .useCursor(true)
 
         then:
@@ -55,6 +56,7 @@ class AggregatePublisherImplSpecification  extends Specification {
         1 * wrapped.bypassDocumentValidation(true) >> wrapped
         1 * wrapped.collation(collation) >> wrapped
         1 * wrapped.maxTime(1, TimeUnit.SECONDS) >> wrapped
+        1 * wrapped.maxAwaitTime(2, TimeUnit.SECONDS) >> wrapped
         1 * wrapped.useCursor(true) >> wrapped
 
         when:
