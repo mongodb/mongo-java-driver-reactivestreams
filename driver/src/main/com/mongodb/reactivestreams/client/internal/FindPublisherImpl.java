@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
 
-
+@SuppressWarnings("deprecation")
 final class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
 
     private final com.mongodb.async.client.FindIterable<TResult> wrapped;
@@ -124,6 +124,54 @@ final class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
     @Override
     public FindPublisher<TResult> collation(final Collation collation) {
         wrapped.collation(collation);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> comment(final String comment) {
+        wrapped.comment(comment);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> hint(final Bson hint) {
+        wrapped.hint(hint);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> max(final Bson max) {
+        wrapped.max(max);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> min(final Bson min) {
+        wrapped.min(min);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> maxScan(final long maxScan) {
+        wrapped.maxScan(maxScan);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> returnKey(final boolean returnKey) {
+        wrapped.returnKey(returnKey);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> showRecordId(final boolean showRecordId) {
+        wrapped.showRecordId(showRecordId);
+        return this;
+    }
+
+    @Override
+    public FindPublisher<TResult> snapshot(final boolean snapshot) {
+        wrapped.snapshot(snapshot);
         return this;
     }
 

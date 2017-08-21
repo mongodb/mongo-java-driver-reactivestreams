@@ -19,6 +19,8 @@ package com.mongodb.reactivestreams.client.internal
 import com.mongodb.CursorType
 import com.mongodb.async.client.FindIterable
 import com.mongodb.client.model.Collation
+import org.bson.BsonDocument
+import org.bson.BsonInt32
 import org.bson.Document
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -62,6 +64,14 @@ class FindPublisherImplSpecification extends Specification {
                 .noCursorTimeout(false)
                 .partial(false)
                 .collation(collation)
+                .comment('my comment')
+                .min(new BsonDocument('x', new BsonInt32(1)))
+                .max(new BsonDocument('x', new BsonInt32(5)))
+                .hint(new BsonDocument('y', new BsonInt32(1)))
+                .maxScan(39)
+                .returnKey(true)
+                .showRecordId(true)
+                .snapshot(true)
 
         then:
         1 * wrapped.sort(sort) >> wrapped
@@ -76,6 +86,14 @@ class FindPublisherImplSpecification extends Specification {
         1 * wrapped.noCursorTimeout(false) >> wrapped
         1 * wrapped.partial(false) >> wrapped
         1 * wrapped.collation(collation) >> wrapped
+        1 * wrapped.comment('my comment') >> wrapped
+        1 * wrapped.min(new BsonDocument('x', new BsonInt32(1))) >> wrapped
+        1 * wrapped.max(new BsonDocument('x', new BsonInt32(5))) >> wrapped
+        1 * wrapped.hint(new BsonDocument('y', new BsonInt32(1))) >> wrapped
+        1 * wrapped.maxScan(39) >> wrapped
+        1 * wrapped.returnKey(true) >> wrapped
+        1 * wrapped.showRecordId(true) >> wrapped
+        1 * wrapped.snapshot(true) >> wrapped
 
         when:
         publisher.subscribe(subscriber)
