@@ -30,7 +30,7 @@ import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
 
-
+@SuppressWarnings("deprecation")
 final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResult> {
 
     private final com.mongodb.async.client.AggregateIterable<TResult> wrapped;

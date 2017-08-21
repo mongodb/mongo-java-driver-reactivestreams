@@ -13,12 +13,8 @@ Changes between released versions
 ### 1.6
 
   * Updated MongoDB Driver Async to 3.5.0 [JAVARS-35](https://jira.mongodb.org/browse/JAVARS-35)
+  * Deprecated AggregatePublisher#useCursor [JAVARS-34](https://jira.mongodb.org/browse/JAVARS-34)
   * Deprecate modifiers in FindPublisher and replace with properties [JAVARS-28](https://jira.mongodb.org/browse/JAVARS-28)
-
-### 1.5
-[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.5)
-
-  * Added Collation support to delete operations [JAVARS-27](https://jira.mongodb.org/browse/JAVARS-27)
 
 ### 1.5
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.5)
