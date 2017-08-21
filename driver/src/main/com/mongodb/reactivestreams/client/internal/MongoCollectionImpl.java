@@ -39,6 +39,7 @@ import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.AggregatePublisher;
+import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
 import com.mongodb.reactivestreams.client.DistinctPublisher;
 import com.mongodb.reactivestreams.client.FindPublisher;
 import com.mongodb.reactivestreams.client.ListIndexesPublisher;
@@ -51,6 +52,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.mongodb.assertions.Assertions.notNull;
@@ -180,6 +182,26 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     @Override
     public <TResult> AggregatePublisher<TResult> aggregate(final List<? extends Bson> pipeline, final Class<TResult> clazz) {
         return new AggregatePublisherImpl<TResult>(wrapped.aggregate(pipeline, clazz));
+    }
+
+    @Override
+    public ChangeStreamPublisher<Document> watch() {
+        return watch(Document.class);
+    }
+
+    @Override
+    public <TResult> ChangeStreamPublisher<TResult> watch(final Class<TResult> resultClass) {
+        return watch(Collections.<Bson>emptyList(), resultClass);
+    }
+
+    @Override
+    public ChangeStreamPublisher<Document> watch(final List<? extends Bson> pipeline) {
+        return watch(pipeline, Document.class);
+    }
+
+    @Override
+    public <TResult> ChangeStreamPublisher<TResult> watch(final List<? extends Bson> pipeline, final Class<TResult> resultClass) {
+        return new ChangeStreamPublisherImpl<TResult>(wrapped.watch(pipeline, resultClass));
     }
 
     @Override

@@ -249,6 +249,48 @@ public interface MongoCollection<TDocument> {
     <TResult> AggregatePublisher<TResult> aggregate(List<? extends Bson> pipeline, Class<TResult> clazz);
 
     /**
+     * Creates a change stream for this collection.
+     *
+     * @return the change stream iterable
+     * @mongodb.driver.manual reference/operator/aggregation/changeStream $changeStream
+     * @since 1.6
+     */
+    ChangeStreamPublisher<Document> watch();
+
+    /**
+     * Creates a change stream for this collection.
+     *
+     * @param resultClass the class to decode each document into
+     * @param <TResult>   the target document type of the iterable.
+     * @return the change stream iterable
+     * @mongodb.driver.manual reference/operator/aggregation/changeStream $changeStream
+     * @since 1.6
+     */
+    <TResult> ChangeStreamPublisher<TResult> watch(Class<TResult> resultClass);
+
+    /**
+     * Creates a change stream for this collection.
+     *
+     * @param pipeline the aggregation pipeline to apply to the change stream
+     * @return the change stream iterable
+     * @mongodb.driver.manual reference/operator/aggregation/changeStream $changeStream
+     * @since 1.6
+     */
+    ChangeStreamPublisher<Document> watch(List<? extends Bson> pipeline);
+
+    /**
+     * Creates a change stream for this collection.
+     *
+     * @param pipeline    the aggregation pipeline to apply to the change stream
+     * @param resultClass the class to decode each document into
+     * @param <TResult>   the target document type of the iterable.
+     * @return the change stream iterable
+     * @mongodb.driver.manual reference/operator/aggregation/changeStream $changeStream
+     * @since 1.6
+     */
+    <TResult> ChangeStreamPublisher<TResult> watch(List<? extends Bson> pipeline, Class<TResult> resultClass);
+
+    /**
      * Aggregates documents according to the specified map-reduce function.
      *
      * @param mapFunction    A JavaScript function that associates or "maps" a value with a key and emits the key and value pair.

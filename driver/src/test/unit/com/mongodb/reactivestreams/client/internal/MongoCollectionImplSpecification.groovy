@@ -20,6 +20,7 @@ import com.mongodb.MongoNamespace
 import com.mongodb.ReadConcern
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
+import com.mongodb.async.client.ChangeStreamIterable
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
 import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.Collation
@@ -285,6 +286,44 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+    }
+
+    def 'should use ChangeStreamPublisher correctly'() {
+        given:
+        def pipeline = [new Document('$match', 1)]
+        def wrappedResult = Stub(ChangeStreamIterable)
+        def wrapped = Mock(WrappedMongoCollection) {
+            1 * watch([], Document) >> wrappedResult
+            1 * watch([], BsonDocument) >> wrappedResult
+            1 * watch(pipeline, Document) >> wrappedResult
+            1 * watch(pipeline, BsonDocument) >> wrappedResult
+        }
+        def collection = new MongoCollectionImpl(wrapped)
+        def changeStreamPublisher
+
+        when:
+        changeStreamPublisher = collection.watch()
+
+        then:
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(BsonDocument)
+
+        then:
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(pipeline)
+
+        then:
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(pipeline, BsonDocument)
+
+        then:
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
     }
 
     def 'should create MapReducePublisher correctly'() {
