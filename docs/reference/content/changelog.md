@@ -11,16 +11,21 @@ title = "Changelog"
 Changes between released versions
 
 ### 1.6
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.6)
 
   * Updated Reactive Streams to 1.0.1 [JAVARS-36](https://jira.mongodb.org/browse/JAVARS-36)
   * Updated MongoDB Driver Async to 3.5.0 [JAVARS-35](https://jira.mongodb.org/browse/JAVARS-35)
   * Deprecated AggregatePublisher#useCursor [JAVARS-34](https://jira.mongodb.org/browse/JAVARS-34)
   * Deprecate modifiers in FindPublisher and replace with properties [JAVARS-28](https://jira.mongodb.org/browse/JAVARS-28)
 
+---
+
 ### 1.5
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.5)
 
   * Added Collation support to delete operations [JAVARS-27](https://jira.mongodb.org/browse/JAVARS-27)
+
+---
 
 ### 1.4
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.4)
@@ -30,6 +35,7 @@ Changes between released versions
   * Added `MongoClients.getDefaultCodecRegistry()` [JAVARS-16](https://jira.mongodb.org/browse/JAVARS-16)
   * Added a static factory method to MongoClients to taking an already constructed async.client.MongoClient [JAVARS-26](https://jira.mongodb.org/browse/JAVARS-26)
 
+---
 
 ### 1.3
 
@@ -40,12 +46,16 @@ Changes between released versions
   * Added support for views [JAVARS-22](https://jira.mongodb.org/browse/JAVARS-22)
   * Added support for extending handshake metadata [JAVARS-20](https://jira.mongodb.org/browse/JAVARS-20)
 
+---
+
 ### 1.2
 
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARX%20AND%20fixVersion%20%3D%201.2)
 
   * Updated MongoDB Driver Async to 3.2.0
   * Added support for MongoDB 3.2.0 features
+
+---
 
 ### 1.1 
 
