@@ -12,6 +12,7 @@ Changes between released versions
 
 ### 1.6
 
+  * Updated Reactive Streams to 1.0.1 [JAVARS-36](https://jira.mongodb.org/browse/JAVARS-36)
   * Updated MongoDB Driver Async to 3.5.0 [JAVARS-35](https://jira.mongodb.org/browse/JAVARS-35)
   * Deprecated AggregatePublisher#useCursor [JAVARS-34](https://jira.mongodb.org/browse/JAVARS-34)
   * Deprecate modifiers in FindPublisher and replace with properties [JAVARS-28](https://jira.mongodb.org/browse/JAVARS-28)
