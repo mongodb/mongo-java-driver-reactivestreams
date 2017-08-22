@@ -52,12 +52,12 @@ In [reactive streams](http://www.reactive-streams.org) this is forbidden, so in 
 return a [`Success`]({{< apiref "com/mongodb/reactivestreams/client/Success.html">}}) on the operation.
 
 {{% note %}}
-All [`Publishers`](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Publisher.html) returned 
+All [`Publishers`](http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Publisher.html) returned 
 from the API are cold, meaning that no I/O happens until they are subscribed to and the subscription makes a request. So just creating a 
 `Publisher` won't cause any network IO. It's not util `Subscription.request()` is called that the driver executes the operation.
 
-Publishers in this implementation are unicast. Each [`Subscription`](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Subscription.html) 
-to a `Publisher` relates to a single MongoDB operation and its ['Subscriber'](http://www.reactive-streams.org/reactive-streams-1.0.0.RC4-javadoc/?org/reactivestreams/Subscriber.html)  
+Publishers in this implementation are unicast. Each [`Subscription`](http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Subscription.html) 
+to a `Publisher` relates to a single MongoDB operation and its ['Subscriber'](http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Subscriber.html)  
 will receive its own specific set of results. 
 {{% /note %}}
 

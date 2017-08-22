@@ -9,7 +9,7 @@ type = "index"
 Welcome to the MongoDB Reactive Streams Java driver documentation hub.
 
 The Reactive Streams implementation is built upon the 
-[`MongoDB Async Driver`](http://mongodb.github.io/mongo-java-driver/3.1/driver-async) and we mirror their API. 
+[`MongoDB Async Driver`](http://mongodb.github.io/mongo-java-driver/3.5/driver-async) and we mirror their API. 
 For reference documentation please see the async driver documentation.
 
 

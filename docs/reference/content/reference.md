@@ -8,5 +8,5 @@ title = "Reference"
 
 ## Reference
 
-The Reactive Streams Java Driver is built upon the [`MongoDB Async Driver`](http://mongodb.github.io/mongo-java-driver/3.1/driver-async/)
-for detailed reference information see the [official documentation](http://mongodb.github.io/mongo-java-driver/3.1/driver-async/reference).
+The Reactive Streams Java Driver is built upon the [`MongoDB Async Driver`](http://mongodb.github.io/mongo-java-driver/3.5/driver-async/)
+for detailed reference information see the [official documentation](http://mongodb.github.io/mongo-java-driver/3.5/driver-async/reference).
