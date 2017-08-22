@@ -19,7 +19,7 @@
  *
  * Ensure you have configured ~/.gradle/gradle.properties for both the nexus and signing plugins
  */
-configure(subprojects - project(':util') - project(':examples') - project(':examples:rxjava') - project(':examples:tour')) {
+configure(subprojects - project(':util') - project(':examples') - project(':examples:documentation') - project(':examples:rxjava') - project(':examples:tour')) {
     apply plugin: 'com.bmuschko.nexus'
 
     modifyPom {
