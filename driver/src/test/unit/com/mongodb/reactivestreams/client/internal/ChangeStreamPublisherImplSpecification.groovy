@@ -26,7 +26,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
 
-import static com.mongodb.client.model.FullDocument.UPDATE_LOOKUP
+import static com.mongodb.client.model.changestream.FullDocument.UPDATE_LOOKUP
 
 class ChangeStreamPublisherImplSpecification extends Specification {
 

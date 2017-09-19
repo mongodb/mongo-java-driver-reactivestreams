@@ -16,10 +16,13 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.async.client.ChangeStreamIterable;
 import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.FullDocument;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.FullDocument;
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
-import org.bson.conversions.Bson;
+import org.bson.BsonDocument;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -30,7 +33,7 @@ import static com.mongodb.async.client.Observables.observe;
 
 final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<TResult> {
 
-    private final com.mongodb.async.client.ChangeStreamIterable<TResult> wrapped;
+    private final ChangeStreamIterable<TResult> wrapped;
 
     ChangeStreamPublisherImpl(final com.mongodb.async.client.ChangeStreamIterable<TResult> wrapped) {
         this.wrapped = notNull("wrapped", wrapped);
@@ -43,7 +46,7 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
     }
 
     @Override
-    public ChangeStreamPublisher<TResult> resumeAfter(final Bson resumeToken) {
+    public ChangeStreamPublisher<TResult> resumeAfter(final BsonDocument resumeToken) {
         wrapped.resumeAfter(resumeToken);
         return this;
     }
@@ -61,7 +64,12 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
     }
 
     @Override
-    public void subscribe(final Subscriber<? super TResult> s) {
-        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
+    public <TDocument> Publisher<TDocument> withDocumentClass(final Class<TDocument> clazz) {
+        return new ObservableToPublisher<TDocument>(observe(wrapped.withDocumentClass(clazz)));
+    }
+
+    @Override
+    public void subscribe(final Subscriber<? super ChangeStreamDocument<TResult>> s) {
+        new ObservableToPublisher<ChangeStreamDocument<TResult>>(observe(wrapped)).subscribe(s);
     }
 }

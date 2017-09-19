@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -18,8 +18,9 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.FullDocument;
-import org.bson.conversions.Bson;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.FullDocument;
+import org.bson.BsonDocument;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * @mongodb.server.release 3.6
  * @since 1.6
  */
-public interface ChangeStreamPublisher<TResult> extends Publisher<TResult> {
+public interface ChangeStreamPublisher<TResult> extends Publisher<ChangeStreamDocument<TResult>> {
     /**
      * Sets the fullDocument value.
      *
@@ -46,7 +47,7 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<TResult> {
      * @param resumeToken the resume token
      * @return this
      */
-    ChangeStreamPublisher<TResult> resumeAfter(Bson resumeToken);
+    ChangeStreamPublisher<TResult> resumeAfter(BsonDocument resumeToken);
 
     /**
      * Sets the maximum await execution time on the server for this operation.
@@ -66,4 +67,14 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<TResult> {
      * @return this
      */
     ChangeStreamPublisher<TResult> collation(Collation collation);
+
+
+    /**
+     * Returns a {@code MongoIterable} containing the results of the change stream based on the document class provided.
+     *
+     * @param clazz the class to use for the raw result.
+     * @param <TDocument> the result type
+     * @return the new Mongo Iterable
+     */
+    <TDocument> Publisher<TDocument> withDocumentClass(Class<TDocument> clazz);
 }
