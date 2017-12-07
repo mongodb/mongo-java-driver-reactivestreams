@@ -29,6 +29,7 @@ class AggregatePublisherImplSpecification  extends Specification {
     def 'should call the underlying wrapped methods'() {
         given:
         def collation = Collation.builder().locale('en').build()
+        def hint = new Document('a', 1)
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(100) }
         }
@@ -47,16 +48,20 @@ class AggregatePublisherImplSpecification  extends Specification {
                 .allowDiskUse(true)
                 .bypassDocumentValidation(true)
                 .collation(collation)
+                .comment('a comment')
                 .maxTime(1, TimeUnit.SECONDS)
                 .maxAwaitTime(2, TimeUnit.SECONDS)
+                .hint(hint)
                 .useCursor(true)
 
         then:
         1 * wrapped.allowDiskUse(true) >> wrapped
         1 * wrapped.bypassDocumentValidation(true) >> wrapped
         1 * wrapped.collation(collation) >> wrapped
+        1 * wrapped.comment('a comment') >> wrapped
         1 * wrapped.maxTime(1, TimeUnit.SECONDS) >> wrapped
         1 * wrapped.maxAwaitTime(2, TimeUnit.SECONDS) >> wrapped
+        1 * wrapped.hint(hint) >> wrapped
         1 * wrapped.useCursor(true) >> wrapped
 
         when:

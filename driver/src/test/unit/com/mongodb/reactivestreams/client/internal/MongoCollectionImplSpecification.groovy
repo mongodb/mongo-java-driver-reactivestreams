@@ -26,7 +26,9 @@ import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.Collation
 import com.mongodb.client.model.CollationStrength
 import com.mongodb.client.model.CountOptions
+import com.mongodb.client.model.CreateIndexOptions
 import com.mongodb.client.model.DeleteOptions
+import com.mongodb.client.model.DropIndexOptions
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -37,6 +39,7 @@ import com.mongodb.client.model.InsertOneModel
 import com.mongodb.client.model.InsertOneOptions
 import com.mongodb.client.model.RenameCollectionOptions
 import com.mongodb.client.model.UpdateOptions
+import com.mongodb.session.ClientSession
 import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.codecs.configuration.CodecRegistry
@@ -46,11 +49,13 @@ import spock.lang.Specification
 import static com.mongodb.reactivestreams.client.CustomMatchers.isTheSameAs
 import static spock.util.matcher.HamcrestSupport.expect
 
+@SuppressWarnings('ClassSize')
 class MongoCollectionImplSpecification extends Specification {
 
     def subscriber = Stub(Subscriber) {
         onSubscribe(_) >> { args -> args[0].request(1) }
     }
+    def clientSession = Stub(ClientSession)
     def wrapped = Mock(WrappedMongoCollection)
     def mongoCollection = new MongoCollectionImpl(wrapped)
     def filter = new Document('_id', 1)
@@ -211,13 +216,31 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.count(filter, options, _)
-    }
 
+        when:
+        mongoCollection.count(clientSession).subscribe(subscriber)
+
+        then:
+        1 * wrapped.count(clientSession, _, _, _)
+
+        when:
+        mongoCollection.count(clientSession, filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.count(clientSession, filter, _, _)
+
+        when:
+        mongoCollection.count(clientSession, filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.count(clientSession, filter, options, _)
+    }
 
     def 'should create DistinctPublisher correctly'() {
         given:
         def wrapped = Stub(WrappedMongoCollection) {
             distinct(_, _) >> Stub(com.mongodb.async.client.DistinctIterable)
+            distinct(clientSession, _, _) >> Stub(com.mongodb.async.client.DistinctIterable)
         }
         def collection = new MongoCollectionImpl(wrapped)
 
@@ -226,52 +249,85 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         expect distinctPublisher, isTheSameAs(new DistinctPublisherImpl(wrapped.distinct('field', String)))
+
+        when:
+        distinctPublisher = collection.distinct(clientSession, 'field', String)
+
+        then:
+        expect distinctPublisher, isTheSameAs(new DistinctPublisherImpl(wrapped.distinct(clientSession, 'field', String)))
     }
 
     def 'should create FindPublisher correctly'() {
         given:
         def wrappedResult = Stub(com.mongodb.async.client.FindIterable)
-        def wrapped = Mock(WrappedMongoCollection) {
-            1 * find(new BsonDocument(), Document) >> wrappedResult
-            1 * find(new BsonDocument(), BsonDocument) >> wrappedResult
-            1 * find(new Document(), Document) >> wrappedResult
-            1 * find(new Document(), BsonDocument) >> wrappedResult
-            2 * getDocumentClass() >> Document
-        }
+        def wrapped = Mock(WrappedMongoCollection)
         def collection = new MongoCollectionImpl(wrapped)
 
         when:
         def findPublisher = collection.find()
 
         then:
+        1 * wrapped.getDocumentClass() >> Document
+        1 * wrapped.find(new BsonDocument(), Document) >> wrappedResult
         expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
 
         when:
         findPublisher = collection.find(BsonDocument)
 
         then:
+        1 * wrapped.find(new BsonDocument(), BsonDocument) >> wrappedResult
         expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
 
         when:
         findPublisher = collection.find(new Document())
 
         then:
+        1 * wrapped.getDocumentClass() >> Document
+        1 * wrapped.find(new Document(), Document) >> wrappedResult
         expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
 
         when:
         findPublisher = collection.find(new Document(), BsonDocument)
 
         then:
+        1 * wrapped.find(new Document(), BsonDocument) >> wrappedResult
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
+
+        when:
+        findPublisher = collection.find(clientSession)
+
+        then:
+        1 * wrapped.getDocumentClass() >> Document
+        1 * wrapped.find(clientSession, new BsonDocument(), Document) >> wrappedResult
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
+
+        when:
+        findPublisher = collection.find(clientSession, BsonDocument)
+
+        then:
+        1 * wrapped.find(clientSession, new BsonDocument(), BsonDocument) >> wrappedResult
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
+
+        when:
+        findPublisher = collection.find(clientSession, new Document())
+
+        then:
+        1 * wrapped.getDocumentClass() >> Document
+        1 * wrapped.find(clientSession, new Document(), Document) >> wrappedResult
+        expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
+
+        when:
+        findPublisher = collection.find(new Document(), BsonDocument)
+
+        then:
+        1 * wrapped.find(new Document(), BsonDocument) >> wrappedResult
         expect findPublisher, isTheSameAs(new FindPublisherImpl(wrappedResult))
     }
 
     def 'should use AggregatePublisher correctly'() {
         given:
         def wrappedResult = Stub(com.mongodb.async.client.AggregateIterable)
-        def wrapped = Mock(WrappedMongoCollection) {
-            1 * aggregate(_, Document) >> wrappedResult
-            1 * aggregate(_, BsonDocument) >> wrappedResult
-        }
+        def wrapped = Mock(WrappedMongoCollection)
         def collection = new MongoCollectionImpl(wrapped)
         def pipeline = [new Document('$match', 1)]
 
@@ -279,12 +335,28 @@ class MongoCollectionImplSpecification extends Specification {
         def aggregatePublisher = collection.aggregate(pipeline)
 
         then:
+        1 * wrapped.aggregate(pipeline, Document) >> wrappedResult
         expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
 
         when:
         aggregatePublisher = collection.aggregate(pipeline, BsonDocument)
 
         then:
+        1 * wrapped.aggregate(pipeline, BsonDocument) >> wrappedResult
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+
+        when:
+        aggregatePublisher = collection.aggregate(clientSession, pipeline)
+
+        then:
+        1 * wrapped.aggregate(clientSession, pipeline, Document) >> wrappedResult
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+
+        when:
+        aggregatePublisher = collection.aggregate(clientSession, pipeline, BsonDocument)
+
+        then:
+        1 * wrapped.aggregate(clientSession, pipeline, BsonDocument) >> wrappedResult
         expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
     }
 
@@ -292,12 +364,7 @@ class MongoCollectionImplSpecification extends Specification {
         given:
         def pipeline = [new Document('$match', 1)]
         def wrappedResult = Stub(ChangeStreamIterable)
-        def wrapped = Mock(WrappedMongoCollection) {
-            1 * watch([], Document) >> wrappedResult
-            1 * watch([], BsonDocument) >> wrappedResult
-            1 * watch(pipeline, Document) >> wrappedResult
-            1 * watch(pipeline, BsonDocument) >> wrappedResult
-        }
+        def wrapped = Mock(WrappedMongoCollection)
         def collection = new MongoCollectionImpl(wrapped)
         def changeStreamPublisher
 
@@ -305,46 +372,92 @@ class MongoCollectionImplSpecification extends Specification {
         changeStreamPublisher = collection.watch()
 
         then:
+        1 * wrapped.watch([], Document) >> wrappedResult
         expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
 
         when:
         changeStreamPublisher = collection.watch(BsonDocument)
 
         then:
+        1 * wrapped.watch([], BsonDocument) >> wrappedResult
         expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
 
         when:
         changeStreamPublisher = collection.watch(pipeline)
 
         then:
+        1 * wrapped.watch(pipeline, Document) >> wrappedResult
         expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
 
         when:
         changeStreamPublisher = collection.watch(pipeline, BsonDocument)
 
         then:
+        1 * wrapped.watch(pipeline, BsonDocument) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(clientSession)
+
+        then:
+        1 * wrapped.watch(clientSession, [], Document) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(clientSession, BsonDocument)
+
+        then:
+        1 * wrapped.watch(clientSession, [], BsonDocument) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(clientSession, pipeline)
+
+        then:
+        1 * wrapped.watch(clientSession, pipeline, Document) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = collection.watch(clientSession, pipeline, BsonDocument)
+
+        then:
+        1 * wrapped.watch(clientSession, pipeline, BsonDocument) >> wrappedResult
         expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
     }
 
     def 'should create MapReducePublisher correctly'() {
         given:
         def wrappedResult = Stub(com.mongodb.async.client.MapReduceIterable)
-        def wrapped = Mock(WrappedMongoCollection) {
-            1 * mapReduce('map', 'reduce', Document) >> wrappedResult
-            1 * mapReduce('map', 'reduce', BsonDocument) >> wrappedResult
-        }
+        def wrapped = Mock(WrappedMongoCollection)
         def collection = new MongoCollectionImpl(wrapped)
+        def mapReducePublisher
 
         when:
-        def mapReducePublisher = collection.mapReduce('map', 'reduce')
+        mapReducePublisher = collection.mapReduce('map', 'reduce')
 
         then:
+        1 * wrapped.mapReduce('map', 'reduce', Document) >> wrappedResult
         expect mapReducePublisher, isTheSameAs(new MapReducePublisherImpl(wrappedResult))
 
         when:
         mapReducePublisher = collection.mapReduce('map', 'reduce', BsonDocument)
 
         then:
+        1 * wrapped.mapReduce('map', 'reduce', BsonDocument) >> wrappedResult
+        expect mapReducePublisher, isTheSameAs(new MapReducePublisherImpl(wrappedResult))
+
+        when:
+        mapReducePublisher = collection.mapReduce(clientSession, 'map', 'reduce')
+
+        then:
+        1 * wrapped.mapReduce(clientSession, 'map', 'reduce', Document) >> wrappedResult
+        expect mapReducePublisher, isTheSameAs(new MapReducePublisherImpl(wrappedResult))
+
+        when:
+        mapReducePublisher = collection.mapReduce(clientSession, 'map', 'reduce', BsonDocument)
+
+        then:
+        1 * wrapped.mapReduce(clientSession, 'map', 'reduce', BsonDocument) >> wrappedResult
         expect mapReducePublisher, isTheSameAs(new MapReducePublisherImpl(wrappedResult))
     }
 
@@ -373,6 +486,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.bulkWrite(bulkOperation, options, _)
+
+        when:
+        mongoCollection.bulkWrite(clientSession, bulkOperation).subscribe(subscriber)
+
+        then:
+        1 * wrapped.bulkWrite(clientSession, bulkOperation, _, _)
+
+        when:
+        mongoCollection.bulkWrite(clientSession, bulkOperation, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.bulkWrite(clientSession, bulkOperation, options, _)
     }
 
     def 'should use the underlying insertOne'() {
@@ -397,6 +522,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.insertOne(insert, options, _)
+
+        when:
+        mongoCollection.insertOne(clientSession, insert).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertOne(clientSession, insert, _, _)
+
+        when:
+        mongoCollection.insertOne(clientSession, insert, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertOne(clientSession, insert, options, _)
     }
 
     def 'should use the underlying insertMany'() {
@@ -421,6 +558,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.insertMany(inserts, options, _)
+
+        when:
+        mongoCollection.insertMany(clientSession, inserts).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertMany(clientSession, inserts, _, _)
+
+        when:
+        mongoCollection.insertMany(clientSession, inserts, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.insertMany(clientSession, inserts, options, _)
     }
 
     def 'should use the underlying deleteOne'() {
@@ -428,13 +577,19 @@ class MongoCollectionImplSpecification extends Specification {
         mongoCollection.deleteOne(filter)
 
         then: 'only executed when requested'
-        0 * wrapped.deleteOne(_, _)
+        0 * wrapped.deleteOne(*_)
 
         when:
         mongoCollection.deleteOne(filter).subscribe(subscriber)
 
         then:
-        1 * wrapped.deleteOne(filter, _)
+        1 * wrapped.deleteOne(filter, _, _)
+
+        when:
+        mongoCollection.deleteOne(clientSession, filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteOne(clientSession, filter, _, _)
     }
 
     def 'should use the underlying deleteOne with options'() {
@@ -450,6 +605,12 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.deleteOne(filter, options, _)
+
+        when:
+        mongoCollection.deleteOne(clientSession, filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteOne(clientSession, filter, options, _)
     }
 
     def 'should use the underlying deleteMany'() {
@@ -457,13 +618,19 @@ class MongoCollectionImplSpecification extends Specification {
         mongoCollection.deleteMany(filter)
 
         then: 'only executed when requested'
-        0 * wrapped.deleteMany(_, _)
+        0 * wrapped.deleteMany(*_)
 
         when:
         mongoCollection.deleteMany(filter).subscribe(subscriber)
 
         then:
-        1 * wrapped.deleteMany(filter, _)
+        1 * wrapped.deleteMany(filter, _, _)
+
+        when:
+        mongoCollection.deleteMany(clientSession, filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteMany(clientSession, filter, _, _)
     }
 
     def 'should use the underlying deleteMany with options'() {
@@ -479,6 +646,12 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.deleteMany(filter, options, _)
+
+        when:
+        mongoCollection.deleteMany(clientSession, filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.deleteMany(clientSession, filter, options, _)
     }
 
     def 'should use the underlying replaceOne'() {
@@ -503,6 +676,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.replaceOne(filter, replacement, options, _)
+
+        when:
+        mongoCollection.replaceOne(clientSession, filter, replacement).subscribe(subscriber)
+
+        then:
+        1 * wrapped.replaceOne(clientSession, filter, replacement, _, _)
+
+        when:
+        mongoCollection.replaceOne(clientSession, filter, replacement, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.replaceOne(clientSession, filter, replacement, options, _)
     }
 
 
@@ -528,6 +713,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.updateOne(filter, update, options, _)
+
+        when:
+        mongoCollection.updateOne(clientSession, filter, update).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateOne(clientSession, filter, update, _, _)
+
+        when:
+        mongoCollection.updateOne(clientSession, filter, update, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateOne(clientSession, filter, update, options, _)
     }
 
     def 'should use the underlying updateMany'() {
@@ -552,6 +749,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.updateMany(filter, update, options, _)
+
+        when:
+        mongoCollection.updateMany(clientSession, filter, update).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateMany(clientSession, filter, update, _, _)
+
+        when:
+        mongoCollection.updateMany(clientSession, filter, update, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.updateMany(clientSession, filter, update, options, _)
     }
 
     def 'should use the underlying findOneAndDelete'() {
@@ -576,6 +785,17 @@ class MongoCollectionImplSpecification extends Specification {
         then:
         1 * wrapped.findOneAndDelete(filter, options, _)
 
+        when:
+        mongoCollection.findOneAndDelete(clientSession, filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndDelete(clientSession, filter, _, _)
+
+        when:
+        mongoCollection.findOneAndDelete(clientSession, filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndDelete(clientSession, filter, options, _)
     }
 
     def 'should use the underlying findOneAndReplace'() {
@@ -600,6 +820,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.findOneAndReplace(filter, replacement, options, _)
+
+        when:
+        mongoCollection.findOneAndReplace(clientSession, filter, replacement).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndReplace(clientSession, filter, replacement, _, _)
+
+        when:
+        mongoCollection.findOneAndReplace(clientSession, filter, replacement, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndReplace(clientSession, filter, replacement, options, _)
     }
 
     def 'should use the underlying findOneAndUpdate'() {
@@ -624,6 +856,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.findOneAndUpdate(filter, update, options, _)
+
+        when:
+        mongoCollection.findOneAndUpdate(clientSession, filter, update).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndUpdate(clientSession, filter, update, _, _)
+
+        when:
+        mongoCollection.findOneAndUpdate(clientSession, filter, update, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.findOneAndUpdate(clientSession, filter, update, options, _)
     }
 
     def 'should use the underlying drop'() {
@@ -638,6 +882,12 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.drop(_)
+
+        when:
+        mongoCollection.drop(clientSession).subscribe(subscriber)
+
+        then:
+        1 * wrapped.drop(clientSession, _)
     }
 
     def 'should use the underlying createIndex'() {
@@ -662,73 +912,176 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.createIndex(index, options, _)
+
+        when:
+        mongoCollection.createIndex(clientSession, index).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndex(clientSession, index, _, _)
+
+        when:
+        mongoCollection.createIndex(clientSession, index, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndex(clientSession, index, options, _)
     }
 
     def 'should use the underlying createIndexes'() {
         given:
         def indexes = [new IndexModel(new Document('index', 1))]
+        def options = new CreateIndexOptions()
 
         when:
         mongoCollection.createIndexes(indexes)
 
         then: 'only executed when requested'
-        0 * wrapped.createIndexes(_, _)
+        0 * wrapped.createIndexes(*_)
 
         when:
         mongoCollection.createIndexes(indexes).subscribe(subscriber)
 
         then:
-        1 * wrapped.createIndexes(indexes, _)
+        1 * wrapped.createIndexes(indexes, _, _)
+
+        when:
+        mongoCollection.createIndexes(indexes, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndexes(indexes, options, _)
+
+        when:
+        mongoCollection.createIndexes(clientSession, indexes).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndexes(clientSession, indexes, _, _)
+
+        when:
+        mongoCollection.createIndexes(clientSession, indexes, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.createIndexes(clientSession, indexes, options, _)
     }
 
     def 'should use the underlying listIndexes'() {
-        def wrapped = Stub(WrappedMongoCollection) {
-            listIndexes(_) >> Stub(com.mongodb.async.client.ListIndexesIterable)
-            getDocumentClass() >> Document
-        }
+        def listIndexesIterable = Stub(com.mongodb.async.client.ListIndexesIterable)
+        def wrapped = Mock(WrappedMongoCollection)
         def mongoCollection = new MongoCollectionImpl(wrapped)
 
         when:
         def publisher = mongoCollection.listIndexes()
 
         then:
-        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(wrapped.listIndexes(Document)))
+        1 * wrapped.listIndexes(_) >> listIndexesIterable
+        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(listIndexesIterable))
 
         when:
         mongoCollection.listIndexes(BsonDocument)
 
         then:
-        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(wrapped.listIndexes(BsonDocument)))
+        1 * wrapped.listIndexes(BsonDocument) >> listIndexesIterable
+        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(listIndexesIterable))
+
+        when:
+        publisher = mongoCollection.listIndexes(clientSession)
+
+        then:
+        1 * wrapped.listIndexes(clientSession, _) >> listIndexesIterable
+        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(listIndexesIterable))
+
+        when:
+        mongoCollection.listIndexes(clientSession, BsonDocument)
+
+        then:
+        1 * wrapped.listIndexes(clientSession, BsonDocument) >> listIndexesIterable
+        expect publisher, isTheSameAs(new ListIndexesPublisherImpl(listIndexesIterable))
     }
 
     def 'should use the underlying dropIndex'() {
         given:
         def index = 'index'
+        def dropIndexOptions = new DropIndexOptions()
 
         when:
         mongoCollection.dropIndex(index)
 
         then: 'only executed when requested'
-        0 * wrapped.dropIndex(_, _)
+        0 * wrapped.dropIndex(*_)
 
         when:
         mongoCollection.dropIndex(index).subscribe(subscriber)
 
         then:
-        1 * wrapped.dropIndex(index, _)
+        1 * wrapped.dropIndex(index, _, _)
 
         when:
         index = new Document('index', 1)
         mongoCollection.dropIndex(index).subscribe(subscriber)
 
         then:
-        1 * wrapped.dropIndex(_, _)
+        1 * wrapped.dropIndex(_, _, _)
 
         when:
         mongoCollection.dropIndexes().subscribe(subscriber)
 
         then:
-        1 * wrapped.dropIndex('*', _)
+        1 * wrapped.dropIndex('*', _, _)
+
+        when:
+        mongoCollection.dropIndex(index, dropIndexOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(index, dropIndexOptions, _)
+
+        when:
+        index = new Document('index', 1)
+        mongoCollection.dropIndex(index, dropIndexOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(index, dropIndexOptions, _)
+
+        when:
+        mongoCollection.dropIndexes(dropIndexOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex('*', dropIndexOptions, _)
+
+        when:
+        mongoCollection.dropIndex(clientSession, index).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(clientSession, index, _, _)
+
+        when:
+        index = new Document('index', 1)
+        mongoCollection.dropIndex(clientSession, index).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(clientSession, index, _, _)
+
+        when:
+        mongoCollection.dropIndexes(clientSession).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(clientSession, '*', _, _)
+
+        when:
+        mongoCollection.dropIndex(clientSession, index, dropIndexOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(clientSession, index, dropIndexOptions, _)
+
+        when:
+        index = new Document('index', 1)
+        mongoCollection.dropIndex(clientSession, index, dropIndexOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(clientSession, index, dropIndexOptions, _)
+
+        when:
+        mongoCollection.dropIndexes(clientSession, dropIndexOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.dropIndex(clientSession, '*', dropIndexOptions, _)
     }
 
     def 'should use the underlying renameCollection'() {
@@ -753,6 +1106,18 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.renameCollection(nameCollectionNamespace, options, _)
+
+        when:
+        mongoCollection.renameCollection(clientSession, nameCollectionNamespace).subscribe(subscriber)
+
+        then:
+        1 * wrapped.renameCollection(clientSession, nameCollectionNamespace, _, _)
+
+        when:
+        mongoCollection.renameCollection(clientSession, nameCollectionNamespace, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.renameCollection(clientSession, nameCollectionNamespace, options, _)
     }
 
 }

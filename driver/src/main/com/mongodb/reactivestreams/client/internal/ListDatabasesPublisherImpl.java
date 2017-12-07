@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,18 @@ final class ListDatabasesPublisherImpl<TResult> implements ListDatabasesPublishe
     public ListDatabasesPublisher<TResult> maxTime(final long maxTime, final TimeUnit timeUnit) {
         notNull("timeUnit", timeUnit);
         wrapped.maxTime(maxTime, timeUnit);
+        return this;
+    }
+
+    @Override
+    public ListDatabasesPublisher<TResult> filter(final Bson filter) {
+        wrapped.filter(filter);
+        return this;
+    }
+
+    @Override
+    public ListDatabasesPublisher<TResult> nameOnly(final Boolean nameOnly) {
+        wrapped.nameOnly(nameOnly);
         return this;
     }
 

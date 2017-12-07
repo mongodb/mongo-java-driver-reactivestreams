@@ -99,7 +99,8 @@ configure(subprojects.findAll { it.name != 'util' }) {
         dependsOn project(':util').compileJava //We need taglets to be compiled
         options.author = true
         options.version = true
-        options.links 'http://docs.oracle.com/javase/7/docs/api/'
+        options.links 'http://docs.oracle.com/javase/8/docs/api/'
+        options.links 'http://mongodb.github.io/mongo-java-driver/3.6/javadoc/'
         options.tagletPath project(':util').sourceSets.main.output.classesDir
         options.taglets 'ManualTaglet'
         options.taglets 'ServerReleaseTaglet'

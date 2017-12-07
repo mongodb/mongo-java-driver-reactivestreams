@@ -21,6 +21,7 @@ import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.Collation;
 import com.mongodb.reactivestreams.client.AggregatePublisher;
 import com.mongodb.reactivestreams.client.Success;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -83,6 +84,18 @@ final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResul
     @Override
     public AggregatePublisher<TResult> collation(final Collation collation) {
         wrapped.collation(collation);
+        return this;
+    }
+
+    @Override
+    public AggregatePublisher<TResult> comment(final String comment) {
+        wrapped.comment(comment);
+        return this;
+    }
+
+    @Override
+    public AggregatePublisher<TResult> hint(final Bson hint) {
+        wrapped.hint(hint);
         return this;
     }
 

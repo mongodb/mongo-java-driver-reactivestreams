@@ -16,10 +16,14 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.Block;
+import com.mongodb.ClientSessionOptions;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import com.mongodb.session.ClientSession;
 import org.bson.Document;
 import org.reactivestreams.Publisher;
 
@@ -65,6 +69,11 @@ public final class MongoClientImpl implements MongoClient {
     }
 
     @Override
+    public Publisher<String> listDatabaseNames(final ClientSession clientSession) {
+        return new ObservableToPublisher<String>(observe(wrapped.listDatabaseNames(clientSession)));
+    }
+
+    @Override
     public ListDatabasesPublisher<Document> listDatabases() {
         return listDatabases(Document.class);
     }
@@ -72,5 +81,25 @@ public final class MongoClientImpl implements MongoClient {
     @Override
     public <TResult> ListDatabasesPublisher<TResult> listDatabases(final Class<TResult> clazz) {
         return new ListDatabasesPublisherImpl<TResult>(wrapped.listDatabases(clazz));
+    }
+
+    @Override
+    public ListDatabasesPublisher<Document> listDatabases(final ClientSession clientSession) {
+        return listDatabases(clientSession, Document.class);
+    }
+
+    @Override
+    public <TResult> ListDatabasesPublisher<TResult> listDatabases(final ClientSession clientSession, final Class<TResult> clazz) {
+        return new ListDatabasesPublisherImpl<TResult>(wrapped.listDatabases(clientSession, clazz));
+    }
+
+    @Override
+    public Publisher<ClientSession> startSession(final ClientSessionOptions options) {
+        return new ObservableToPublisher<ClientSession>(observe(new Block<SingleResultCallback<ClientSession>>() {
+            @Override
+            public void apply(final SingleResultCallback<ClientSession> clientSessionSingleResultCallback) {
+                wrapped.startSession(options, clientSessionSingleResultCallback);
+            }
+        }));
     }
 }

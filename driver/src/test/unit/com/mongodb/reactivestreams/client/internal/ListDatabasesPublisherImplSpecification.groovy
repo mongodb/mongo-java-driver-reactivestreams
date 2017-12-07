@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client.internal
 
 import com.mongodb.async.client.ListDatabasesIterable
+import org.bson.Document
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
 
@@ -32,6 +33,7 @@ class ListDatabasesPublisherImplSpecification extends Specification {
 
         def wrapped = Mock(ListDatabasesIterable)
         def publisher = new ListDatabasesPublisherImpl(wrapped)
+        def filter = new Document('a', 1)
 
         when:
         publisher.subscribe(subscriber)
@@ -44,6 +46,18 @@ class ListDatabasesPublisherImplSpecification extends Specification {
 
         then:
         1 * wrapped.maxTime(1, TimeUnit.SECONDS) >> wrapped
+
+        when:
+        publisher = publisher.filter(filter)
+
+        then:
+        1 * wrapped.filter(filter) >> wrapped
+
+        when:
+        publisher = publisher.nameOnly(true)
+
+        then:
+        1 * wrapped.nameOnly(true) >> wrapped
 
         when:
         publisher.subscribe(subscriber)

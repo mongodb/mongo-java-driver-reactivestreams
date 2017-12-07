@@ -17,6 +17,7 @@
 
 package com.mongodb.reactivestreams.client;
 
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -38,5 +39,26 @@ public interface ListDatabasesPublisher<TResult> extends Publisher<TResult> {
      * @mongodb.driver.manual reference/operator/meta/maxTimeMS/ Max Time
      */
     ListDatabasesPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
+
+    /**
+     * Sets the query filter to apply to the returned database names.
+     *
+     * @param filter the filter, which may be null.
+     * @return this
+     * @mongodb.server.release 3.4.2
+     * @since 1.7
+     */
+    ListDatabasesPublisher<TResult> filter(Bson filter);
+
+    /**
+     * Sets the nameOnly flag that indicates whether the command should return just the database names or return the database names and
+     * size information.
+     *
+     * @param nameOnly the nameOnly flag, which may be null
+     * @return this
+     * @mongodb.server.release 3.4.3
+     * @since 1.7
+     */
+    ListDatabasesPublisher<TResult> nameOnly(Boolean nameOnly);
 
 }

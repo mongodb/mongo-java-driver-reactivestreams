@@ -22,6 +22,7 @@ import com.mongodb.WriteConcern;
 import com.mongodb.annotations.ThreadSafe;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.CreateViewOptions;
+import com.mongodb.session.ClientSession;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
@@ -165,6 +166,56 @@ public interface MongoDatabase {
     <TResult> Publisher<TResult> runCommand(Bson command, ReadPreference readPreference, Class<TResult> clazz);
 
     /**
+     * Executes command in the context of the current database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param command the command to be run
+     * @return a publisher containing the command result
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Document> runCommand(ClientSession clientSession, Bson command);
+
+    /**
+     * Executes command in the context of the current database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param command        the command to be run
+     * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
+     * @return a publisher containing the command result
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Document> runCommand(ClientSession clientSession, Bson command, ReadPreference readPreference);
+
+    /**
+     * Executes command in the context of the current database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param command   the command to be run
+     * @param clazz     the default class to cast any documents returned from the database into.
+     * @param <TResult> the type of the class to use instead of {@code Document}.
+     * @return a publisher containing the command result
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    <TResult> Publisher<TResult> runCommand(ClientSession clientSession, Bson command, Class<TResult> clazz);
+
+    /**
+     * Executes command in the context of the current database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param command        the command to be run
+     * @param readPreference the {@link com.mongodb.ReadPreference} to be used when executing the command
+     * @param clazz          the default class to cast any documents returned from the database into.
+     * @param <TResult>      the type of the class to use instead of {@code Document}.
+     * @return a publisher containing the command result
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    <TResult> Publisher<TResult> runCommand(ClientSession clientSession, Bson command, ReadPreference readPreference, Class<TResult> clazz);
+
+    /**
      * Drops this database.
      *
      * @return a publisher identifying when the database has been dropped
@@ -173,11 +224,32 @@ public interface MongoDatabase {
     Publisher<Success> drop();
 
     /**
+     * Drops this database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @return a publisher identifying when the database has been dropped
+     * @mongodb.driver.manual reference/commands/dropDatabase/#dbcmd.dropDatabase Drop database
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Success> drop(ClientSession clientSession);
+
+    /**
      * Gets the names of all the collections in this database.
      *
      * @return a publisher with all the names of all the collections in this database
      */
     Publisher<String> listCollectionNames();
+
+    /**
+     * Gets the names of all the collections in this database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @return a publisher with all the names of all the collections in this database
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<String> listCollectionNames(ClientSession clientSession);
 
     /**
      * Finds all the collections in this database.
@@ -198,6 +270,30 @@ public interface MongoDatabase {
     <TResult> ListCollectionsPublisher<TResult> listCollections(Class<TResult> clazz);
 
     /**
+     * Finds all the collections in this database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @return the fluent list collections interface
+     * @mongodb.driver.manual reference/command/listCollections listCollections
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    ListCollectionsPublisher<Document> listCollections(ClientSession clientSession);
+
+    /**
+     * Finds all the collections in this database.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param clazz     the class to decode each document into
+     * @param <TResult> the target document type of the iterable.
+     * @return the fluent list collections interface
+     * @mongodb.driver.manual reference/command/listCollections listCollections
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    <TResult> ListCollectionsPublisher<TResult> listCollections(ClientSession clientSession, Class<TResult> clazz);
+
+    /**
      * Create a new collection with the given name.
      *
      * @param collectionName the name for the new collection to create
@@ -215,6 +311,31 @@ public interface MongoDatabase {
      * @mongodb.driver.manual reference/commands/create Create Command
      */
     Publisher<Success> createCollection(String collectionName, CreateCollectionOptions options);
+
+    /**
+     * Create a new collection with the given name.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param collectionName the name for the new collection to create
+     * @return a publisher identifying when the collection has been created
+     * @mongodb.driver.manual reference/commands/create Create Command
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Success> createCollection(ClientSession clientSession, String collectionName);
+
+    /**
+     * Create a new collection with the selected options
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param collectionName the name for the new collection to create
+     * @param options        various options for creating the collection
+     * @return a publisher identifying when the collection has been created
+     * @mongodb.driver.manual reference/commands/create Create Command
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Success> createCollection(ClientSession clientSession, String collectionName, CreateCollectionOptions options);
 
     /**
      * Creates a view with the given name, backing collection/view name, and aggregation pipeline that defines the view.
@@ -242,4 +363,34 @@ public interface MongoDatabase {
      * @mongodb.driver.manual reference/command/create Create Command
      */
     Publisher<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline, CreateViewOptions createViewOptions);
+
+    /**
+     * Creates a view with the given name, backing collection/view name, and aggregation pipeline that defines the view.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param viewName the name of the view to create
+     * @param viewOn   the backing collection/view for the view
+     * @param pipeline the pipeline that defines the view
+     * @return an observable identifying when the collection view has been created
+     * @mongodb.driver.manual reference/command/create Create Command
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Success> createView(ClientSession clientSession, String viewName, String viewOn, List<? extends Bson> pipeline);
+
+    /**
+     * Creates a view with the given name, backing collection/view name, aggregation pipeline, and options that defines the view.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param viewName the name of the view to create
+     * @param viewOn   the backing collection/view for the view
+     * @param pipeline the pipeline that defines the view
+     * @param createViewOptions various options for creating the view
+     * @return an observable identifying when the collection view has been created
+     * @mongodb.driver.manual reference/command/create Create Command
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<Success> createView(ClientSession clientSession, String viewName, String viewOn, List<? extends Bson> pipeline,
+                                  CreateViewOptions createViewOptions);
 }

@@ -27,6 +27,7 @@ import com.mongodb.reactivestreams.client.ListCollectionsPublisher;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import com.mongodb.reactivestreams.client.Success;
+import com.mongodb.session.ClientSession;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
@@ -138,6 +139,37 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
+    public Publisher<Document> runCommand(final ClientSession clientSession, final Bson command) {
+        return runCommand(clientSession, command, Document.class);
+    }
+
+    @Override
+    public Publisher<Document> runCommand(final ClientSession clientSession, final Bson command, final ReadPreference readPreference) {
+        return runCommand(clientSession, command, readPreference, Document.class);
+    }
+
+    @Override
+    public <TResult> Publisher<TResult> runCommand(final ClientSession clientSession, final Bson command, final Class<TResult> clazz) {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
+            @Override
+            public void apply(final SingleResultCallback<TResult> callback) {
+                wrapped.runCommand(clientSession, command, clazz, callback);
+            }
+        }));
+    }
+
+    @Override
+    public <TResult> Publisher<TResult> runCommand(final ClientSession clientSession, final Bson command,
+                                                   final ReadPreference readPreference, final Class<TResult> clazz) {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
+            @Override
+            public void apply(final SingleResultCallback<TResult> callback) {
+                wrapped.runCommand(clientSession, command, readPreference, clazz, callback);
+            }
+        }));
+    }
+
+    @Override
     public Publisher<Success> drop() {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
@@ -148,8 +180,23 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
+    public Publisher<Success> drop(final ClientSession clientSession) {
+        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
+            @Override
+            public void apply(final SingleResultCallback<Success> callback) {
+                wrapped.drop(clientSession, voidToSuccessCallback(callback));
+            }
+        }));
+    }
+
+    @Override
     public Publisher<String> listCollectionNames() {
         return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames()));
+    }
+
+    @Override
+    public Publisher<String> listCollectionNames(final ClientSession clientSession) {
+        return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames(clientSession)));
     }
 
     @Override
@@ -160,6 +207,16 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     @Override
     public <C> ListCollectionsPublisher<C> listCollections(final Class<C> clazz) {
         return new ListCollectionsPublisherImpl<C>(wrapped.listCollections(clazz));
+    }
+
+    @Override
+    public ListCollectionsPublisher<Document> listCollections(final ClientSession clientSession) {
+        return listCollections(clientSession, Document.class);
+    }
+
+    @Override
+    public <C> ListCollectionsPublisher<C> listCollections(final ClientSession clientSession, final Class<C> clazz) {
+        return new ListCollectionsPublisherImpl<C>(wrapped.listCollections(clientSession, clazz));
     }
 
     @Override
@@ -178,13 +235,24 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
-    public Publisher<Success> createView(final String viewName, final String viewOn, final List<? extends Bson> pipeline) {
+    public Publisher<Success> createCollection(final ClientSession clientSession, final String collectionName) {
+        return createCollection(clientSession, collectionName, new CreateCollectionOptions());
+    }
+
+    @Override
+    public Publisher<Success> createCollection(final ClientSession clientSession, final String collectionName,
+                                               final CreateCollectionOptions options) {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createView(viewName, viewOn, pipeline, voidToSuccessCallback(callback));
+                wrapped.createCollection(clientSession, collectionName, options, voidToSuccessCallback(callback));
             }
         }));
+    }
+
+    @Override
+    public Publisher<Success> createView(final String viewName, final String viewOn, final List<? extends Bson> pipeline) {
+        return createView(viewName, viewOn, pipeline, new CreateViewOptions());
     }
 
     @Override
@@ -194,6 +262,23 @@ public final class MongoDatabaseImpl implements MongoDatabase {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
                 wrapped.createView(viewName, viewOn, pipeline, createViewOptions, voidToSuccessCallback(callback));
+            }
+        }));
+    }
+
+    @Override
+    public Publisher<Success> createView(final ClientSession clientSession, final String viewName, final String viewOn,
+                                         final List<? extends Bson> pipeline) {
+        return createView(clientSession, viewName, viewOn, pipeline, new CreateViewOptions());
+    }
+
+    @Override
+    public Publisher<Success> createView(final ClientSession clientSession, final String viewName, final String viewOn,
+                                         final List<? extends Bson> pipeline, final CreateViewOptions createViewOptions) {
+        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
+            @Override
+            public void apply(final SingleResultCallback<Success> callback) {
+                wrapped.createView(clientSession, viewName, viewOn, pipeline, createViewOptions, voidToSuccessCallback(callback));
             }
         }));
     }

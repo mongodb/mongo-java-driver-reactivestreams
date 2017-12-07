@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.client.model.Collation;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -107,5 +108,25 @@ public interface AggregatePublisher<TResult> extends Publisher<TResult> {
      * @mongodb.server.release 3.4
      */
     AggregatePublisher<TResult> collation(Collation collation);
+
+    /**
+     * Sets the comment to the aggregation. A null value means no comment is set.
+     *
+     * @param comment the comment
+     * @return this
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    AggregatePublisher<TResult> comment(String comment);
+
+    /**
+     * Sets the hint for which index to use. A null value means no hint is set.
+     *
+     * @param hint the hint
+     * @return this
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    AggregatePublisher<TResult> hint(Bson hint);
 
 }

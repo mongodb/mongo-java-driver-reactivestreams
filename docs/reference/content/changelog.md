@@ -13,8 +13,11 @@ Changes between released versions
 ### 1.7
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.7)
 
-  * Updated MongoDB Driver Async to 3.6.0-beta1
-  * Add change stream support [JAVARS-33](https://jira.mongodb.org/browse/JAVARS-33)
+  * Updated MongoDB Driver Async to 3.6.0
+  * MongoDB 3.6 support [JAVARS-41](https://jira.mongodb.org/browse/JAVARS-41)
+    See the [what's new in 3.6 guide](http://mongodb.github.io/mongo-java-driver/3.6/whats-new/)
+
+---
 
 ### 1.6
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.6)

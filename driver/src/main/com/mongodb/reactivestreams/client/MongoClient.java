@@ -16,8 +16,10 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.ClientSessionOptions;
 import com.mongodb.annotations.Immutable;
 import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.session.ClientSession;
 import org.bson.Document;
 import org.reactivestreams.Publisher;
 
@@ -67,6 +69,18 @@ public interface MongoClient extends Closeable {
     Publisher<String> listDatabaseNames();
 
     /**
+     * Get a list of the database names
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @mongodb.driver.manual reference/commands/listDatabases List Databases
+     * @return an iterable containing all the names of all the databases
+     *
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<String> listDatabaseNames(ClientSession clientSession);
+
+    /**
      * Gets the list of databases
      *
      * @return the fluent list databases interface
@@ -81,5 +95,37 @@ public interface MongoClient extends Closeable {
      * @return the fluent list databases interface
      */
     <TResult> ListDatabasesPublisher<TResult> listDatabases(Class<TResult> clazz);
+
+    /**
+     * Gets the list of databases
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @return the fluent list databases interface
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    ListDatabasesPublisher<Document> listDatabases(ClientSession clientSession);
+
+    /**
+     * Gets the list of databases
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param clazz the class to cast the database documents to
+     * @param <TResult>   the type of the class to use instead of {@code Document}.
+     * @return the fluent list databases interface
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    <TResult> ListDatabasesPublisher<TResult> listDatabases(ClientSession clientSession, Class<TResult> clazz);
+
+    /**
+     * Creates a client session.
+     *
+     * @param options the options for the client session
+     * @return a publisher for the client session.
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     */
+    Publisher<ClientSession> startSession(ClientSessionOptions options);
 
 }

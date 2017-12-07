@@ -21,6 +21,7 @@ import com.mongodb.async.SingleResultCallback;
 import com.mongodb.operation.AsyncOperationExecutor;
 import com.mongodb.operation.AsyncReadOperation;
 import com.mongodb.operation.AsyncWriteOperation;
+import com.mongodb.session.ClientSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class TestOperationExecutor implements AsyncOperationExecutor {
     private final List<AsyncWriteOperation> queuedWriteOperations = new ArrayList<AsyncWriteOperation>();
     private final List<SingleResultCallback> queuedReadCallbacks = new ArrayList<SingleResultCallback>();
     private final List<SingleResultCallback> queuedWriteCallbacks = new ArrayList<SingleResultCallback>();
+    private List<ClientSession> clientSessions = new ArrayList<ClientSession>();
     private final List<AsyncReadOperation> readOperations = new ArrayList<AsyncReadOperation>();
     private final List<AsyncWriteOperation> writeOperations = new ArrayList<AsyncWriteOperation>();
 
@@ -50,7 +52,14 @@ public class TestOperationExecutor implements AsyncOperationExecutor {
     @Override
     public <T> void execute(final AsyncReadOperation<T> operation, final ReadPreference readPreference,
                             final SingleResultCallback<T> callback) {
+        execute(operation, readPreference, null, callback);
+    }
+
+    @Override
+    public <T> void execute(final AsyncReadOperation<T> operation, final ReadPreference readPreference, final ClientSession session,
+                            final SingleResultCallback<T> callback) {
         readPreferences.add(readPreference);
+        clientSessions.add(session);
         if (queueExecution) {
             queuedReadOperations.add(operation);
             queuedReadCallbacks.add(callback);
@@ -60,9 +69,14 @@ public class TestOperationExecutor implements AsyncOperationExecutor {
         }
     }
 
-
     @Override
     public <T> void execute(final AsyncWriteOperation<T> operation, final SingleResultCallback<T> callback) {
+        execute(operation, null, callback);
+    }
+
+    @Override
+    public <T> void execute(final AsyncWriteOperation<T> operation, final ClientSession session, final SingleResultCallback<T> callback) {
+        clientSessions.add(session);
         if (queueExecution) {
             queuedWriteOperations.add(operation);
             queuedWriteCallbacks.add(callback);
