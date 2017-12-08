@@ -1,7 +1,7 @@
 githubUser = "mongodb"
 githubRepo = "mongo-java-driver-reactivestreams"
 githubBranch = "master"
-currentVersion = "1.6"
+currentVersion = "1.7"
 highlightTheme = "idea.css"
 apiUrl = "/javadoc"
 coreApiUrl = "http://mongodb.github.io/mongo-java-driver/3.6/javadoc/"
