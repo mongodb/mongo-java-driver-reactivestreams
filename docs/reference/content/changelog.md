@@ -10,6 +10,11 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.7.1
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.7.1)
+
+  * Updated MongoDB Driver Async to 3.6.3 - Decrease likelihood of implicit session leak [JAVARS-55](https://jira.mongodb.org/browse/JAVARS-55)
+
 ### 1.7
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.7)
 
