@@ -17,7 +17,7 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.MongoNamespace
-import com.mongodb.client.MongoDriverInformation
+import com.mongodb.MongoDriverInformation
 import com.mongodb.client.model.IndexModel
 import com.mongodb.diagnostics.logging.Loggers
 import org.bson.Document
