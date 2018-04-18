@@ -20,11 +20,15 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoNamespace;
 import com.mongodb.MongoTimeoutException;
+import com.mongodb.connection.ClusterType;
+import com.mongodb.connection.ServerVersion;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +45,8 @@ public final class Fixture {
 
     private static ConnectionString connectionString;
     private static MongoClient mongoClient;
+    private static ServerVersion serverVersion;
+    private static ClusterType clusterType;
 
     private Fixture() {
     }
@@ -48,6 +54,8 @@ public final class Fixture {
     public static synchronized MongoClient getMongoClient() {
         if (mongoClient == null) {
             mongoClient = MongoClients.create(getConnectionString());
+            serverVersion = getServerVersion();
+            clusterType = getClusterType();
             Runtime.getRuntime().addShutdownHook(new ShutdownHook());
         }
         return mongoClient;
@@ -111,6 +119,49 @@ public final class Fixture {
             if (!e.getErrorMessage().contains("ns not found")) {
                 throw e;
             }
+        }
+    }
+
+    public static boolean serverVersionAtLeast(final int majorVersion, final int minorVersion) {
+        getMongoClient();
+        return serverVersion.compareTo(new ServerVersion(Arrays.asList(majorVersion, minorVersion, 0))) >= 0;
+    }
+
+    public static boolean isReplicaSet() {
+        getMongoClient();
+        return clusterType == ClusterType.REPLICA_SET;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static ServerVersion getServerVersion() {
+        Document response = runAdminCommand(new Document("buildInfo", 1));
+        List<Integer> versionArray = (List<Integer>) response.get("versionArray");
+        return new ServerVersion(versionArray.subList(0, 3));
+    }
+
+    private static ClusterType getClusterType() {
+        Document response = runAdminCommand(new Document("ismaster", 1));
+        if (response.containsKey("setName")) {
+            return ClusterType.REPLICA_SET;
+        } else if ("isdbgrid".equals(response.getString("msg"))) {
+            return ClusterType.SHARDED;
+        } else {
+            return ClusterType.STANDALONE;
+        }
+    }
+
+    private static Document runAdminCommand(final Bson command) {
+        ObservableSubscriber<Document> subscriber = new ObservableSubscriber<Document>();
+        getMongoClient().getDatabase("admin")
+                .runCommand(command)
+                .subscribe(subscriber);
+        try {
+            return subscriber.get(20, SECONDS).get(0);
+        } catch (Throwable t) {
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+            throw new RuntimeException(t);
         }
     }
 
