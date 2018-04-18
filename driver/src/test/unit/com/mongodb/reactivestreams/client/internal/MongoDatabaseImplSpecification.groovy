@@ -24,7 +24,8 @@ import com.mongodb.async.client.MongoDatabase as WrappedMongoDatabase
 import com.mongodb.client.model.CreateCollectionOptions
 import com.mongodb.client.model.CreateViewOptions
 import com.mongodb.reactivestreams.client.MongoDatabase
-import com.mongodb.session.ClientSession
+import com.mongodb.reactivestreams.client.ClientSession
+import com.mongodb.async.client.ClientSession as WrappedClientSession
 import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.codecs.configuration.CodecRegistry
@@ -36,7 +37,10 @@ import static spock.util.matcher.HamcrestSupport.expect
 
 class MongoDatabaseImplSpecification extends Specification {
 
-    def clientSession = Stub(ClientSession)
+    def wrappedClientSession = Stub(WrappedClientSession)
+    def clientSession = Stub(ClientSession) {
+        getWrapped() >> wrappedClientSession
+    }
 
     def 'should have the same methods as the wrapped MongoDatabase'() {
         given:
@@ -224,13 +228,13 @@ class MongoDatabaseImplSpecification extends Specification {
         mongoDatabase.runCommand(clientSession, new Document()).subscribe(subscriber)
 
         then:
-        1 * wrapped.runCommand(clientSession, new Document(), Document, _)
+        1 * wrapped.runCommand(wrappedClientSession, new Document(), Document, _)
 
         when:
         mongoDatabase.runCommand(clientSession, new BsonDocument(), BsonDocument).subscribe(subscriber)
 
         then:
-        1 * wrapped.runCommand(clientSession, new BsonDocument(), BsonDocument, _)
+        1 * wrapped.runCommand(wrappedClientSession, new BsonDocument(), BsonDocument, _)
     }
 
     def 'should call the underlying runCommand for read operations'() {
@@ -264,13 +268,13 @@ class MongoDatabaseImplSpecification extends Specification {
         mongoDatabase.runCommand(clientSession, new Document(), readPreference).subscribe(subscriber)
 
         then:
-        1 * wrapped.runCommand(clientSession, new Document(), readPreference, Document, _)
+        1 * wrapped.runCommand(wrappedClientSession, new Document(), readPreference, Document, _)
 
         when:
         mongoDatabase.runCommand(clientSession, new BsonDocument(), readPreference, BsonDocument).subscribe(subscriber)
 
         then:
-        1 * wrapped.runCommand(clientSession, new BsonDocument(), readPreference, BsonDocument, _)
+        1 * wrapped.runCommand(wrappedClientSession, new BsonDocument(), readPreference, BsonDocument, _)
     }
 
     def 'should call the underlying drop'() {
@@ -298,7 +302,7 @@ class MongoDatabaseImplSpecification extends Specification {
         mongoDatabase.drop(clientSession).subscribe(subscriber)
 
         then:
-        1 * wrapped.drop(clientSession, _)
+        1 * wrapped.drop(wrappedClientSession, _)
     }
     def 'should call the underlying listCollectionNames'() {
         given:
@@ -315,7 +319,7 @@ class MongoDatabaseImplSpecification extends Specification {
         mongoDatabase.listCollectionNames(clientSession)
 
         then:
-        1 * wrapped.listCollectionNames(clientSession)
+        1 * wrapped.listCollectionNames(wrappedClientSession)
 
     }
     def 'should call the underlying listCollections'() {
@@ -342,14 +346,14 @@ class MongoDatabaseImplSpecification extends Specification {
         publisher = mongoDatabase.listCollections(clientSession)
 
         then:
-        1 * wrapped.listCollections(clientSession, Document) >> wrappedResult
+        1 * wrapped.listCollections(wrappedClientSession, Document) >> wrappedResult
         expect publisher, isTheSameAs(new ListCollectionsPublisherImpl(wrappedResult))
 
         when:
         publisher = mongoDatabase.listCollections(clientSession, BsonDocument)
 
         then:
-        1 * wrapped.listCollections(clientSession, BsonDocument) >> wrappedResult
+        1 * wrapped.listCollections(wrappedClientSession, BsonDocument) >> wrappedResult
         expect publisher, isTheSameAs(new ListCollectionsPublisherImpl(wrappedResult))
     }
 
@@ -384,13 +388,13 @@ class MongoDatabaseImplSpecification extends Specification {
         mongoDatabase.createCollection(clientSession, 'collectionName').subscribe(subscriber)
 
         then:
-        1 * wrapped.createCollection(clientSession, 'collectionName', _, _)
+        1 * wrapped.createCollection(wrappedClientSession, 'collectionName', _, _)
 
         when:
         mongoDatabase.createCollection(clientSession, 'collectionName', createCollectionOptions).subscribe(subscriber)
 
         then:
-        1 * wrapped.createCollection(clientSession, 'collectionName', createCollectionOptions, _)
+        1 * wrapped.createCollection(wrappedClientSession, 'collectionName', createCollectionOptions, _)
     }
 
     def 'should call the underlying createView'() {
@@ -427,12 +431,12 @@ class MongoDatabaseImplSpecification extends Specification {
         mongoDatabase.createView(clientSession, viewName, viewOn, pipeline).subscribe(subscriber)
 
         then:
-        1 * wrapped.createView(clientSession, viewName, viewOn, pipeline, _,  _)
+        1 * wrapped.createView(wrappedClientSession, viewName, viewOn, pipeline, _,  _)
 
         when:
         mongoDatabase.createView(clientSession, viewName, viewOn, pipeline, createViewOptions).subscribe(subscriber)
 
         then:
-        1 * wrapped.createView(clientSession, viewName, viewOn, pipeline, createViewOptions, _)
+        1 * wrapped.createView(wrappedClientSession, viewName, viewOn, pipeline, createViewOptions, _)
     }
 }

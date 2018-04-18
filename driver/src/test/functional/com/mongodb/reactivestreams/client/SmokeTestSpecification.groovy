@@ -21,9 +21,12 @@ import com.mongodb.MongoDriverInformation
 import com.mongodb.client.model.IndexModel
 import com.mongodb.diagnostics.logging.Loggers
 import org.bson.Document
+import spock.lang.IgnoreIf
 
 import static Fixture.getMongoClient
 import static com.mongodb.reactivestreams.client.Fixture.getConnectionString
+import static com.mongodb.reactivestreams.client.Fixture.isReplicaSet
+import static com.mongodb.reactivestreams.client.Fixture.serverVersionAtLeast
 import static java.util.concurrent.TimeUnit.SECONDS
 
 class SmokeTestSpecification extends FunctionalSpecification {
@@ -38,7 +41,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
         def updatedDocument = new Document('_id', 1).append('a', 1)
 
         when:
-        run('clean up old database', mongoClient.getDatabase(databaseName).&drop) == Success.SUCCESS
+        run('clean up old database', mongoClient.getDatabase(databaseName).&drop)
         def names = run('get database names', mongoClient.&listDatabaseNames)
 
         then: 'Get Database Names'
@@ -143,6 +146,36 @@ class SmokeTestSpecification extends FunctionalSpecification {
         !run('the collection name is no longer in the collectionNames list', database.&listCollectionNames).contains(collectionName)
     }
 
+    @IgnoreIf({ !(serverVersionAtLeast(3, 7) && isReplicaSet()) })
+    def 'should commit a transaction'() {
+        given:
+        run('create collection', database.&createCollection, collection.namespace.collectionName)
+
+        when:
+        ClientSession session = run('start a session', getMongoClient().&startSession)[0] as ClientSession
+        session.startTransaction()
+        run('insert a document', collection.&insertOne, session, new Document('_id', 1))
+        run('commit a transaction', session.&commitTransaction)
+
+        then:
+        run('The count is one', collection.&count)[0] == 1
+    }
+
+    @IgnoreIf({ !(serverVersionAtLeast(3, 7) && isReplicaSet()) })
+    def 'should abort a transaction'() {
+        given:
+        run('create collection', database.&createCollection, collection.namespace.collectionName)
+
+        when:
+        ClientSession session = run('start a session', getMongoClient().&startSession)[0] as ClientSession
+        session.startTransaction()
+        run('insert a document', collection.&insertOne, session, new Document('_id', 1))
+        run('abort a transaction', session.&abortTransaction)
+
+        then:
+        run('The count is zero', collection.&count)[0] == 0
+    }
+
     def 'should not leak exceptions when a client is closed'() {
         given:
         def mongoClient = MongoClients.create(getConnectionString())
@@ -199,7 +232,7 @@ class SmokeTestSpecification extends FunctionalSpecification {
     }
 
     def run(String log, operation, ... args) {
-        LOGGER.debug(log);
+        LOGGER.debug(log)
         def subscriber = new Fixture.ObservableSubscriber()
         operation.call(args).subscribe(subscriber)
         subscriber.get(30, SECONDS)

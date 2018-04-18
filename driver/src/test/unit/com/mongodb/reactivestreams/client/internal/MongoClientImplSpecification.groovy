@@ -20,7 +20,8 @@ import com.mongodb.ClientSessionOptions
 import com.mongodb.async.client.ListDatabasesIterable
 import com.mongodb.async.client.MongoClient as WrappedMongoClient
 import com.mongodb.reactivestreams.client.MongoClient
-import com.mongodb.session.ClientSession
+import com.mongodb.reactivestreams.client.ClientSession
+import com.mongodb.async.client.ClientSession as WrappedClientSession
 import org.bson.BsonDocument
 import org.bson.Document
 import org.reactivestreams.Subscriber
@@ -53,7 +54,10 @@ class MongoClientImplSpecification extends Specification {
 
     def 'should call the underlying listDatabases'() {
         given:
-        def clientSession = Stub(ClientSession)
+        def wrappedClientSession = Stub(WrappedClientSession)
+        def clientSession = Stub(ClientSession) {
+            getWrapped() >> wrappedClientSession
+        }
         def wrappedResult = Stub(ListDatabasesIterable)
         def wrapped = Mock(WrappedMongoClient)
         def mongoClient = new MongoClientImpl(wrapped)
@@ -76,20 +80,23 @@ class MongoClientImplSpecification extends Specification {
         publisher = mongoClient.listDatabases(clientSession)
 
         then:
-        1 * wrapped.listDatabases(clientSession, Document) >> wrappedResult
+        1 * wrapped.listDatabases(wrappedClientSession, Document) >> wrappedResult
         expect publisher, isTheSameAs(new ListDatabasesPublisherImpl(wrappedResult))
 
         when:
         publisher = mongoClient.listDatabases(clientSession, BsonDocument)
 
         then:
-        1 * wrapped.listDatabases(clientSession, BsonDocument) >> wrappedResult
+        1 * wrapped.listDatabases(wrappedClientSession, BsonDocument) >> wrappedResult
         expect publisher, isTheSameAs(new ListDatabasesPublisherImpl(wrappedResult))
     }
 
     def 'should call the underlying listDatabaseNames'() {
         given:
-        def clientSession = Stub(ClientSession)
+        def wrappedClientSession = Stub(WrappedClientSession)
+        def clientSession = Stub(ClientSession) {
+            getWrapped() >> wrappedClientSession
+        }
 
         when:
         mongoClient.listDatabaseNames()
@@ -101,7 +108,7 @@ class MongoClientImplSpecification extends Specification {
         mongoClient.listDatabaseNames(clientSession)
 
         then:
-        1 * wrapped.listDatabaseNames(clientSession)
+        1 * wrapped.listDatabaseNames(wrappedClientSession)
     }
 
     def 'should call the underlying withSession'() {
@@ -111,7 +118,13 @@ class MongoClientImplSpecification extends Specification {
         }
         def wrapped = Mock(WrappedMongoClient)
         def mongoClient = new MongoClientImpl(wrapped)
-        def options = ClientSessionOptions.builder().build()
+        def options = ClientSessionOptions.builder().causallyConsistent(false).build()
+
+        when:
+        mongoClient.startSession().subscribe(subscriber)
+
+        then:
+        1 * wrapped.startSession(ClientSessionOptions.builder().build(), _)
 
         when:
         mongoClient.startSession(options).subscribe(subscriber)

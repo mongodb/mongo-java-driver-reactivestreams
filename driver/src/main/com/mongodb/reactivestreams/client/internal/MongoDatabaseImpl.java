@@ -27,7 +27,7 @@ import com.mongodb.reactivestreams.client.ListCollectionsPublisher;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.session.ClientSession;
+import com.mongodb.reactivestreams.client.ClientSession;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
@@ -153,7 +153,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
         return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
             @Override
             public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.runCommand(clientSession, command, clazz, callback);
+                wrapped.runCommand(clientSession.getWrapped(), command, clazz, callback);
             }
         }));
     }
@@ -164,7 +164,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
         return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
             @Override
             public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.runCommand(clientSession, command, readPreference, clazz, callback);
+                wrapped.runCommand(clientSession.getWrapped(), command, readPreference, clazz, callback);
             }
         }));
     }
@@ -184,7 +184,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.drop(clientSession, voidToSuccessCallback(callback));
+                wrapped.drop(clientSession.getWrapped(), voidToSuccessCallback(callback));
             }
         }));
     }
@@ -196,7 +196,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public Publisher<String> listCollectionNames(final ClientSession clientSession) {
-        return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames(clientSession)));
+        return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames(clientSession.getWrapped())));
     }
 
     @Override
@@ -216,7 +216,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public <C> ListCollectionsPublisher<C> listCollections(final ClientSession clientSession, final Class<C> clazz) {
-        return new ListCollectionsPublisherImpl<C>(wrapped.listCollections(clientSession, clazz));
+        return new ListCollectionsPublisherImpl<C>(wrapped.listCollections(clientSession.getWrapped(), clazz));
     }
 
     @Override
@@ -245,7 +245,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createCollection(clientSession, collectionName, options, voidToSuccessCallback(callback));
+                wrapped.createCollection(clientSession.getWrapped(), collectionName, options, voidToSuccessCallback(callback));
             }
         }));
     }
@@ -278,7 +278,8 @@ public final class MongoDatabaseImpl implements MongoDatabase {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createView(clientSession, viewName, viewOn, pipeline, createViewOptions, voidToSuccessCallback(callback));
+                wrapped.createView(clientSession.getWrapped(), viewName, viewOn, pipeline, createViewOptions,
+                        voidToSuccessCallback(callback));
             }
         }));
     }

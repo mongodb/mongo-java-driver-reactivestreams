@@ -30,7 +30,7 @@ import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream;
 import com.mongodb.reactivestreams.client.gridfs.GridFSFindPublisher;
 import com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream;
-import com.mongodb.session.ClientSession;
+import com.mongodb.reactivestreams.client.ClientSession;
 import org.bson.BsonValue;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -133,7 +133,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
     @Override
     public GridFSUploadStream openUploadStream(final ClientSession clientSession, final String filename,
                                                final GridFSUploadOptions options) {
-        return new GridFSUploadStreamImpl(wrapped.openUploadStream(clientSession, filename, options));
+        return new GridFSUploadStreamImpl(wrapped.openUploadStream(clientSession.getWrapped(), filename, options));
     }
 
     @Override
@@ -144,7 +144,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
     @Override
     public GridFSUploadStream openUploadStream(final ClientSession clientSession, final BsonValue id, final String filename,
                                                final GridFSUploadOptions options) {
-        return new GridFSUploadStreamImpl(wrapped.openUploadStream(clientSession, id, filename, options));
+        return new GridFSUploadStreamImpl(wrapped.openUploadStream(clientSession.getWrapped(), id, filename, options));
     }
 
     @Override
@@ -189,7 +189,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<ObjectId>(observe(new Block<SingleResultCallback<ObjectId>>() {
             @Override
             public void apply(final SingleResultCallback<ObjectId> callback) {
-                wrapped.uploadFromStream(clientSession, filename, toCallbackAsyncInputStream(source), options, callback);
+                wrapped.uploadFromStream(clientSession.getWrapped(), filename, toCallbackAsyncInputStream(source), options, callback);
             }
         }));
     }
@@ -206,7 +206,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.uploadFromStream(clientSession, id, filename, toCallbackAsyncInputStream(source), options,
+                wrapped.uploadFromStream(clientSession.getWrapped(), id, filename, toCallbackAsyncInputStream(source), options,
                         voidToSuccessCallback(callback));
             }
         }));
@@ -234,12 +234,12 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final ObjectId id) {
-        return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession, id));
+        return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), id));
     }
 
     @Override
     public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final BsonValue id) {
-        return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession, id));
+        return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), id));
     }
 
     @Override
@@ -250,7 +250,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
     @Override
     public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final String filename,
                                                    final GridFSDownloadOptions options) {
-        return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession, filename, options));
+        return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), filename, options));
     }
 
     @Override
@@ -295,7 +295,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
             @Override
             public void apply(final SingleResultCallback<Long> callback) {
-                wrapped.downloadToStream(clientSession, id, toCallbackAsyncOutputStream(destination), callback);
+                wrapped.downloadToStream(clientSession.getWrapped(), id, toCallbackAsyncOutputStream(destination), callback);
             }
         }));
     }
@@ -305,7 +305,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
             @Override
             public void apply(final SingleResultCallback<Long> callback) {
-                wrapped.downloadToStream(clientSession, id, toCallbackAsyncOutputStream(destination), callback);
+                wrapped.downloadToStream(clientSession.getWrapped(), id, toCallbackAsyncOutputStream(destination), callback);
             }
         }));
     }
@@ -321,7 +321,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
             @Override
             public void apply(final SingleResultCallback<Long> callback) {
-                wrapped.downloadToStream(clientSession, filename, toCallbackAsyncOutputStream(destination), options, callback);
+                wrapped.downloadToStream(clientSession.getWrapped(), filename, toCallbackAsyncOutputStream(destination), options, callback);
             }
         }));
     }
@@ -338,12 +338,12 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public GridFSFindPublisher find(final ClientSession clientSession) {
-        return new GridFSFindPublisherImpl(wrapped.find(clientSession));
+        return new GridFSFindPublisherImpl(wrapped.find(clientSession.getWrapped()));
     }
 
     @Override
     public GridFSFindPublisher find(final ClientSession clientSession, final Bson filter) {
-        return new GridFSFindPublisherImpl(wrapped.find(clientSession, filter));
+        return new GridFSFindPublisherImpl(wrapped.find(clientSession.getWrapped(), filter));
     }
 
     @Override
@@ -371,7 +371,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.delete(clientSession, id, voidToSuccessCallback(callback));
+                wrapped.delete(clientSession.getWrapped(), id, voidToSuccessCallback(callback));
             }
         }));
     }
@@ -381,7 +381,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.delete(clientSession, id, voidToSuccessCallback(callback));
+                wrapped.delete(clientSession.getWrapped(), id, voidToSuccessCallback(callback));
             }
         }));
     }
@@ -411,7 +411,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.rename(clientSession, id, newFilename, voidToSuccessCallback(callback));
+                wrapped.rename(clientSession.getWrapped(), id, newFilename, voidToSuccessCallback(callback));
             }
         }));
     }
@@ -421,7 +421,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.rename(clientSession, id, newFilename, voidToSuccessCallback(callback));
+                wrapped.rename(clientSession.getWrapped(), id, newFilename, voidToSuccessCallback(callback));
             }
         }));
     }
@@ -441,7 +441,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
             @Override
             public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.drop(clientSession, voidToSuccessCallback(callback));
+                wrapped.drop(clientSession.getWrapped(), voidToSuccessCallback(callback));
             }
         }));
     }

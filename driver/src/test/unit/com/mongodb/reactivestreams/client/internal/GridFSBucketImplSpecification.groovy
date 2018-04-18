@@ -28,7 +28,8 @@ import com.mongodb.client.gridfs.model.GridFSUploadOptions
 import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream
 import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket
-import com.mongodb.session.ClientSession
+import com.mongodb.reactivestreams.client.ClientSession
+import com.mongodb.async.client.ClientSession as WrappedClientSession
 import org.bson.BsonObjectId
 import org.bson.Document
 import org.reactivestreams.Subscriber
@@ -40,7 +41,10 @@ class GridFSBucketImplSpecification extends Specification {
         onSubscribe(_) >> { args -> args[0].request(100) }
     }
 
-    def clientSession = Stub(ClientSession)
+    def wrappedClientSession = Stub(WrappedClientSession)
+    def clientSession = Stub(ClientSession) {
+        getWrapped() >> wrappedClientSession
+    }
 
     def 'should have the same methods as the wrapped GridFSBucket'() {
         given:
@@ -159,25 +163,25 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.openUploadStream(clientSession, filename)
 
         then:
-        1 * wrapped.openUploadStream(clientSession, filename, _) >> uploadStream
+        1 * wrapped.openUploadStream(wrappedClientSession, filename, _) >> uploadStream
 
         when:
         bucket.openUploadStream(clientSession, filename, options)
 
         then:
-        1 * wrapped.openUploadStream(clientSession, filename, options) >> uploadStream
+        1 * wrapped.openUploadStream(wrappedClientSession, filename, options) >> uploadStream
 
         when:
         bucket.openUploadStream(clientSession, fileId, filename)
 
         then:
-        1 * wrapped.openUploadStream(clientSession, fileId, filename, _) >> uploadStream
+        1 * wrapped.openUploadStream(wrappedClientSession, fileId, filename, _) >> uploadStream
 
         when:
         bucket.openUploadStream(clientSession, fileId, filename, options)
 
         then:
-        1 * wrapped.openUploadStream(clientSession, fileId, filename, options) >> uploadStream
+        1 * wrapped.openUploadStream(wrappedClientSession, fileId, filename, options) >> uploadStream
     }
 
     def 'should call the wrapped uploadFromStream'() {
@@ -230,25 +234,25 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.uploadFromStream(clientSession, filename, source).subscribe(subscriber)
 
         then:
-        1 * wrapped.uploadFromStream(clientSession, filename, _, _, _)
+        1 * wrapped.uploadFromStream(wrappedClientSession, filename, _, _, _)
 
         when:
         bucket.uploadFromStream(clientSession, filename, source, options).subscribe(subscriber)
 
         then:
-        1 * wrapped.uploadFromStream(clientSession, filename, _, options, _)
+        1 * wrapped.uploadFromStream(wrappedClientSession, filename, _, options, _)
 
         when:
         bucket.uploadFromStream(clientSession, fileId, filename, source).subscribe(subscriber)
 
         then:
-        1 * wrapped.uploadFromStream(clientSession, fileId, filename, _, _, _)
+        1 * wrapped.uploadFromStream(wrappedClientSession, fileId, filename, _, _, _)
 
         when:
         bucket.uploadFromStream(clientSession, fileId, filename, source, options).subscribe(subscriber)
 
         then:
-        1 * wrapped.uploadFromStream(clientSession, fileId, filename, _, options, _)
+        1 * wrapped.uploadFromStream(wrappedClientSession, fileId, filename, _, options, _)
     }
 
     def 'should call the wrapped openDownloadStream'() {
@@ -288,25 +292,25 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.openDownloadStream(clientSession, fileId)
 
         then:
-        1 * wrapped.openDownloadStream(clientSession, fileId) >> downloadStream
+        1 * wrapped.openDownloadStream(wrappedClientSession, fileId) >> downloadStream
 
         when:
         bucket.openDownloadStream(clientSession, fileId.getValue())
 
         then:
-        1 * wrapped.openDownloadStream(clientSession, fileId.getValue()) >> downloadStream
+        1 * wrapped.openDownloadStream(wrappedClientSession, fileId.getValue()) >> downloadStream
 
         when:
         bucket.openDownloadStream(clientSession, filename)
 
         then:
-        1 * wrapped.openDownloadStream(clientSession, filename, _) >> downloadStream
+        1 * wrapped.openDownloadStream(wrappedClientSession, filename, _) >> downloadStream
 
         when:
         bucket.openDownloadStream(clientSession, filename, options)
 
         then:
-        1 * wrapped.openDownloadStream(clientSession, filename, options) >> downloadStream
+        1 * wrapped.openDownloadStream(wrappedClientSession, filename, options) >> downloadStream
     }
 
     def 'should call the wrapped downloadToStream'() {
@@ -359,25 +363,25 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.downloadToStream(clientSession, fileId, destination).subscribe(subscriber)
 
         then:
-        1 * wrapped.downloadToStream(clientSession, fileId, _, _)
+        1 * wrapped.downloadToStream(wrappedClientSession, fileId, _, _)
 
         when:
         bucket.downloadToStream(clientSession, fileId.getValue(), destination).subscribe(subscriber)
 
         then:
-        1 * wrapped.downloadToStream(clientSession, fileId.getValue(), _, _)
+        1 * wrapped.downloadToStream(wrappedClientSession, fileId.getValue(), _, _)
 
         when:
         bucket.downloadToStream(clientSession, filename, destination).subscribe(subscriber)
 
         then:
-        1 * wrapped.downloadToStream(clientSession, filename, _, _, _)
+        1 * wrapped.downloadToStream(wrappedClientSession, filename, _, _, _)
 
         when:
         bucket.downloadToStream(clientSession, filename, destination, options).subscribe(subscriber)
 
         then:
-        1 * wrapped.downloadToStream(clientSession, filename, _, options, _)
+        1 * wrapped.downloadToStream(wrappedClientSession, filename, _, options, _)
     }
 
     def 'should call the underlying find method'() {
@@ -403,13 +407,13 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.find(clientSession)
 
         then:
-        1 * wrapped.find(clientSession) >> findIterable
+        1 * wrapped.find(wrappedClientSession) >> findIterable
 
         when:
         bucket.find(clientSession, filter)
 
         then:
-        1 * wrapped.find(clientSession, filter) >> findIterable
+        1 * wrapped.find(wrappedClientSession, filter) >> findIterable
     }
 
     def 'should call the underlying delete method'() {
@@ -446,13 +450,13 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.delete(clientSession, fileId).subscribe(subscriber)
 
         then:
-        1 * wrapped.delete(clientSession, fileId, _)
+        1 * wrapped.delete(wrappedClientSession, fileId, _)
 
         when:
         bucket.delete(clientSession, fileId.getValue()).subscribe(subscriber)
 
         then:
-        1 * wrapped.delete(clientSession, fileId.getValue(), _)
+        1 * wrapped.delete(wrappedClientSession, fileId.getValue(), _)
     }
 
     def 'should call the underlying rename method'() {
@@ -490,13 +494,13 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.rename(clientSession, fileId, newFilename).subscribe(subscriber)
 
         then:
-        1 * wrapped.rename(clientSession, fileId, newFilename, _)
+        1 * wrapped.rename(wrappedClientSession, fileId, newFilename, _)
 
         when:
         bucket.rename(clientSession, fileId.getValue(), newFilename).subscribe(subscriber)
 
         then:
-        1 * wrapped.rename(clientSession, fileId.getValue(), newFilename, _)
+        1 * wrapped.rename(wrappedClientSession, fileId.getValue(), newFilename, _)
     }
 
     def 'should call the underlying drop method'() {
@@ -527,7 +531,7 @@ class GridFSBucketImplSpecification extends Specification {
         bucket.drop(clientSession).subscribe(subscriber)
 
         then:
-        1 * wrapped.drop(clientSession, _)
+        1 * wrapped.drop(wrappedClientSession, _)
     }
 
 }

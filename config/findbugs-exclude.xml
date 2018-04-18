@@ -14,4 +14,8 @@
         </Not>
     </Match>
 
+    <Match>
+        <Class name="~com.mongodb.reactivestreams.client.ClientSession.*"/>
+        <Bug pattern="NM_SAME_SIMPLE_NAME_AS_INTERFACE"/>
+    </Match>
 </FindBugsFilter>
