@@ -38,6 +38,7 @@ import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneModel
 import com.mongodb.client.model.InsertOneOptions
 import com.mongodb.client.model.RenameCollectionOptions
+import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.client.model.UpdateOptions
 import com.mongodb.session.ClientSession
 import org.bson.BsonDocument
@@ -657,7 +658,8 @@ class MongoCollectionImplSpecification extends Specification {
     def 'should use the underlying replaceOne'() {
         given:
         def replacement = new Document('new', 1)
-        def options = new UpdateOptions()
+        def updateOptions = new UpdateOptions()
+        def replaceOptions = new ReplaceOptions()
 
         when:
         mongoCollection.replaceOne(filter, replacement)
@@ -672,10 +674,16 @@ class MongoCollectionImplSpecification extends Specification {
         1 * wrapped.replaceOne(filter, replacement, _, _)
 
         when:
-        mongoCollection.replaceOne(filter, replacement, options).subscribe(subscriber)
+        mongoCollection.replaceOne(filter, replacement, replaceOptions).subscribe(subscriber)
 
         then:
-        1 * wrapped.replaceOne(filter, replacement, options, _)
+        1 * wrapped.replaceOne(filter, replacement, replaceOptions, _)
+
+        when:
+        mongoCollection.replaceOne(filter, replacement, updateOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.replaceOne(filter, replacement, updateOptions, _)
 
         when:
         mongoCollection.replaceOne(clientSession, filter, replacement).subscribe(subscriber)
@@ -684,10 +692,16 @@ class MongoCollectionImplSpecification extends Specification {
         1 * wrapped.replaceOne(clientSession, filter, replacement, _, _)
 
         when:
-        mongoCollection.replaceOne(clientSession, filter, replacement, options).subscribe(subscriber)
+        mongoCollection.replaceOne(clientSession, filter, replacement, replaceOptions).subscribe(subscriber)
 
         then:
-        1 * wrapped.replaceOne(clientSession, filter, replacement, options, _)
+        1 * wrapped.replaceOne(clientSession, filter, replacement, replaceOptions, _)
+
+        when:
+        mongoCollection.replaceOne(clientSession, filter, replacement, updateOptions).subscribe(subscriber)
+
+        then:
+        1 * wrapped.replaceOne(clientSession, filter, replacement, updateOptions, _)
     }
 
 

@@ -35,6 +35,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
@@ -772,7 +773,21 @@ public interface MongoCollection<TDocument> {
      * @param options     the options to apply to the replace operation
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
+     * @since 1.8
      */
+    Publisher<UpdateResult> replaceOne(Bson filter, TDocument replacement, ReplaceOptions options);
+
+    /**
+     * Replace a document in the collection according to the specified arguments.
+     *
+     * @param filter      the query filter to apply the the replace operation
+     * @param replacement the replacement document
+     * @param options     the options to apply to the replace operation
+     * @return a publisher with a single element the UpdateResult
+     * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
+     * @deprecated Prefer {@link #replaceOne(Bson, Object, ReplaceOptions)}
+     */
+    @Deprecated
     Publisher<UpdateResult> replaceOne(Bson filter, TDocument replacement, UpdateOptions options);
 
     /**
@@ -798,8 +813,24 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element the UpdateResult
      * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
      * @mongodb.server.release 3.6
-     * @since 1.7
+     * @since 1.8
      */
+    Publisher<UpdateResult> replaceOne(ClientSession clientSession, Bson filter, TDocument replacement, ReplaceOptions options);
+
+    /**
+     * Replace a document in the collection according to the specified arguments.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param filter      the query filter to apply the the replace operation
+     * @param replacement the replacement document
+     * @param options     the options to apply to the replace operation
+     * @return a publisher with a single element the UpdateResult
+     * @mongodb.driver.manual tutorial/modify-documents/#replace-the-document Replace
+     * @mongodb.server.release 3.6
+     * @since 1.7
+     * @deprecated Prefer {@link #replaceOne(ClientSession, Bson, Object, ReplaceOptions)}
+     */
+    @Deprecated
     Publisher<UpdateResult> replaceOne(ClientSession clientSession, Bson filter, TDocument replacement, UpdateOptions options);
 
     /**

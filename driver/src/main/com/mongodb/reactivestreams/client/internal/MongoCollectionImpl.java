@@ -36,6 +36,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
@@ -471,11 +472,11 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
 
     @Override
     public Publisher<UpdateResult> replaceOne(final Bson filter, final TDocument replacement) {
-        return replaceOne(filter, replacement, new UpdateOptions());
+        return replaceOne(filter, replacement, new ReplaceOptions());
     }
 
     @Override
-    public Publisher<UpdateResult> replaceOne(final Bson filter, final TDocument replacement, final UpdateOptions options) {
+    public Publisher<UpdateResult> replaceOne(final Bson filter, final TDocument replacement, final ReplaceOptions options) {
         return new ObservableToPublisher<UpdateResult>(observe(new Block<SingleResultCallback<UpdateResult>>() {
             @Override
             public void apply(final SingleResultCallback<UpdateResult> callback) {
@@ -485,14 +486,39 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     }
 
     @Override
+    @Deprecated
+    public Publisher<UpdateResult> replaceOne(final Bson filter, final TDocument replacement, final UpdateOptions options) {
+        return new ObservableToPublisher<UpdateResult>(observe(new Block<SingleResultCallback<UpdateResult>>() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public void apply(final SingleResultCallback<UpdateResult> callback) {
+                wrapped.replaceOne(filter, replacement, options, callback);
+            }
+        }));
+    }
+
+    @Override
     public Publisher<UpdateResult> replaceOne(final ClientSession clientSession, final Bson filter, final TDocument replacement) {
-        return replaceOne(clientSession, filter, replacement, new UpdateOptions());
+        return replaceOne(clientSession, filter, replacement, new ReplaceOptions());
     }
 
     @Override
     public Publisher<UpdateResult> replaceOne(final ClientSession clientSession, final Bson filter, final TDocument replacement,
+                                              final ReplaceOptions options) {
+        return new ObservableToPublisher<UpdateResult>(observe(new Block<SingleResultCallback<UpdateResult>>() {
+            @Override
+            public void apply(final SingleResultCallback<UpdateResult> callback) {
+                wrapped.replaceOne(clientSession, filter, replacement, options, callback);
+            }
+        }));
+    }
+
+    @Override
+    @Deprecated
+    public Publisher<UpdateResult> replaceOne(final ClientSession clientSession, final Bson filter, final TDocument replacement,
                                               final UpdateOptions options) {
         return new ObservableToPublisher<UpdateResult>(observe(new Block<SingleResultCallback<UpdateResult>>() {
+            @SuppressWarnings("deprecation")
             @Override
             public void apply(final SingleResultCallback<UpdateResult> callback) {
                 wrapped.replaceOne(clientSession, filter, replacement, options, callback);
