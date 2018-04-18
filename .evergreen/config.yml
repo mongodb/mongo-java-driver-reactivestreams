@@ -360,6 +360,10 @@ axes:
         display_name: "3.6"
         variables:
            VERSION: "3.6"
+      - id: "latest"
+        display_name: "latest"
+        variables:
+           VERSION: "latest"
   - id: "os"
     display_name: "OS"
     values:
