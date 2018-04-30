@@ -23,7 +23,8 @@ class ListCollectionsPublisherSpecification extends Specification {
 
     def 'should have the same methods as the wrapped ListCollectionsIterable'() {
         given:
-        def wrapped = (com.mongodb.async.client.ListCollectionsIterable.methods*.name - ['batchCursor', 'forEach', 'getBatchSize', 'into', 'map']).toSet().sort()
+        def wrapped = (com.mongodb.async.client.ListCollectionsIterable.methods*.name
+                - ['batchCursor', 'forEach', 'getBatchSize', 'into', 'map']).toSet().sort()
         def local = (ListCollectionsPublisher.methods*.name - Publisher.methods*.name).sort()
         expect:
         wrapped == local

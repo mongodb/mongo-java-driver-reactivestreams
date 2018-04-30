@@ -16,6 +16,8 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.Block;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.ChangeStreamIterable;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
@@ -72,6 +74,17 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
     public ChangeStreamPublisher<TResult> batchSize(final int batchSize) {
         wrapped.batchSize(batchSize);
         return this;
+    }
+
+    @Override
+    public Publisher<ChangeStreamDocument<TResult>> first() {
+        return new ObservableToPublisher<ChangeStreamDocument<TResult>>(observe(
+                new Block<SingleResultCallback<ChangeStreamDocument<TResult>>>() {
+                    @Override
+                    public void apply(final SingleResultCallback<ChangeStreamDocument<TResult>> callback) {
+                        wrapped.first(callback);
+                    }
+                }));
     }
 
     @Override

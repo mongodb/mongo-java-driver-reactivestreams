@@ -89,4 +89,12 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<ChangeStreamDo
      * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
      */
     ChangeStreamPublisher<TResult> batchSize(int batchSize);
+
+    /**
+     * Helper to return a publisher limited to the first result.
+     *
+     * @return a Publisher which will contain a single item.
+     * @since 1.8
+     */
+    Publisher<ChangeStreamDocument<TResult>> first();
 }

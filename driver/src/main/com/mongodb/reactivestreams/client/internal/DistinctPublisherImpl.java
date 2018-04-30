@@ -16,9 +16,12 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.Block;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.Collation;
 import com.mongodb.reactivestreams.client.DistinctPublisher;
 import org.bson.conversions.Bson;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -57,6 +60,16 @@ final class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult>
     public DistinctPublisher<TResult> batchSize(final int batchSize) {
         wrapped.batchSize(batchSize);
         return this;
+    }
+
+    @Override
+    public Publisher<TResult> first() {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>(){
+            @Override
+            public void apply(final SingleResultCallback<TResult> callback) {
+                wrapped.first(callback);
+            }
+        }));
     }
 
     @Override

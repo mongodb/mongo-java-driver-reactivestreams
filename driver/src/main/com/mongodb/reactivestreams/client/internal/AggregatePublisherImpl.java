@@ -106,6 +106,16 @@ final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResul
     }
 
     @Override
+    public Publisher<TResult> first() {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>(){
+            @Override
+            public void apply(final SingleResultCallback<TResult> callback) {
+                wrapped.first(callback);
+            }
+        }));
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super TResult> s) {
         new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }

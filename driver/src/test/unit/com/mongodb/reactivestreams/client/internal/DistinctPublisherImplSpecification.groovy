@@ -67,6 +67,12 @@ class DistinctPublisherImplSpecification extends Specification {
         then:
         1 * wrapped.batchSize(10) >> wrapped
         1 * wrapped.batchCursor(_)
+
+        when:
+        publisher.first().subscribe(subscriber)
+
+        then:
+        1 * wrapped.first(_)
     }
 
 }

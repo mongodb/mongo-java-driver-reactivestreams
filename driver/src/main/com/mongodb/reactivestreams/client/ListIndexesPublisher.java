@@ -50,4 +50,12 @@ public interface ListIndexesPublisher<TResult> extends Publisher<TResult> {
      * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
      */
     ListIndexesPublisher<TResult> batchSize(int batchSize);
+
+    /**
+     * Helper to return a publisher limited to the first result.
+     *
+     * @return a Publisher which will contain a single item.
+     * @since 1.8
+     */
+    Publisher<TResult> first();
 }

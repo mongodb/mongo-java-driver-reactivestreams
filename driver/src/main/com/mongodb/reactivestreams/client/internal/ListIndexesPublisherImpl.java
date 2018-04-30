@@ -16,7 +16,10 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
+import com.mongodb.Block;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.ListIndexesPublisher;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
@@ -43,6 +46,16 @@ final class ListIndexesPublisherImpl<TResult> implements ListIndexesPublisher<TR
     public ListIndexesPublisher<TResult> batchSize(final int batchSize) {
         wrapped.batchSize(batchSize);
         return this;
+    }
+
+    @Override
+    public Publisher<TResult> first() {
+        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>(){
+            @Override
+            public void apply(final SingleResultCallback<TResult> callback) {
+                wrapped.first(callback);
+            }
+        }));
     }
 
     @Override

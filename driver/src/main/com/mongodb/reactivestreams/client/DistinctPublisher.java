@@ -72,4 +72,12 @@ public interface DistinctPublisher<TResult> extends Publisher<TResult> {
      */
     DistinctPublisher<TResult> batchSize(int batchSize);
 
+    /**
+     * Helper to return a publisher limited to the first result.
+     *
+     * @return a Publisher which will contain a single item.
+     * @since 1.8
+     */
+    Publisher<TResult> first();
+
 }
