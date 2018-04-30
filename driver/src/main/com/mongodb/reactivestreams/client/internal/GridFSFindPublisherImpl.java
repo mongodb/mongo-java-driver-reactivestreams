@@ -90,6 +90,12 @@ final class GridFSFindPublisherImpl implements GridFSFindPublisher {
     }
 
     @Override
+    public GridFSFindPublisher batchSize(final int batchSize) {
+        wrapped.batchSize(batchSize);
+        return this;
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super GridFSFile> s) {
         new ObservableToPublisher<GridFSFile>(observe(wrapped)).subscribe(s);
     }

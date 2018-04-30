@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.async.client.FindIterable
-import com.mongodb.async.client.MongoIterable
 import org.reactivestreams.Publisher
 import spock.lang.Specification
 
@@ -25,8 +24,8 @@ class FindPublisherSpecification extends Specification {
 
     def 'should have the same methods as the wrapped FindIterable'() {
         given:
-        def wrapped = (FindIterable.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (FindPublisher.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
+        def wrapped = (FindIterable.methods*.name - ['batchCursor', 'forEach', 'getBatchSize', 'into', 'map']).toSet().sort()
+        def local = (FindPublisher.methods*.name - Publisher.methods*.name).sort()
 
         expect:
         wrapped == local

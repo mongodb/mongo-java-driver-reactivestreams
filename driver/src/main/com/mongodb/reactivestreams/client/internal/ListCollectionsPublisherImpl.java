@@ -49,6 +49,12 @@ final class ListCollectionsPublisherImpl<TResult> implements ListCollectionsPubl
     }
 
     @Override
+    public ListCollectionsPublisher<TResult> batchSize(final int batchSize) {
+        wrapped.batchSize(batchSize);
+        return this;
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super TResult> s) {
         new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }

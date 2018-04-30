@@ -184,4 +184,17 @@ public interface MapReducePublisher<TResult> extends Publisher<TResult> {
      * @mongodb.server.release 3.4
      */
     MapReducePublisher<TResult> collation(Collation collation);
+
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    MapReducePublisher<TResult> batchSize(int batchSize);
 }

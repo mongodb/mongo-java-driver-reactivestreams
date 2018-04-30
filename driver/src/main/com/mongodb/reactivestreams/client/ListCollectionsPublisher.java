@@ -48,4 +48,16 @@ public interface ListCollectionsPublisher<TResult> extends Publisher<TResult> {
      */
     ListCollectionsPublisher<TResult> maxTime(long maxTime, TimeUnit timeUnit);
 
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    ListCollectionsPublisher<TResult> batchSize(int batchSize);
 }

@@ -69,6 +69,12 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
     }
 
     @Override
+    public ChangeStreamPublisher<TResult> batchSize(final int batchSize) {
+        wrapped.batchSize(batchSize);
+        return this;
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super ChangeStreamDocument<TResult>> s) {
         new ObservableToPublisher<ChangeStreamDocument<TResult>>(observe(wrapped)).subscribe(s);
     }

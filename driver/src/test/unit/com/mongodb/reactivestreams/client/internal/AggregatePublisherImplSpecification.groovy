@@ -68,6 +68,13 @@ class AggregatePublisherImplSpecification  extends Specification {
         publisher.subscribe(subscriber)
 
         then:
+        1 * wrapped.batchCursor(_) >> wrapped
+
+        when: 'setting batchSize'
+        publisher.batchSize(10).subscribe(subscriber)
+
+        then:
+        1 * wrapped.batchSize(10)
         1 * wrapped.batchCursor(_)
 
         when: 'calling toCollection'

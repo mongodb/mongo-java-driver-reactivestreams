@@ -40,6 +40,12 @@ final class ListIndexesPublisherImpl<TResult> implements ListIndexesPublisher<TR
     }
 
     @Override
+    public ListIndexesPublisher<TResult> batchSize(final int batchSize) {
+        wrapped.batchSize(batchSize);
+        return this;
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super TResult> s) {
         new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }

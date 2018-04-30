@@ -16,7 +16,6 @@
 
 package com.mongodb.reactivestreams.client.gridfs
 
-import com.mongodb.async.client.MongoIterable
 import com.mongodb.async.client.gridfs.GridFSFindIterable
 import org.reactivestreams.Publisher
 import spock.lang.Specification
@@ -25,8 +24,8 @@ class GridFSFindPublisherSpecification extends Specification {
 
     def 'should have the same methods as the wrapped FindIterable'() {
         given:
-        def wrapped = (GridFSFindIterable.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (GridFSFindPublisher.methods*.name - Publisher.methods*.name - 'first' - 'batchSize').sort()
+        def wrapped = (GridFSFindIterable.methods*.name - ['batchCursor', 'forEach', 'getBatchSize', 'into', 'map']).toSet().sort()
+        def local = (GridFSFindPublisher.methods*.name - Publisher.methods*.name).sort()
 
         expect:
         wrapped == local

@@ -69,6 +69,13 @@ class GridFSFindPublisherImplSpecification extends Specification {
 
         then:
         1 * wrapped.first(_) >> { wrapped }
+
+        when: 'setting batchSize'
+        gridFSPublisher.batchSize(10).subscribe(subscriber)
+
+        then:
+        1 * wrapped.batchSize(10) >> wrapped
+        1 * wrapped.batchCursor(_)
     }
 
 }

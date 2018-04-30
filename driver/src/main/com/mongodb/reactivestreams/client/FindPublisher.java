@@ -32,9 +32,9 @@ import java.util.concurrent.TimeUnit;
 public interface FindPublisher<TResult> extends Publisher<TResult> {
 
     /**
-     * Helper to return a publisher limited first from the query.
+     * Helper to return a publisher limited to the first result.
      *
-     * @return a Publisher which will
+     * @return a Publisher which will contain a single item.
      */
     Publisher<TResult> first();
 
@@ -241,4 +241,17 @@ public interface FindPublisher<TResult> extends Publisher<TResult> {
      * @since 1.6
      */
     FindPublisher<TResult> snapshot(boolean snapshot);
+
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    FindPublisher<TResult> batchSize(int batchSize);
 }

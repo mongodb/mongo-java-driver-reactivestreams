@@ -100,6 +100,12 @@ final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResul
     }
 
     @Override
+    public AggregatePublisher<TResult> batchSize(final int batchSize) {
+        wrapped.batchSize(batchSize);
+        return this;
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super TResult> s) {
         new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }

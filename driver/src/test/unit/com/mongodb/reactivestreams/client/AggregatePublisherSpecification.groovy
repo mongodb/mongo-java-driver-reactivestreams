@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client
 
 import com.mongodb.async.client.AggregateIterable
-import com.mongodb.async.client.MongoIterable
 import org.reactivestreams.Publisher
 import spock.lang.Specification
 
@@ -25,8 +24,8 @@ class AggregatePublisherSpecification  extends Specification {
 
     def 'should have the same methods as the wrapped AggregateIterable'() {
         given:
-        def wrapped = (AggregateIterable.methods*.name - MongoIterable.methods*.name).sort()
-        def local = (AggregatePublisher.methods*.name - Publisher.methods*.name - 'batchSize').sort()
+        def wrapped = (AggregateIterable.methods*.name - ['batchCursor', 'forEach', 'getBatchSize', 'into', 'map']).toSet().sort()
+        def local = (AggregatePublisher.methods*.name - Publisher.methods*.name).sort()
 
         expect:
         wrapped == local

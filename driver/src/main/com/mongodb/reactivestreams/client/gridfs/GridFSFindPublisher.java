@@ -110,4 +110,17 @@ public interface GridFSFindPublisher extends Publisher<GridFSFile> {
      * @mongodb.server.release 3.4
      */
     GridFSFindPublisher collation(Collation collation);
+
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    GridFSFindPublisher batchSize(int batchSize);
 }

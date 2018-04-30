@@ -54,6 +54,12 @@ final class DistinctPublisherImpl<TResult> implements DistinctPublisher<TResult>
     }
 
     @Override
+    public DistinctPublisher<TResult> batchSize(final int batchSize) {
+        wrapped.batchSize(batchSize);
+        return this;
+    }
+
+    @Override
     public void subscribe(final Subscriber<? super TResult> s) {
         new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
     }

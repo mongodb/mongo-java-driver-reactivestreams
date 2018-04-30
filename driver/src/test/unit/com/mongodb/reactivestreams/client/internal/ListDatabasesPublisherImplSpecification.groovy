@@ -64,6 +64,13 @@ class ListDatabasesPublisherImplSpecification extends Specification {
 
         then:
         1 * wrapped.batchCursor(_)
+
+        when: 'setting batchSize'
+        publisher.batchSize(10).subscribe(subscriber)
+
+        then:
+        1 * wrapped.batchSize(10) >> wrapped
+        1 * wrapped.batchCursor(_)
     }
 
 }

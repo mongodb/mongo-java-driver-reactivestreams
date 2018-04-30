@@ -68,7 +68,6 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<ChangeStreamDo
      */
     ChangeStreamPublisher<TResult> collation(Collation collation);
 
-
     /**
      * Returns a {@code MongoIterable} containing the results of the change stream based on the document class provided.
      *
@@ -77,4 +76,17 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<ChangeStreamDo
      * @return the new Mongo Iterable
      */
     <TDocument> Publisher<TDocument> withDocumentClass(Class<TDocument> clazz);
+
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    ChangeStreamPublisher<TResult> batchSize(int batchSize);
 }

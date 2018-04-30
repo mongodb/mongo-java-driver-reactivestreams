@@ -59,4 +59,17 @@ public interface DistinctPublisher<TResult> extends Publisher<TResult> {
      */
     DistinctPublisher<TResult> collation(Collation collation);
 
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    DistinctPublisher<TResult> batchSize(int batchSize);
+
 }

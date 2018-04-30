@@ -61,4 +61,16 @@ public interface ListDatabasesPublisher<TResult> extends Publisher<TResult> {
      */
     ListDatabasesPublisher<TResult> nameOnly(Boolean nameOnly);
 
+    /**
+     * Sets the number of documents to return per batch.
+     *
+     * <p>Overrides the {@link org.reactivestreams.Subscription#request(long)} value for setting the batch size, allowing for fine grained
+     * control over the underlying cursor.</p>
+     *
+     * @param batchSize the batch size
+     * @return this
+     * @since 1.8
+     * @mongodb.driver.manual reference/method/cursor.batchSize/#cursor.batchSize Batch Size
+     */
+    ListDatabasesPublisher<TResult> batchSize(int batchSize);
 }
