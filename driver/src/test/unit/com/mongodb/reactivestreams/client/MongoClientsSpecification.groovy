@@ -23,6 +23,16 @@ import com.mongodb.async.client.MongoClients as WrappedMongoClients
 class MongoClientsSpecification extends Specification {
 
 
+    def 'should have the same methods as the wrapped MongoClients'() {
+        given:
+        def wrapped = (com.mongodb.async.client.MongoClients.methods*.name).sort()
+        def local = MongoClients.methods*.name.sort()
+        local.remove(0) // remove 1 extra create method MongoClients.create(async.MongoClient)
+
+        expect:
+        wrapped == local
+    }
+
     def 'should return the same default codec registry'() {
         expect:
         MongoClients.getDefaultCodecRegistry() == WrappedMongoClients.getDefaultCodecRegistry()

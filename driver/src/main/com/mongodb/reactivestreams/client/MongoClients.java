@@ -17,7 +17,7 @@
 package com.mongodb.reactivestreams.client;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoDriverInformation;
 import com.mongodb.reactivestreams.client.internal.MongoClientImpl;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -50,8 +50,10 @@ public final class MongoClients {
      *
      * @param settings the settings
      * @return the client
+     * @deprecated use {@link MongoClients#create(com.mongodb.MongoClientSettings)} instead
      */
-    public static MongoClient create(final MongoClientSettings settings) {
+    @Deprecated
+    public static MongoClient create(final com.mongodb.async.client.MongoClientSettings settings) {
         return create(settings, null);
     }
 
@@ -75,7 +77,6 @@ public final class MongoClients {
         return create(connectionString, null);
     }
 
-
     /**
      * Create a new client with the given connection string.
      *
@@ -98,7 +99,34 @@ public final class MongoClients {
      * @param settings the settings
      * @param mongoDriverInformation any driver information to associate with the MongoClient
      * @return the client
-     * @since 1.3
+     * @deprecated use {@link MongoClients#create(com.mongodb.MongoClientSettings)} instead
+     */
+    @Deprecated
+    public static MongoClient create(final com.mongodb.async.client.MongoClientSettings settings,
+                                     final MongoDriverInformation mongoDriverInformation) {
+        return create(com.mongodb.async.client.MongoClients.create(settings, getMongoDriverInformation(mongoDriverInformation)));
+    }
+
+    /**
+     * Create a new client with the given client settings.
+     *
+     * @param settings the settings
+     * @return the client
+     * @since 1.8
+     */
+    public static MongoClient create(final MongoClientSettings settings) {
+        return create(settings, null);
+    }
+
+    /**
+     * Creates a new client with the given client settings.
+     *
+     * <p>Note: Intended for driver and library authors to associate extra driver metadata with the connections.</p>
+     *
+     * @param settings the settings
+     * @param mongoDriverInformation any driver information to associate with the MongoClient
+     * @return the client
+     * @since 1.8
      */
     public static MongoClient create(final MongoClientSettings settings, final MongoDriverInformation mongoDriverInformation) {
         return create(com.mongodb.async.client.MongoClients.create(settings, getMongoDriverInformation(mongoDriverInformation)));
@@ -121,7 +149,7 @@ public final class MongoClients {
      * Gets the default codec registry.
      *
      * @return the default codec registry
-     * @see MongoClientSettings#getCodecRegistry()
+     * @see com.mongodb.MongoClientSettings#getCodecRegistry()
      * @since 1.4
      */
     public static CodecRegistry getDefaultCodecRegistry() {

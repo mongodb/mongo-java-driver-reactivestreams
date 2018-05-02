@@ -18,7 +18,6 @@ package com.mongodb.reactivestreams.client;
 
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.annotations.Immutable;
-import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.session.ClientSession;
 import org.bson.Document;
 import org.reactivestreams.Publisher;
@@ -54,11 +53,13 @@ public interface MongoClient extends Closeable {
     /**
      * Gets the settings that this client uses to connect to server.
      *
-     * <p>Note: {@link MongoClientSettings} is immutable.</p>
+     * <p>Note: {@link com.mongodb.async.client.MongoClientSettings} is immutable.</p>
      *
      * @return the settings
+     * @deprecated this method is being removed
      */
-    MongoClientSettings getSettings();
+    @Deprecated
+    com.mongodb.async.client.MongoClientSettings getSettings();
 
     /**
      * Get a list of the database names

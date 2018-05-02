@@ -19,7 +19,6 @@ package com.mongodb.reactivestreams.client.internal;
 import com.mongodb.Block;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -59,7 +58,8 @@ public final class MongoClientImpl implements MongoClient {
     }
 
     @Override
-    public MongoClientSettings getSettings() {
+    @Deprecated
+    public com.mongodb.async.client.MongoClientSettings getSettings() {
         return wrapped.getSettings();
     }
 
