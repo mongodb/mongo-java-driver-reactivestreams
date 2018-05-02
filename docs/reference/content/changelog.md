@@ -10,6 +10,17 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.8.0
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.8)
+
+  * Updated MongoDB Driver Async to 3.7.0
+  * Support first() methods on all MongoIterable based Publishers [JAVARS-66](https://jira.mongodb.org/browse/JAVARS-66)
+  * Add support for com.mongodb.MongoClientSettings [JAVARS-60](https://jira.mongodb.org/browse/JAVARS-60)
+  * Resolve MongoDriverInformation incompatibility [JAVARS-58](https://jira.mongodb.org/browse/JAVARS-58)
+  * Support ReplaceOptions in CRUD API [JAVARS-57](https://jira.mongodb.org/browse/JAVARS-57)
+  * Allow configuration of batchSize on FindPublisher and AggregatePublisher [JAVARS-30](https://jira.mongodb.org/browse/JAVARS-30)
+
+
 ### 1.7.1
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.7.1)
 
