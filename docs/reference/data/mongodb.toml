@@ -1,9 +1,9 @@
 githubUser = "mongodb"
 githubRepo = "mongo-java-driver-reactivestreams"
 githubBranch = "master"
-currentVersion = "1.8"
+currentVersion = "1.9"
 highlightTheme = "idea.css"
 apiUrl = "/javadoc"
-coreApiUrl = "http://mongodb.github.io/mongo-java-driver/3.7/javadoc/"
-mongoDriverVersion = "3.7.0"                        # Update in installation-guide.md
-reactiveStreamsVersion = "1.0.1"                    # Update in installation-guide.md
+coreApiUrl = "http://mongodb.github.io/mongo-java-driver/3.8/javadoc/"
+mongoDriverVersion = "3.8.0-beta2"                        # Update in installation-guide.md
+reactiveStreamsVersion = "1.0.2"                          # Update in installation-guide.md
