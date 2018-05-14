@@ -80,6 +80,7 @@ final class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
     }
 
     @Override
+    @Deprecated
     public FindPublisher<TResult> modifiers(final Bson modifiers) {
         wrapped.modifiers(modifiers);
         return this;
@@ -152,6 +153,7 @@ final class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
     }
 
     @Override
+    @Deprecated
     public FindPublisher<TResult> maxScan(final long maxScan) {
         wrapped.maxScan(maxScan);
         return this;
@@ -170,6 +172,7 @@ final class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
     }
 
     @Override
+    @Deprecated
     public FindPublisher<TResult> snapshot(final boolean snapshot) {
         wrapped.snapshot(snapshot);
         return this;

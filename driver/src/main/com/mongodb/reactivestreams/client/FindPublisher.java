@@ -210,7 +210,9 @@ public interface FindPublisher<TResult> extends Publisher<TResult> {
      * @param maxScan the maxScan
      * @return this
      * @since 1.6
+     * @deprecated Deprecated as of MongoDB 4.0 release
      */
+    @Deprecated
     FindPublisher<TResult> maxScan(long maxScan);
 
     /**
@@ -239,7 +241,9 @@ public interface FindPublisher<TResult> extends Publisher<TResult> {
      * @param snapshot the snapshot
      * @return this
      * @since 1.6
+     * @deprecated Deprecated in MongoDB 3.6 release and removed in MongoDB 4.0 release
      */
+    @Deprecated
     FindPublisher<TResult> snapshot(boolean snapshot);
 
     /**
