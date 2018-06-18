@@ -21,6 +21,7 @@ import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.FullDocument;
 import org.bson.BsonDocument;
+import org.bson.BsonTimestamp;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.TimeUnit;
@@ -48,6 +49,20 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<ChangeStreamDo
      * @return this
      */
     ChangeStreamPublisher<TResult> resumeAfter(BsonDocument resumeToken);
+
+    /**
+     * The change stream will only provide changes that occurred after the specified timestamp.
+     *
+     * <p>Any command run against the server will return an operation time that can be used here.</p>
+     * <p>The default value is an operation time obtained from the server before the change stream was created.</p>
+     *
+     * @param startAtOperationTime the start at operation time
+     * @since 1.9
+     * @return this
+     * @mongodb.server.release 4.0
+     * @mongodb.driver.manual reference/method/db.runCommand/
+     */
+    ChangeStreamPublisher<TResult> startAtOperationTime(BsonTimestamp startAtOperationTime);
 
     /**
      * Sets the maximum await execution time on the server for this operation.

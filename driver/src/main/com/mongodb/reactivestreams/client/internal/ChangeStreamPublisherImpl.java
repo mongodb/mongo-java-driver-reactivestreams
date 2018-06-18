@@ -24,6 +24,7 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.FullDocument;
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
 import org.bson.BsonDocument;
+import org.bson.BsonTimestamp;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -50,6 +51,12 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
     @Override
     public ChangeStreamPublisher<TResult> resumeAfter(final BsonDocument resumeToken) {
         wrapped.resumeAfter(resumeToken);
+        return this;
+    }
+
+    @Override
+    public ChangeStreamPublisher<TResult> startAtOperationTime(final BsonTimestamp startAtOperationTime) {
+        wrapped.startAtOperationTime(startAtOperationTime);
         return this;
     }
 

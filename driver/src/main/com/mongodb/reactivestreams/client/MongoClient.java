@@ -19,9 +19,11 @@ package com.mongodb.reactivestreams.client;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.annotations.Immutable;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 
 import java.io.Closeable;
+import java.util.List;
 
 /**
  * A client-side representation of a MongoDB cluster.  Instances can represent either a standalone MongoDB instance, a replica set,
@@ -117,6 +119,102 @@ public interface MongoClient extends Closeable {
      * @since 1.7
      */
     <TResult> ListDatabasesPublisher<TResult> listDatabases(ClientSession clientSession, Class<TResult> clazz);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @return the change stream iterable
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     */
+    ChangeStreamPublisher<Document> watch();
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param resultClass the class to decode each document into
+     * @param <TResult>   the target document type of the iterable.
+     * @return the change stream iterable
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     */
+    <TResult> ChangeStreamPublisher<TResult> watch(Class<TResult> resultClass);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param pipeline the aggregation pipeline to apply to the change stream.
+     * @return the change stream iterable
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     */
+    ChangeStreamPublisher<Document> watch(List<? extends Bson> pipeline);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param pipeline    the aggregation pipeline to apply to the change stream
+     * @param resultClass the class to decode each document into
+     * @param <TResult>   the target document type of the iterable.
+     * @return the change stream iterable
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     */
+    <TResult> ChangeStreamPublisher<TResult> watch(List<? extends Bson> pipeline, Class<TResult> resultClass);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @return the change stream iterable
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     */
+    ChangeStreamPublisher<Document> watch(ClientSession clientSession);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param resultClass the class to decode each document into
+     * @param <TResult>   the target document type of the iterable.
+     * @return the change stream iterable
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     */
+    <TResult> ChangeStreamPublisher<TResult> watch(ClientSession clientSession, Class<TResult> resultClass);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param pipeline the aggregation pipeline to apply to the change stream.
+     * @return the change stream iterable
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     */
+    ChangeStreamPublisher<Document> watch(ClientSession clientSession, List<? extends Bson> pipeline);
+
+    /**
+     * Creates a change stream for this client.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param pipeline    the aggregation pipeline to apply to the change stream
+     * @param resultClass the class to decode each document into
+     * @param <TResult>   the target document type of the iterable.
+     * @return the change stream iterable
+     * @since 1.9
+     * @mongodb.server.release 4.0
+     * @mongodb.driver.dochub core/changestreams Change Streams
+     */
+    <TResult> ChangeStreamPublisher<TResult> watch(ClientSession clientSession, List<? extends Bson> pipeline, Class<TResult> resultClass);
 
     /**
      * Creates a client session.

@@ -17,11 +17,12 @@
 package com.mongodb.reactivestreams.client.internal
 
 import com.mongodb.ClientSessionOptions
+import com.mongodb.async.client.ChangeStreamIterable
+import com.mongodb.async.client.ClientSession as WrappedClientSession
 import com.mongodb.async.client.ListDatabasesIterable
 import com.mongodb.async.client.MongoClient as WrappedMongoClient
-import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.ClientSession
-import com.mongodb.async.client.ClientSession as WrappedClientSession
+import com.mongodb.reactivestreams.client.MongoClient
 import org.bson.BsonDocument
 import org.bson.Document
 import org.reactivestreams.Subscriber
@@ -34,6 +35,10 @@ class MongoClientImplSpecification extends Specification {
 
     def wrapped = Mock(WrappedMongoClient)
     def mongoClient = new MongoClientImpl(wrapped)
+    def wrappedClientSession = Stub(WrappedClientSession)
+    def clientSession = Stub(ClientSession) {
+        getWrapped() >> wrappedClientSession
+    }
 
     def 'should have the same methods as the wrapped MongoClient'() {
         given:
@@ -54,10 +59,6 @@ class MongoClientImplSpecification extends Specification {
 
     def 'should call the underlying listDatabases'() {
         given:
-        def wrappedClientSession = Stub(WrappedClientSession)
-        def clientSession = Stub(ClientSession) {
-            getWrapped() >> wrappedClientSession
-        }
         def wrappedResult = Stub(ListDatabasesIterable)
         def wrapped = Mock(WrappedMongoClient)
         def mongoClient = new MongoClientImpl(wrapped)
@@ -92,12 +93,6 @@ class MongoClientImplSpecification extends Specification {
     }
 
     def 'should call the underlying listDatabaseNames'() {
-        given:
-        def wrappedClientSession = Stub(WrappedClientSession)
-        def clientSession = Stub(ClientSession) {
-            getWrapped() >> wrappedClientSession
-        }
-
         when:
         mongoClient.listDatabaseNames()
 
@@ -109,6 +104,70 @@ class MongoClientImplSpecification extends Specification {
 
         then:
         1 * wrapped.listDatabaseNames(wrappedClientSession)
+    }
+
+
+    def 'should use ChangeStreamPublisher correctly'() {
+        given:
+        def pipeline = [new Document('$match', 1)]
+        def wrappedResult = Stub(ChangeStreamIterable)
+        def changeStreamPublisher
+
+        when:
+        changeStreamPublisher = mongoClient.watch()
+
+        then:
+        1 * wrapped.watch([], Document) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(BsonDocument)
+
+        then:
+        1 * wrapped.watch([], BsonDocument) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(pipeline)
+
+        then:
+        1 * wrapped.watch(pipeline, Document) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(pipeline, BsonDocument)
+
+        then:
+        1 * wrapped.watch(pipeline, BsonDocument) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(clientSession)
+
+        then:
+        1 * wrapped.watch(wrappedClientSession, [], Document) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(clientSession, BsonDocument)
+
+        then:
+        1 * wrapped.watch(wrappedClientSession, [], BsonDocument) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(clientSession, pipeline)
+
+        then:
+        1 * wrapped.watch(wrappedClientSession, pipeline, Document) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+
+        when:
+        changeStreamPublisher = mongoClient.watch(clientSession, pipeline, BsonDocument)
+
+        then:
+        1 * wrapped.watch(wrappedClientSession, pipeline, BsonDocument) >> wrappedResult
+        expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
     }
 
     def 'should call the underlying withSession'() {

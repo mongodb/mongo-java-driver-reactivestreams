@@ -19,12 +19,17 @@ package com.mongodb.reactivestreams.client.internal;
 import com.mongodb.Block;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
 import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
+
+import java.util.Collections;
+import java.util.List;
 
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.async.client.Observables.observe;
@@ -91,6 +96,48 @@ public final class MongoClientImpl implements MongoClient {
     @Override
     public <TResult> ListDatabasesPublisher<TResult> listDatabases(final ClientSession clientSession, final Class<TResult> clazz) {
         return new ListDatabasesPublisherImpl<TResult>(wrapped.listDatabases(clientSession.getWrapped(), clazz));
+    }
+
+    @Override
+    public ChangeStreamPublisher<Document> watch() {
+        return watch(Collections.<Bson>emptyList());
+    }
+
+    @Override
+    public <TResult> ChangeStreamPublisher<TResult> watch(final Class<TResult> resultClass) {
+        return watch(Collections.<Bson>emptyList(), resultClass);
+    }
+
+    @Override
+    public ChangeStreamPublisher<Document> watch(final List<? extends Bson> pipeline) {
+        return watch(pipeline, Document.class);
+    }
+
+    @Override
+    public <TResult> ChangeStreamPublisher<TResult> watch(final List<? extends Bson> pipeline, final Class<TResult> resultClass) {
+        return new ChangeStreamPublisherImpl<TResult>(wrapped.watch(pipeline, resultClass));
+    }
+
+    @Override
+    public ChangeStreamPublisher<Document> watch(final ClientSession clientSession) {
+        return watch(clientSession, Collections.<Bson>emptyList(), Document.class);
+    }
+
+    @Override
+    public <TResult> ChangeStreamPublisher<TResult> watch(final ClientSession clientSession, final Class<TResult> resultClass) {
+        return watch(clientSession, Collections.<Bson>emptyList(), resultClass);
+    }
+
+    @Override
+    public ChangeStreamPublisher<Document> watch(final ClientSession clientSession, final List<? extends Bson> pipeline) {
+        return watch(clientSession, pipeline, Document.class);
+    }
+
+    @Override
+    public <TResult> ChangeStreamPublisher<TResult> watch(final ClientSession clientSession, final List<? extends Bson> pipeline,
+                                                         final Class<TResult> resultClass) {
+        notNull("clientSession", clientSession);
+        return new ChangeStreamPublisherImpl<TResult>(wrapped.watch(clientSession.getWrapped(), pipeline, resultClass));
     }
 
     @Override
