@@ -89,6 +89,12 @@ class GridFSBucketImplSpecification extends Specification {
 
         then:
         1 * wrapped.getReadConcern()
+
+        when:
+        bucket.getDisableMD5()
+
+        then:
+        1 * wrapped.getDisableMD5()
     }
 
     def 'should call the underlying GridFSBucket when adjusting settings'() {
@@ -124,6 +130,12 @@ class GridFSBucketImplSpecification extends Specification {
 
         then:
         1 * wrapped.withReadConcern(readConcern) >> wrapped
+
+        when:
+        bucket.withDisableMD5(true)
+
+        then:
+        1 * wrapped.withDisableMD5(true) >> wrapped
     }
 
     def 'should call the wrapped openUploadStream'() {
