@@ -102,6 +102,7 @@ configure(subprojects.findAll { it.name != 'util' }) {
         options.links 'http://docs.oracle.com/javase/8/docs/api/'
         options.links 'http://mongodb.github.io/mongo-java-driver/3.6/javadoc/'
         options.tagletPath project(':util').sourceSets.main.output.classesDir
+        options.taglets 'DochubTaglet'
         options.taglets 'ManualTaglet'
         options.taglets 'ServerReleaseTaglet'
         options.encoding = 'UTF-8'
