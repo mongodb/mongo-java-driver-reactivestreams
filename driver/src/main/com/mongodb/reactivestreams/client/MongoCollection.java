@@ -27,6 +27,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateIndexOptions;
 import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.DropIndexOptions;
+import com.mongodb.client.model.EstimatedDocumentCountOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -150,7 +151,9 @@ public interface MongoCollection<TDocument> {
      * Counts the number of documents in the collection.
      *
      * @return a publisher with a single element indicating the number of documents
+     * @deprecated use {@link #countDocuments()} or {@link #estimatedDocumentCount()} instead
      */
+    @Deprecated
     Publisher<Long> count();
 
     /**
@@ -158,7 +161,9 @@ public interface MongoCollection<TDocument> {
      *
      * @param filter the query filter
      * @return a publisher with a single element indicating the number of documents
+     * @deprecated Use {@link #countDocuments(Bson)} instead
      */
+    @Deprecated
     Publisher<Long> count(Bson filter);
 
     /**
@@ -167,7 +172,9 @@ public interface MongoCollection<TDocument> {
      * @param filter  the query filter
      * @param options the options describing the count
      * @return a publisher with a single element indicating the number of documents
+     * @deprecated Use {@link #countDocuments(Bson, CountOptions)} instead
      */
+    @Deprecated
     Publisher<Long> count(Bson filter, CountOptions options);
 
     /**
@@ -177,7 +184,9 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating the number of documents
      * @mongodb.server.release 3.6
      * @since 1.7
+     * @deprecated Use {@link #countDocuments(ClientSession)} instead
      */
+    @Deprecated
     Publisher<Long> count(ClientSession clientSession);
 
     /**
@@ -188,7 +197,9 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating the number of documents
      * @mongodb.server.release 3.6
      * @since 1.7
+     * @deprecated Use {@link #countDocuments(ClientSession, Bson)} instead
      */
+    @Deprecated
     Publisher<Long> count(ClientSession clientSession, Bson filter);
 
     /**
@@ -200,8 +211,87 @@ public interface MongoCollection<TDocument> {
      * @return a publisher with a single element indicating the number of documents
      * @mongodb.server.release 3.6
      * @since 1.7
+     * @deprecated Use {@link #countDocuments(ClientSession, Bson, CountOptions)} instead
      */
+    @Deprecated
     Publisher<Long> count(ClientSession clientSession, Bson filter, CountOptions options);
+
+    /**
+     * Gets an estimate of the count of documents in a collection using collection metadata.
+     *
+     * @return a publisher with a single element indicating the estimated number of documents
+     * @since 1.9
+     */
+    Publisher<Long> estimatedDocumentCount();
+
+    /**
+     * Gets an estimate of the count of documents in a collection using collection metadata.
+     *
+     * @param options the options describing the count
+     * @return a publisher with a single element indicating the estimated number of documents
+     * @since 1.9
+     */
+    Publisher<Long> estimatedDocumentCount(EstimatedDocumentCountOptions options);
+
+    /**
+     * Counts the number of documents in the collection.
+     *
+     * @return a publisher with a single element indicating the number of documents
+     * @since 1.9
+     */
+    Publisher<Long> countDocuments();
+
+    /**
+     * Counts the number of documents in the collection according to the given options.
+     *
+     * @param filter the query filter
+     * @return a publisher with a single element indicating the number of documents
+     * @since 1.9
+     */
+    Publisher<Long> countDocuments(Bson filter);
+
+    /**
+     * Counts the number of documents in the collection according to the given options.
+     *
+     * @param filter  the query filter
+     * @param options the options describing the count
+     * @return a publisher with a single element indicating the number of documents
+     * @since 1.9
+     */
+    Publisher<Long> countDocuments(Bson filter, CountOptions options);
+
+    /**
+     * Counts the number of documents in the collection.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @return a publisher with a single element indicating the number of documents
+     * @mongodb.server.release 3.6
+     * @since 1.9
+     */
+    Publisher<Long> countDocuments(ClientSession clientSession);
+
+    /**
+     * Counts the number of documents in the collection according to the given options.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param filter the query filter
+     * @return a publisher with a single element indicating the number of documents
+     * @mongodb.server.release 3.6
+     * @since 1.9
+     */
+    Publisher<Long> countDocuments(ClientSession clientSession, Bson filter);
+
+    /**
+     * Counts the number of documents in the collection according to the given options.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param filter  the query filter
+     * @param options the options describing the count
+     * @return a publisher with a single element indicating the number of documents
+     * @mongodb.server.release 3.6
+     * @since 1.9
+     */
+    Publisher<Long> countDocuments(ClientSession clientSession, Bson filter, CountOptions options);
 
     /**
      * Gets the distinct values of the specified field name.

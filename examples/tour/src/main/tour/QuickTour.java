@@ -104,7 +104,8 @@ public final class QuickTour {
         collection.insertMany(documents).subscribe(subscriber);
         subscriber.await();
 
-        collection.count().subscribe(new PrintSubscriber<Long>("total # of documents after inserting 100 small ones (should be 101): %s"));
+        collection.countDocuments()
+                .subscribe(new PrintSubscriber<Long>("total # of documents after inserting 100 small ones (should be 101): %s"));
 
         subscriber = new PrintDocumentSubscriber();
         collection.find().first().subscribe(subscriber);

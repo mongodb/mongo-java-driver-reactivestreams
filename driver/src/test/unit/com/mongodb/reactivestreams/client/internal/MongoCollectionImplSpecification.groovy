@@ -21,6 +21,7 @@ import com.mongodb.ReadConcern
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
 import com.mongodb.async.client.ChangeStreamIterable
+import com.mongodb.async.client.ClientSession as WrappedClientSession
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
 import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.Collation
@@ -29,6 +30,7 @@ import com.mongodb.client.model.CountOptions
 import com.mongodb.client.model.CreateIndexOptions
 import com.mongodb.client.model.DeleteOptions
 import com.mongodb.client.model.DropIndexOptions
+import com.mongodb.client.model.EstimatedDocumentCountOptions
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -41,7 +43,6 @@ import com.mongodb.client.model.RenameCollectionOptions
 import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.client.model.UpdateOptions
 import com.mongodb.reactivestreams.client.ClientSession
-import com.mongodb.async.client.ClientSession as WrappedClientSession
 import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.codecs.configuration.CodecRegistry
@@ -239,6 +240,76 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.count(wrappedClientSession, filter, options, _)
+    }
+
+    def 'should use the underlying estimatedDocumentCount'() {
+        given:
+        def options = new EstimatedDocumentCountOptions()
+
+        when:
+        mongoCollection.estimatedDocumentCount()
+
+        then: 'only executed when requested'
+        0 * wrapped.estimatedDocumentCount(_, _, _)
+
+        when:
+        mongoCollection.estimatedDocumentCount().subscribe(subscriber)
+
+        then:
+        1 * wrapped.estimatedDocumentCount(_, _)
+
+        when:
+        mongoCollection.estimatedDocumentCount(options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.estimatedDocumentCount(options, _)
+    }
+
+    def 'should use the underlying countDocuments'() {
+        given:
+        def options = new CountOptions()
+
+        when:
+        mongoCollection.countDocuments()
+
+        then: 'only executed when requested'
+        0 * wrapped.countDocuments(_, _, _)
+
+        when:
+        mongoCollection.countDocuments().subscribe(subscriber)
+
+        then:
+        1 * wrapped.countDocuments(_, _, _)
+
+        when:
+        mongoCollection.countDocuments(filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.countDocuments(filter, _, _)
+
+        when:
+        mongoCollection.countDocuments(filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.countDocuments(filter, options, _)
+
+        when:
+        mongoCollection.countDocuments(clientSession).subscribe(subscriber)
+
+        then:
+        1 * wrapped.countDocuments(wrappedClientSession, _, _, _)
+
+        when:
+        mongoCollection.countDocuments(clientSession, filter).subscribe(subscriber)
+
+        then:
+        1 * wrapped.countDocuments(wrappedClientSession, filter, _, _)
+
+        when:
+        mongoCollection.countDocuments(clientSession, filter, options).subscribe(subscriber)
+
+        then:
+        1 * wrapped.countDocuments(wrappedClientSession, filter, options, _)
     }
 
     def 'should create DistinctPublisher correctly'() {

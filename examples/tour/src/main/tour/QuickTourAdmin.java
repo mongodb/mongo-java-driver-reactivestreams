@@ -104,13 +104,13 @@ public final class QuickTourAdmin {
 
         // Find using the text index
         subscriber = new PrintSubscriber("Text search matches: %s");
-        collection.count(text("textual content -irrelevant")).subscribe(subscriber);
+        collection.countDocuments(text("textual content -irrelevant")).subscribe(subscriber);
         subscriber.await();
 
         // Find using the $language operator
         subscriber = new PrintSubscriber("Text search matches (english): %s");
         Bson textSearch = text("textual content -irrelevant", new TextSearchOptions().language("english"));
-        collection.count(textSearch).subscribe(subscriber);
+        collection.countDocuments(textSearch).subscribe(subscriber);
         subscriber.await();
 
         // Find the highest scoring match

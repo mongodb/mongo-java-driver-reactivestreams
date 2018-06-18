@@ -364,13 +364,13 @@ public class GridFSTest extends DatabaseTestCase {
 
     private long getChunksCount(final BsonDocument filter) throws Throwable {
         ObservableSubscriber<Long> subscriber = new ObservableSubscriber<Long>();
-        chunksCollection.count(filter).subscribe(subscriber);
+        chunksCollection.countDocuments(filter).subscribe(subscriber);
         return subscriber.get(30, SECONDS).get(0);
     }
 
     private long getFilesCount(final BsonDocument filter) throws Throwable {
         ObservableSubscriber<Long> subscriber = new ObservableSubscriber<Long>();
-        filesCollection.count(filter).subscribe(subscriber);
+        filesCollection.countDocuments(filter).subscribe(subscriber);
         return subscriber.get(30, SECONDS).get(0);
     }
 

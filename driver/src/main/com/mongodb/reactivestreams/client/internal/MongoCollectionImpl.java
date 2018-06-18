@@ -28,6 +28,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateIndexOptions;
 import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.DropIndexOptions;
+import com.mongodb.client.model.EstimatedDocumentCountOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -129,16 +130,20 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     }
 
     @Override
+    @Deprecated
     public Publisher<Long> count() {
         return count(new BsonDocument(), new CountOptions());
     }
 
     @Override
+    @Deprecated
     public Publisher<Long> count(final Bson filter) {
         return count(filter, new CountOptions());
     }
 
     @Override
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public Publisher<Long> count(final Bson filter, final CountOptions options) {
         return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
             @Override
@@ -149,21 +154,80 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     }
 
     @Override
+    @Deprecated
     public Publisher<Long> count(final ClientSession clientSession) {
         return count(clientSession, new BsonDocument(), new CountOptions());
     }
 
     @Override
+    @Deprecated
     public Publisher<Long> count(final ClientSession clientSession, final Bson filter) {
         return count(clientSession, filter, new CountOptions());
     }
 
     @Override
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public Publisher<Long> count(final ClientSession clientSession, final Bson filter, final CountOptions options) {
         return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
             @Override
             public void apply(final SingleResultCallback<Long> callback) {
                 wrapped.count(clientSession.getWrapped(), filter, options, callback);
+            }
+        }));
+    }
+
+    @Override
+    public Publisher<Long> estimatedDocumentCount() {
+        return estimatedDocumentCount(new EstimatedDocumentCountOptions());
+    }
+
+    @Override
+    public Publisher<Long> estimatedDocumentCount(final EstimatedDocumentCountOptions options) {
+        return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
+            @Override
+            public void apply(final SingleResultCallback<Long> callback) {
+                wrapped.estimatedDocumentCount(options, callback);
+            }
+        }));
+    }
+
+    @Override
+    public Publisher<Long> countDocuments() {
+        return countDocuments(new BsonDocument());
+    }
+
+    @Override
+    public Publisher<Long> countDocuments(final Bson filter) {
+        return countDocuments(filter, new CountOptions());
+    }
+
+    @Override
+    public Publisher<Long> countDocuments(final Bson filter, final CountOptions options) {
+        return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
+            @Override
+            public void apply(final SingleResultCallback<Long> callback) {
+                wrapped.countDocuments(filter, options, callback);
+            }
+        }));
+    }
+
+    @Override
+    public Publisher<Long> countDocuments(final ClientSession clientSession) {
+        return countDocuments(clientSession, new BsonDocument());
+    }
+
+    @Override
+    public Publisher<Long> countDocuments(final ClientSession clientSession, final Bson filter) {
+        return countDocuments(clientSession, filter, new CountOptions());
+    }
+
+    @Override
+    public Publisher<Long> countDocuments(final ClientSession clientSession, final Bson filter, final CountOptions options) {
+        return new ObservableToPublisher<Long>(observe(new Block<SingleResultCallback<Long>>() {
+            @Override
+            public void apply(final SingleResultCallback<Long> callback) {
+                wrapped.countDocuments(clientSession.getWrapped(), filter, options, callback);
             }
         }));
     }
