@@ -236,6 +236,22 @@ public interface MongoCollection<TDocument> {
     /**
      * Counts the number of documents in the collection.
      *
+     * <p>
+     * Note: When migrating from {@code count()} to {@code countDocuments()} the following query operators must be replaced:
+     * </p>
+     * <pre>
+     *
+     *  +-------------+--------------------------------+
+     *  | Operator    | Replacement                    |
+     *  +=============+================================+
+     *  | $where      |  $expr                         |
+     *  +-------------+--------------------------------+
+     *  | $near       |  $geoWithin with $center       |
+     *  +-------------+--------------------------------+
+     *  | $nearSphere |  $geoWithin with $centerSphere |
+     *  +-------------+--------------------------------+
+     * </pre>
+     *
      * @return a publisher with a single element indicating the number of documents
      * @since 1.9
      */
@@ -243,6 +259,22 @@ public interface MongoCollection<TDocument> {
 
     /**
      * Counts the number of documents in the collection according to the given options.
+     *
+     * <p>
+     * Note: When migrating from {@code count()} to {@code countDocuments()} the following query operators must be replaced:
+     * </p>
+     * <pre>
+     *
+     *  +-------------+--------------------------------+
+     *  | Operator    | Replacement                    |
+     *  +=============+================================+
+     *  | $where      |  $expr                         |
+     *  +-------------+--------------------------------+
+     *  | $near       |  $geoWithin with $center       |
+     *  +-------------+--------------------------------+
+     *  | $nearSphere |  $geoWithin with $centerSphere |
+     *  +-------------+--------------------------------+
+     * </pre>
      *
      * @param filter the query filter
      * @return a publisher with a single element indicating the number of documents
@@ -253,6 +285,22 @@ public interface MongoCollection<TDocument> {
     /**
      * Counts the number of documents in the collection according to the given options.
      *
+     * <p>
+     * Note: When migrating from {@code count()} to {@code countDocuments()} the following query operators must be replaced:
+     * </p>
+     * <pre>
+     *
+     *  +-------------+--------------------------------+
+     *  | Operator    | Replacement                    |
+     *  +=============+================================+
+     *  | $where      |  $expr                         |
+     *  +-------------+--------------------------------+
+     *  | $near       |  $geoWithin with $center       |
+     *  +-------------+--------------------------------+
+     *  | $nearSphere |  $geoWithin with $centerSphere |
+     *  +-------------+--------------------------------+
+     * </pre>
+     *
      * @param filter  the query filter
      * @param options the options describing the count
      * @return a publisher with a single element indicating the number of documents
@@ -262,6 +310,22 @@ public interface MongoCollection<TDocument> {
 
     /**
      * Counts the number of documents in the collection.
+     *
+     * <p>
+     * Note: When migrating from {@code count()} to {@code countDocuments()} the following query operators must be replaced:
+     * </p>
+     * <pre>
+     *
+     *  +-------------+--------------------------------+
+     *  | Operator    | Replacement                    |
+     *  +=============+================================+
+     *  | $where      |  $expr                         |
+     *  +-------------+--------------------------------+
+     *  | $near       |  $geoWithin with $center       |
+     *  +-------------+--------------------------------+
+     *  | $nearSphere |  $geoWithin with $centerSphere |
+     *  +-------------+--------------------------------+
+     * </pre>
      *
      * @param clientSession the client session with which to associate this operation
      * @return a publisher with a single element indicating the number of documents
@@ -283,6 +347,22 @@ public interface MongoCollection<TDocument> {
 
     /**
      * Counts the number of documents in the collection according to the given options.
+     *
+     * <p>
+     * Note: When migrating from {@code count()} to {@code countDocuments()} the following query operators must be replaced:
+     * </p>
+     * <pre>
+     *
+     *  +-------------+--------------------------------+
+     *  | Operator    | Replacement                    |
+     *  +=============+================================+
+     *  | $where      |  $expr                         |
+     *  +-------------+--------------------------------+
+     *  | $near       |  $geoWithin with $center       |
+     *  +-------------+--------------------------------+
+     *  | $nearSphere |  $geoWithin with $centerSphere |
+     *  +-------------+--------------------------------+
+     * </pre>
      *
      * @param clientSession the client session with which to associate this operation
      * @param filter  the query filter
