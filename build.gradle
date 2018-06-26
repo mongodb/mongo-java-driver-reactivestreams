@@ -44,12 +44,13 @@ configure(subprojects.findAll { it.name != 'util' }) {
     evaluationDependsOn(':util')
 
     group = 'org.mongodb'
-    version = '1.9.0-SNAPSHOT'
+    version = '1.9.0'
     sourceCompatibility = JavaVersion.VERSION_1_6
     targetCompatibility = JavaVersion.VERSION_1_6
 
     repositories {
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/releases' }
         jcenter()
         mavenCentral()
         mavenLocal()
@@ -100,7 +101,7 @@ configure(subprojects.findAll { it.name != 'util' }) {
         options.author = true
         options.version = true
         options.links 'http://docs.oracle.com/javase/8/docs/api/'
-        options.links 'http://mongodb.github.io/mongo-java-driver/3.6/javadoc/'
+        options.links 'http://mongodb.github.io/mongo-java-driver/3.8/javadoc/'
         options.tagletPath project(':util').sourceSets.main.output.classesDir
         options.taglets 'DochubTaglet'
         options.taglets 'ManualTaglet'
