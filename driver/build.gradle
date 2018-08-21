@@ -54,8 +54,7 @@ task tckTest(type: Test) {
     scanForTestClasses = false
 
     classpath = sourceSets.test.runtimeClasspath
-    testClassesDir = sourceSets.test.output.classesDir
-    testSrcDirs = sourceSets.test.allSource.srcDirs.toList()
+    testClassesDirs = sourceSets.test.output.classesDirs
 
     binResultsDir = file("$buildDir/$name-results/binary")
     reports {
