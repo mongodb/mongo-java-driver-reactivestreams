@@ -24,12 +24,14 @@ buildscript {
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         jcenter()
         mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
         mavenLocal()
     }
     dependencies {
         classpath 'me.trnl:clirr-gradle-plugin:0.4'
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:1.12.+'
         classpath 'com.bmuschko:gradle-nexus-plugin:2.2'
+        classpath 'gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8'
     }
 }
 
@@ -223,6 +225,20 @@ task docs(type: Javadoc) {
     excludes =  subprojects.first().javadoc.excludes
     classpath = files(subprojects.collect {project -> project.sourceSets.main.compileClasspath})
     destinationDir = new File(projectDir, 'build/docs')
+}
+
+
+def getGitVersion() {
+    def outputAsString
+    new ByteArrayOutputStream().withStream { os ->
+        def result = exec {
+            executable 'git'
+            args 'describe', '--tags', '--always', '--dirty'
+            standardOutput = os
+        }
+        outputAsString = os.toString().substring(1).trim()
+    }
+    return outputAsString
 }
 
 

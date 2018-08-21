@@ -15,6 +15,7 @@
  */
 
 apply plugin: 'osgi'
+apply plugin: 'de.fuerstenau.buildconfig'
 
 description = "A Reactive Streams implementation of the MongoDB Java driver"
 archivesBaseName = 'mongodb-driver-reactivestreams'
@@ -31,17 +32,12 @@ task uberJar(type: Jar) {
     from sourceSets.main.output
 }
 
-def getGitVersion() {
-    def outputAsString
-    new ByteArrayOutputStream().withStream { os ->
-        def result = exec {
-            executable 'git'
-            args 'describe', '--tags', '--always', '--dirty'
-            standardOutput = os
-        }
-        outputAsString = os.toString().substring(1).trim()
-    }
-    return outputAsString
+buildConfig {
+    appName = 'mongo-java-driver-reactivestreams'
+    version = getGitVersion()
+
+    clsName = 'MongoDriverVersion'
+    packageName = 'com.mongodb.reactivestreams.client.internal.build'
 }
 
 jar {

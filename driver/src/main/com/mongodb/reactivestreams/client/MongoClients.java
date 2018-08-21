@@ -20,14 +20,8 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoDriverInformation;
 import com.mongodb.reactivestreams.client.internal.MongoClientImpl;
+import com.mongodb.reactivestreams.client.internal.build.MongoDriverVersion;
 import org.bson.codecs.configuration.CodecRegistry;
-
-import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.security.CodeSource;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 
 /**
@@ -161,40 +155,13 @@ public final class MongoClients {
             return DEFAULT_DRIVER_INFORMATION;
         } else {
             return MongoDriverInformation.builder(mongoDriverInformation)
-                    .driverName(DRIVER_NAME)
-                    .driverVersion(DRIVER_VERSION).build();
+                    .driverName(MongoDriverVersion.NAME)
+                    .driverVersion(MongoDriverVersion.VERSION).build();
         }
     }
 
-    private static final String DRIVER_NAME = "mongo-java-driver-reactivestreams";
-    private static final String DRIVER_VERSION = getDriverVersion();
-    private static final MongoDriverInformation DEFAULT_DRIVER_INFORMATION = MongoDriverInformation.builder().driverName(DRIVER_NAME)
-            .driverVersion(DRIVER_VERSION).build();
-
-    private static String getDriverVersion() {
-        String driverVersion = "unknown";
-
-        try {
-            CodeSource codeSource = MongoClients.class.getProtectionDomain().getCodeSource();
-            if (codeSource != null) {
-                String path = codeSource.getLocation().getPath();
-                URL jarUrl = path.endsWith(".jar") ? new URL("jar:file:" + path + "!/") : null;
-                if (jarUrl != null) {
-                    JarURLConnection jarURLConnection = (JarURLConnection) jarUrl.openConnection();
-                    Manifest manifest = jarURLConnection.getManifest();
-                    String version = (String) manifest.getMainAttributes().get(new Attributes.Name("Build-Version"));
-                    if (version != null) {
-                        driverVersion = version;
-                    }
-                }
-            }
-        } catch (SecurityException e) {
-            // do nothing
-        } catch (IOException e) {
-            // do nothing
-        }
-        return driverVersion;
-    }
+    private static final MongoDriverInformation DEFAULT_DRIVER_INFORMATION = MongoDriverInformation.builder()
+            .driverName(MongoDriverVersion.NAME).driverVersion(MongoDriverVersion.VERSION).build();
 
     private MongoClients() {
     }

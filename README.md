@@ -100,6 +100,17 @@ $ cd mongo-java-driver-reactivestreams
 $ ./gradlew check
 ```
 
+## IntelliJ IDEA
+
+Some manual configuration steps are required to run the code in IntelliJ:
+
+- **Error:** `java: package com.mongodb.reactivestreams.client.internal.build does not exist`<br>
+ **Fixes:** Any of the following: <br>
+ - Run the `compileBuildConfig` task: eg: `./gradlew compileBuildConfig` or via Gradle > driver-core > Tasks > other > compileBuildConfig
+ - Set `compileBuildConfig` to execute Before Build. via Gradle > Tasks > other > right click compileBuildConfig - click on "Execute Before Build" 
+ - Delegate all build actions to Gradle: Settings > Build, Execution, Deployment > Build Tools > Gradle > Runner - tick "Delegate IDE build/run actions to gradle"
+
+
 ## Maintainers
 
 * Ross Lawley          ross@mongodb.com
