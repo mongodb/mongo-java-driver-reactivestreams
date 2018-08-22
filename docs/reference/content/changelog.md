@@ -10,11 +10,18 @@ title = "Changelog"
 
 Changes between released versions
 
-### 1.9.0-beta1
+### 1.9.1
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.9.1)
+
+  * Updated MongoDB Driver Async to 3.8.1 [JAVARS-107](https://jira.mongodb.org/browse/JAVARS-107)
+  * Auto generate build information [JAVARS-106](https://jira.mongodb.org/browse/JAVARS-106)
+
+### 1.9.0
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.9)
 
-  * Updated MongoDB Driver Async to 3.8.0-beta2
+  * Updated MongoDB Driver Async to 3.8.0
   * Transaction support [JAVARS-59](https://jira.mongodb.org/browse/JAVARS-59)
+  * Added new count API [JAVARS-89](https://jira.mongodb.org/browse/JAVARS-89)
 
 ### 1.8.0
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.8)
