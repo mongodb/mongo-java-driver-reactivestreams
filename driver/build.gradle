@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+apply plugin: 'idea'
 apply plugin: 'osgi'
 apply plugin: 'de.fuerstenau.buildconfig'
 

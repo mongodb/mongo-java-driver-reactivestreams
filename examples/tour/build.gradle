@@ -19,6 +19,6 @@ dependencies {
     compile project(':driver')
 
     sourceSets {
-        test.java.srcDirs += 'src'
+        test.java.srcDirs += 'src/main'
     }
 }
