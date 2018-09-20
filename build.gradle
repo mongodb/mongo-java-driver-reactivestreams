@@ -48,7 +48,7 @@ configure(subprojects.findAll { it.name != 'util' }) {
     evaluationDependsOn(':util')
 
     group = 'org.mongodb'
-    version = '1.9.2'
+    version = '1.9.3-SNAPSHOT'
     sourceCompatibility = JavaVersion.VERSION_1_6
     targetCompatibility = JavaVersion.VERSION_1_6
 
