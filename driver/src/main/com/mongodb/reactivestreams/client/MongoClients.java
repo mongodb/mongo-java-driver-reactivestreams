@@ -134,7 +134,9 @@ public final class MongoClients {
      * @param asyncMongoClient the async MongoClient
      * @return the client
      * @since 1.4
+     * @deprecated Deprecated because {@link com.mongodb.async.client.MongoClient} is deprecated.
      */
+    @Deprecated
     public static MongoClient create(final com.mongodb.async.client.MongoClient asyncMongoClient) {
         return new MongoClientImpl(asyncMongoClient);
     }
