@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Collation;
 import com.mongodb.reactivestreams.client.gridfs.GridFSFindPublisher;
@@ -28,8 +27,9 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.client.Observables.observe;
 
+
+@SuppressWarnings("deprecation")
 final class GridFSFindPublisherImpl implements GridFSFindPublisher {
     private final com.mongodb.async.client.gridfs.GridFSFindIterable wrapped;
 
@@ -39,12 +39,13 @@ final class GridFSFindPublisherImpl implements GridFSFindPublisher {
 
     @Override
     public Publisher<GridFSFile> first() {
-        return new ObservableToPublisher<GridFSFile>(observe(new Block<SingleResultCallback<GridFSFile>>(){
-            @Override
-            public void apply(final SingleResultCallback<GridFSFile> callback) {
-                wrapped.first(callback);
-            }
-        }));
+        return new ObservableToPublisher<GridFSFile>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<GridFSFile>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<GridFSFile> callback) {
+                        wrapped.first(callback);
+                    }
+                }));
     }
 
     @Override
@@ -97,6 +98,6 @@ final class GridFSFindPublisherImpl implements GridFSFindPublisher {
 
     @Override
     public void subscribe(final Subscriber<? super GridFSFile> s) {
-        new ObservableToPublisher<GridFSFile>(observe(wrapped)).subscribe(s);
+        new ObservableToPublisher<GridFSFile>(com.mongodb.async.client.Observables.observe(wrapped)).subscribe(s);
     }
 }

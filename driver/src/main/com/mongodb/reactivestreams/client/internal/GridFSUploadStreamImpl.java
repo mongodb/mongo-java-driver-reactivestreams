@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.Success;
 import com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream;
 import org.bson.BsonValue;
@@ -27,9 +26,10 @@ import org.reactivestreams.Publisher;
 import java.nio.ByteBuffer;
 
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
 
+
+@SuppressWarnings("deprecation")
 final class GridFSUploadStreamImpl implements GridFSUploadStream {
 
     private final com.mongodb.async.client.gridfs.GridFSUploadStream wrapped;
@@ -50,31 +50,34 @@ final class GridFSUploadStreamImpl implements GridFSUploadStream {
 
     @Override
     public Publisher<Integer> write(final ByteBuffer src) {
-        return new ObservableToPublisher<Integer>(observe(new Block<SingleResultCallback<Integer>>() {
-            @Override
-            public void apply(final SingleResultCallback<Integer> callback) {
-                wrapped.write(src, callback);
-            }
-        }));
+        return new ObservableToPublisher<Integer>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
+                        wrapped.write(src, callback);
+                    }
+                }));
     }
 
     @Override
     public Publisher<Success> close() {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.close(voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.close(voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
     public Publisher<Success> abort() {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.abort(voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.abort(voidToSuccessCallback(callback));
+                    }
+                }));
     }
 }

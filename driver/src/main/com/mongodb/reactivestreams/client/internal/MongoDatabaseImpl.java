@@ -20,7 +20,6 @@ import com.mongodb.Block;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.CreateViewOptions;
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
@@ -38,14 +37,15 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
+
 
 /**
  * The internal MongoDatabase implementation.
  *
  * <p>This should not be considered a part of the public API.</p>
  */
+@SuppressWarnings("deprecation")
 public final class MongoDatabaseImpl implements MongoDatabase {
 
     private final com.mongodb.async.client.MongoDatabase wrapped;
@@ -121,23 +121,25 @@ public final class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public <TResult> Publisher<TResult> runCommand(final Bson command, final Class<TResult> clazz) {
-        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
-            @Override
-            public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.runCommand(command, clazz, callback);
-            }
-        }));
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                        wrapped.runCommand(command, clazz, callback);
+                    }
+                }));
     }
 
     @Override
     public <TResult> Publisher<TResult> runCommand(final Bson command, final ReadPreference readPreference,
                                                    final Class<TResult> clazz) {
-        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
-            @Override
-            public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.runCommand(command, readPreference, clazz, callback);
-            }
-        }));
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                        wrapped.runCommand(command, readPreference, clazz, callback);
+                    }
+                }));
     }
 
     @Override
@@ -152,53 +154,59 @@ public final class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public <TResult> Publisher<TResult> runCommand(final ClientSession clientSession, final Bson command, final Class<TResult> clazz) {
-        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
-            @Override
-            public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.runCommand(clientSession.getWrapped(), command, clazz, callback);
-            }
-        }));
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                        wrapped.runCommand(clientSession.getWrapped(), command, clazz, callback);
+                    }
+                }));
     }
 
     @Override
     public <TResult> Publisher<TResult> runCommand(final ClientSession clientSession, final Bson command,
                                                    final ReadPreference readPreference, final Class<TResult> clazz) {
-        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>() {
-            @Override
-            public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.runCommand(clientSession.getWrapped(), command, readPreference, clazz, callback);
-            }
-        }));
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                        wrapped.runCommand(clientSession.getWrapped(), command, readPreference, clazz, callback);
+                    }
+                }));
     }
 
     @Override
     public Publisher<Success> drop() {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.drop(voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.drop(voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
     public Publisher<Success> drop(final ClientSession clientSession) {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.drop(clientSession.getWrapped(), voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.drop(clientSession.getWrapped(), voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
     public Publisher<String> listCollectionNames() {
-        return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames()));
+        return new ObservableToPublisher<String>(com.mongodb.async.client.Observables.observe(wrapped.listCollectionNames()));
     }
 
     @Override
     public Publisher<String> listCollectionNames(final ClientSession clientSession) {
-        return new ObservableToPublisher<String>(observe(wrapped.listCollectionNames(clientSession.getWrapped())));
+        return new ObservableToPublisher<String>(com.mongodb.async.client.Observables.observe(
+                wrapped.listCollectionNames(clientSession.getWrapped()))
+        );
     }
 
     @Override
@@ -228,12 +236,13 @@ public final class MongoDatabaseImpl implements MongoDatabase {
 
     @Override
     public Publisher<Success> createCollection(final String collectionName, final CreateCollectionOptions options) {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createCollection(collectionName, options, voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.createCollection(collectionName, options, voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
@@ -244,12 +253,13 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     @Override
     public Publisher<Success> createCollection(final ClientSession clientSession, final String collectionName,
                                                final CreateCollectionOptions options) {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createCollection(clientSession.getWrapped(), collectionName, options, voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.createCollection(clientSession.getWrapped(), collectionName, options, voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
@@ -260,12 +270,13 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     @Override
     public Publisher<Success> createView(final String viewName, final String viewOn, final List<? extends Bson> pipeline,
                                          final CreateViewOptions createViewOptions) {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createView(viewName, viewOn, pipeline, createViewOptions, voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.createView(viewName, viewOn, pipeline, createViewOptions, voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
@@ -277,13 +288,14 @@ public final class MongoDatabaseImpl implements MongoDatabase {
     @Override
     public Publisher<Success> createView(final ClientSession clientSession, final String viewName, final String viewOn,
                                          final List<? extends Bson> pipeline, final CreateViewOptions createViewOptions) {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>() {
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.createView(clientSession.getWrapped(), viewName, viewOn, pipeline, createViewOptions,
-                        voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.createView(clientSession.getWrapped(), viewName, viewOn, pipeline, createViewOptions,
+                                voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
@@ -332,6 +344,7 @@ public final class MongoDatabaseImpl implements MongoDatabase {
      * Gets the wrapped MongoDatabase
      *
      * <p>This should not be considered a part of the public API.</p>
+     *
      * @return wrapped MongoDatabase
      */
     public com.mongodb.async.client.MongoDatabase getWrapped() {

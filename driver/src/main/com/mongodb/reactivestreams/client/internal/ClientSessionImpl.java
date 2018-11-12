@@ -20,15 +20,14 @@ package com.mongodb.reactivestreams.client.internal;
 import com.mongodb.Block;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.TransactionOptions;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.session.ServerSession;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.reactivestreams.Publisher;
 
-import static com.mongodb.async.client.Observables.observe;
 
+@SuppressWarnings("deprecation")
 class ClientSessionImpl implements ClientSession {
     private final com.mongodb.async.client.ClientSession wrapped;
     private final Object originator;
@@ -65,22 +64,24 @@ class ClientSessionImpl implements ClientSession {
 
     @Override
     public Publisher<Void> commitTransaction() {
-        return new ObservableToPublisher<Void>(observe(new Block<SingleResultCallback<Void>>() {
-            @Override
-            public void apply(final SingleResultCallback<Void> callback) {
-                wrapped.commitTransaction(callback);
-            }
-        }));
-        }
+        return new ObservableToPublisher<Void>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Void>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Void> callback) {
+                        wrapped.commitTransaction(callback);
+                    }
+                }));
+    }
 
     @Override
     public Publisher<Void> abortTransaction() {
-        return new ObservableToPublisher<Void>(observe(new Block<SingleResultCallback<Void>>() {
-            @Override
-            public void apply(final SingleResultCallback<Void> callback) {
-                wrapped.abortTransaction(callback);
-            }
-        }));
+        return new ObservableToPublisher<Void>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Void>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Void> callback) {
+                        wrapped.abortTransaction(callback);
+                    }
+                }));
     }
 
     @Override

@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.ListCollectionsPublisher;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
@@ -26,9 +25,9 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.client.Observables.observe;
 
 
+@SuppressWarnings("deprecation")
 final class ListCollectionsPublisherImpl<TResult> implements ListCollectionsPublisher<TResult> {
 
     private final com.mongodb.async.client.ListCollectionsIterable<TResult> wrapped;
@@ -59,16 +58,17 @@ final class ListCollectionsPublisherImpl<TResult> implements ListCollectionsPubl
 
     @Override
     public Publisher<TResult> first() {
-        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>(){
-            @Override
-            public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.first(callback);
-            }
-        }));
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                        wrapped.first(callback);
+                    }
+                }));
     }
 
     @Override
     public void subscribe(final Subscriber<? super TResult> s) {
-        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
+        new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(wrapped)).subscribe(s);
     }
 }

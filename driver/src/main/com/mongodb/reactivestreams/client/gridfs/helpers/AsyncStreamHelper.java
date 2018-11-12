@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
  *
  * @since 1.3
  */
+@SuppressWarnings("deprecation")
 public final class AsyncStreamHelper {
 
     /**

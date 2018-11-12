@@ -16,9 +16,10 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.Success;
 
+
+@SuppressWarnings("deprecation")
 final class PublisherHelper {
 
     /**
@@ -27,8 +28,9 @@ final class PublisherHelper {
      * @param callback the boolean single result callback.
      * @return the results callback for an operation that returns null to signal success.
      */
-    public static SingleResultCallback<Void> voidToSuccessCallback(final SingleResultCallback<Success> callback) {
-        return new SingleResultCallback<Void>() {
+    public static com.mongodb.async.SingleResultCallback<Void> voidToSuccessCallback(
+            final com.mongodb.async.SingleResultCallback<Success> callback) {
+        return new com.mongodb.async.SingleResultCallback<Void>() {
             @Override
             public void onResult(final Void result, final Throwable t) {
                 callback.onResult(Success.SUCCESS, t);

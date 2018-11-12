@@ -18,7 +18,6 @@ package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
 import com.mongodb.ClientSessionOptions;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
 import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.reactivestreams.client.ListDatabasesPublisher;
@@ -32,13 +31,14 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.client.Observables.observe;
+
 
 /**
  * The internal MongoClient implementation.
  *
  * <p>This should not be considered a part of the public API.</p>
  */
+@SuppressWarnings("deprecation")
 public final class MongoClientImpl implements MongoClient {
     private final com.mongodb.async.client.MongoClient wrapped;
 
@@ -46,6 +46,7 @@ public final class MongoClientImpl implements MongoClient {
      * The internal MongoClientImpl constructor.
      *
      * <p>This should not be considered a part of the public API.</p>
+     *
      * @param wrapped the underlying MongoClient
      */
     public MongoClientImpl(final com.mongodb.async.client.MongoClient wrapped) {
@@ -70,12 +71,13 @@ public final class MongoClientImpl implements MongoClient {
 
     @Override
     public Publisher<String> listDatabaseNames() {
-        return new ObservableToPublisher<String>(observe(wrapped.listDatabaseNames()));
+        return new ObservableToPublisher<String>(com.mongodb.async.client.Observables.observe(wrapped.listDatabaseNames()));
     }
 
     @Override
     public Publisher<String> listDatabaseNames(final ClientSession clientSession) {
-        return new ObservableToPublisher<String>(observe(wrapped.listDatabaseNames(clientSession.getWrapped())));
+        return new ObservableToPublisher<String>(
+                com.mongodb.async.client.Observables.observe(wrapped.listDatabaseNames(clientSession.getWrapped())));
     }
 
     @Override
@@ -135,7 +137,7 @@ public final class MongoClientImpl implements MongoClient {
 
     @Override
     public <TResult> ChangeStreamPublisher<TResult> watch(final ClientSession clientSession, final List<? extends Bson> pipeline,
-                                                         final Class<TResult> resultClass) {
+                                                          final Class<TResult> resultClass) {
         notNull("clientSession", clientSession);
         return new ChangeStreamPublisherImpl<TResult>(wrapped.watch(clientSession.getWrapped(), pipeline, resultClass));
     }
@@ -147,20 +149,21 @@ public final class MongoClientImpl implements MongoClient {
 
     @Override
     public Publisher<ClientSession> startSession(final ClientSessionOptions options) {
-        return new ObservableToPublisher<ClientSession>(observe(new Block<SingleResultCallback<ClientSession>>() {
-            @Override
-            public void apply(final SingleResultCallback<ClientSession> clientSessionSingleResultCallback) {
-                wrapped.startSession(options, new SingleResultCallback<com.mongodb.async.client.ClientSession>() {
+        return new ObservableToPublisher<ClientSession>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<ClientSession>>() {
                     @Override
-                    public void onResult(final com.mongodb.async.client.ClientSession result, final Throwable t) {
-                        if (t != null) {
-                            clientSessionSingleResultCallback.onResult(null, t);
-                        } else {
-                            clientSessionSingleResultCallback.onResult(new ClientSessionImpl(result, this), null);
-                        }
+                    public void apply(final com.mongodb.async.SingleResultCallback<ClientSession> clientSessionSingleResultCallback) {
+                        wrapped.startSession(options, new com.mongodb.async.SingleResultCallback<com.mongodb.async.client.ClientSession>() {
+                            @Override
+                            public void onResult(final com.mongodb.async.client.ClientSession result, final Throwable t) {
+                                if (t != null) {
+                                    clientSessionSingleResultCallback.onResult(null, t);
+                                } else {
+                                    clientSessionSingleResultCallback.onResult(new ClientSessionImpl(result, this), null);
+                                }
+                            }
+                        });
                     }
-                });
-            }
-        }));
+                }));
     }
 }

@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.MapReduceAction;
 import com.mongodb.reactivestreams.client.MapReducePublisher;
@@ -29,12 +28,11 @@ import org.reactivestreams.Subscriber;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.assertions.Assertions.notNull;
-import static com.mongodb.async.client.Observables.observe;
 import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidToSuccessCallback;
 
+
+@SuppressWarnings("deprecation")
 final class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResult> {
-
-
     private final com.mongodb.async.client.MapReduceIterable<TResult> wrapped;
 
     MapReducePublisherImpl(final com.mongodb.async.client.MapReduceIterable<TResult> wrapped) {
@@ -128,12 +126,13 @@ final class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResul
 
     @Override
     public Publisher<Success> toCollection() {
-        return new ObservableToPublisher<Success>(observe(new Block<SingleResultCallback<Success>>(){
-            @Override
-            public void apply(final SingleResultCallback<Success> callback) {
-                wrapped.toCollection(voidToSuccessCallback(callback));
-            }
-        }));
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                        wrapped.toCollection(voidToSuccessCallback(callback));
+                    }
+                }));
     }
 
     @Override
@@ -150,16 +149,17 @@ final class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResul
 
     @Override
     public Publisher<TResult> first() {
-        return new ObservableToPublisher<TResult>(observe(new Block<SingleResultCallback<TResult>>(){
-            @Override
-            public void apply(final SingleResultCallback<TResult> callback) {
-                wrapped.first(callback);
-            }
-        }));
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                        wrapped.first(callback);
+                    }
+                }));
     }
 
     @Override
     public void subscribe(final Subscriber<? super TResult> s) {
-        new ObservableToPublisher<TResult>(observe(wrapped)).subscribe(s);
+        new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(wrapped)).subscribe(s);
     }
 }
