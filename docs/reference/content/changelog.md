@@ -10,6 +10,11 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.10.0
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.10.0)
+
+  * Updated MongoDB Driver Async to 3.9.0
+
 ### 1.9.2
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.9.2)
 
