@@ -304,9 +304,12 @@ public class GridFSTest extends DatabaseTestCase {
             if (rawOptions.containsKey("metadata")) {
                 options.metadata(Document.parse(rawOptions.getDocument("metadata").toJson()));
             }
-
+            GridFSBucket gridFSUploadBucket = gridFSBucket;
+            if (rawOptions.containsKey("disableMD5")) {
+                gridFSUploadBucket = gridFSUploadBucket.withDisableMD5(rawOptions.getBoolean("disableMD5").getValue());
+            }
             ObservableSubscriber<ObjectId> subscriber = new ObservableSubscriber<ObjectId>();
-            gridFSBucket.uploadFromStream(filename, toAsyncInputStream(inputStream), options).subscribe(subscriber);
+            gridFSUploadBucket.uploadFromStream(filename, toAsyncInputStream(inputStream), options).subscribe(subscriber);
             objectId = subscriber.get(30, SECONDS).get(0);
         } catch (Throwable e) {
             error = e;

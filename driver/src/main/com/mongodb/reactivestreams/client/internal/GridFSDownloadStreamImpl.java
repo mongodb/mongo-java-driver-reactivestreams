@@ -65,6 +65,17 @@ final class GridFSDownloadStreamImpl implements GridFSDownloadStream {
     }
 
     @Override
+    public Publisher<Long> skip(final long bytesToSkip) {
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<Long>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
+                        wrapped.skip(bytesToSkip, callback);
+                    }
+                }));
+    }
+
+    @Override
     public Publisher<Success> close() {
         return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {

@@ -17,6 +17,7 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.Success;
 import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
 import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
@@ -55,6 +56,17 @@ public final class GridFSAsyncStreamHelper {
                             @Override
                             public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
                                 wrapper.read(dst, callback);
+                            }
+                        }));
+            }
+
+            @Override
+            public Publisher<Long> skip(final long bytesToSkip) {
+                return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
+                        new Block<com.mongodb.async.SingleResultCallback<Long>>() {
+                            @Override
+                            public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
+                                wrapper.skip(bytesToSkip, callback);
                             }
                         }));
             }
@@ -124,6 +136,33 @@ public final class GridFSAsyncStreamHelper {
                     @Override
                     public void onNext(final Integer integer) {
                         result = integer;
+                    }
+
+                    @Override
+                    public void onError(final Throwable t) {
+                        callback.onResult(null, t);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        callback.onResult(result, null);
+                    }
+                });
+            }
+
+            @Override
+            public void skip(final long bytesToSkip, final SingleResultCallback<Long> callback) {
+                wrapped.skip(bytesToSkip).subscribe(new Subscriber<Long>() {
+                    private Long result = null;
+
+                    @Override
+                    public void onSubscribe(final Subscription s) {
+                        s.request(1);
+                    }
+
+                    @Override
+                    public void onNext(final Long skipped) {
+                        result = skipped;
                     }
 
                     @Override

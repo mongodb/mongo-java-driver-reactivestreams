@@ -39,6 +39,15 @@ public interface AsyncInputStream {
     Publisher<Integer> read(ByteBuffer dst);
 
     /**
+     * Skips over and discards n bytes of data from this input stream.
+     * @param bytesToSkip the number of bytes to skip
+     * @return a publisher with a single element, the actual number of bytes skipped
+     *
+     * @since 1.11
+     */
+    Publisher<Long> skip(long bytesToSkip);
+
+    /**
      * Closes the input stream
      *
      * @return a publisher with a single element indicating when the stream has been closed
