@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-include 'util', 'driver', 'examples:documentation', 'examples:rxjava', 'examples:tour'
+include 'util', 'driver', 'examples:documentation', 'examples:tour'
