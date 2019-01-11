@@ -19,6 +19,7 @@ package com.mongodb.reactivestreams.client.internal
 import com.mongodb.ReadConcern
 import com.mongodb.ReadPreference
 import com.mongodb.WriteConcern
+import com.mongodb.async.client.AggregateIterable
 import com.mongodb.async.client.ChangeStreamIterable
 import com.mongodb.async.client.MongoCollection as WrappedMongoCollection
 import com.mongodb.async.client.MongoDatabase as WrappedMongoDatabase
@@ -507,5 +508,42 @@ class MongoDatabaseImplSpecification extends Specification {
         then:
         1 * wrapped.watch(wrappedClientSession, pipeline, BsonDocument) >> wrappedResult
         expect changeStreamPublisher, isTheSameAs(new ChangeStreamPublisherImpl(wrappedResult))
+    }
+
+    def 'should use AggregatePublisher correctly'() {
+        given:
+        def pipeline = [new Document('$match', 1)]
+        def wrappedResult = Stub(AggregateIterable)
+        def wrapped = Mock(WrappedMongoDatabase)
+        def mongoDatabase = new MongoDatabaseImpl(wrapped)
+        def aggregatePublisher
+
+        when:
+        aggregatePublisher = mongoDatabase.aggregate(pipeline)
+
+        then:
+        1 * wrapped.aggregate(pipeline, Document) >> wrappedResult
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+
+        when:
+        aggregatePublisher = mongoDatabase.aggregate(pipeline, BsonDocument)
+
+        then:
+        1 * wrapped.aggregate(pipeline, BsonDocument) >> wrappedResult
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+
+        when:
+        aggregatePublisher = mongoDatabase.aggregate(clientSession, pipeline)
+
+        then:
+        1 * wrapped.aggregate(wrappedClientSession, pipeline, Document) >> wrappedResult
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
+
+        when:
+        aggregatePublisher = mongoDatabase.aggregate(clientSession, pipeline, BsonDocument)
+
+        then:
+        1 * wrapped.aggregate(wrappedClientSession, pipeline, BsonDocument) >> wrappedResult
+        expect aggregatePublisher, isTheSameAs(new AggregatePublisherImpl(wrappedResult))
     }
 }

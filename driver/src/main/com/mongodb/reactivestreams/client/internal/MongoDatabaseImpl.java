@@ -22,6 +22,7 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.CreateViewOptions;
+import com.mongodb.reactivestreams.client.AggregatePublisher;
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
 import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.reactivestreams.client.ListCollectionsPublisher;
@@ -338,6 +339,28 @@ public final class MongoDatabaseImpl implements MongoDatabase {
                                                           final Class<TResult> resultClass) {
         notNull("clientSession", clientSession);
         return new ChangeStreamPublisherImpl<TResult>(wrapped.watch(clientSession.getWrapped(), pipeline, resultClass));
+    }
+
+    @Override
+    public AggregatePublisher<Document> aggregate(final List<? extends Bson> pipeline) {
+        return aggregate(pipeline, Document.class);
+    }
+
+    @Override
+    public <TResult> AggregatePublisher<TResult> aggregate(final List<? extends Bson> pipeline, final Class<TResult> resultClass) {
+        return new AggregatePublisherImpl<TResult>(wrapped.aggregate(pipeline, resultClass));
+    }
+
+    @Override
+    public AggregatePublisher<Document> aggregate(final ClientSession clientSession, final List<? extends Bson> pipeline) {
+        return aggregate(clientSession, pipeline, Document.class);
+    }
+
+    @Override
+    public <TResult> AggregatePublisher<TResult> aggregate(final ClientSession clientSession, final List<? extends Bson> pipeline,
+                                                           final Class<TResult> resultClass) {
+        notNull("clientSession", clientSession);
+        return new AggregatePublisherImpl<TResult>(wrapped.aggregate(clientSession.getWrapped(), pipeline, resultClass));
     }
 
     /**
