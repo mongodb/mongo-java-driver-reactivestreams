@@ -59,6 +59,12 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
     }
 
     @Override
+    public ChangeStreamPublisher<TResult> startAfter(final BsonDocument startAfter) {
+        wrapped.startAfter(startAfter);
+        return this;
+    }
+
+    @Override
     public ChangeStreamPublisher<TResult> maxAwaitTime(final long maxAwaitTime, final TimeUnit timeUnit) {
         wrapped.maxAwaitTime(maxAwaitTime, timeUnit);
         return this;

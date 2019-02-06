@@ -65,6 +65,23 @@ public interface ChangeStreamPublisher<TResult> extends Publisher<ChangeStreamDo
     ChangeStreamPublisher<TResult> startAtOperationTime(BsonTimestamp startAtOperationTime);
 
     /**
+     * Similar to {@code resumeAfter}, this option takes a resume token and starts a
+     * new change stream returning the first notification after the token.
+     *
+     * <p>This will allow users to watch collections that have been dropped and recreated
+     * or newly renamed collections without missing any notifications.</p>
+     *
+     * <p>Note: The server will report an error if both {@code startAfter} and {@code resumeAfter} are specified.</p>
+     *
+     * @param startAfter the startAfter resumeToken
+     * @return this
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual changeStreams/#change-stream-start-after
+     */
+    ChangeStreamPublisher<TResult> startAfter(BsonDocument startAfter);
+
+    /**
      * Sets the maximum await execution time on the server for this operation.
      *
      * @param maxAwaitTime  the max await time.  A zero value will be ignored, and indicates that the driver should respect the server's

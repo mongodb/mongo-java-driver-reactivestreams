@@ -51,6 +51,7 @@ class ChangeStreamPublisherImplSpecification extends Specification {
         publisher = publisher
                 .fullDocument(UPDATE_LOOKUP)
                 .resumeAfter(new BsonDocument('_id', new BsonInt32(4)))
+                .startAfter(new BsonDocument('_id', new BsonInt32(5)))
                 .startAtOperationTime(new BsonTimestamp(42, 1))
                 .collation(collation)
                 .maxAwaitTime(2, TimeUnit.SECONDS)
@@ -58,6 +59,7 @@ class ChangeStreamPublisherImplSpecification extends Specification {
         then:
         1 * wrapped.fullDocument(UPDATE_LOOKUP) >> wrapped
         1 * wrapped.resumeAfter(new BsonDocument('_id', new BsonInt32(4))) >> wrapped
+        1 * wrapped.startAfter(new BsonDocument('_id', new BsonInt32(5))) >> wrapped
         1 * wrapped.startAtOperationTime(new BsonTimestamp(42, 1)) >> wrapped
         1 * wrapped.collation(collation) >> wrapped
         1 * wrapped.maxAwaitTime(2, TimeUnit.SECONDS) >> wrapped
