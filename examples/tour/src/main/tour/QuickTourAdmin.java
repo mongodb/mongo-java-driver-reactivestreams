@@ -34,7 +34,7 @@ import static tour.SubscriberHelpers.PrintDocumentSubscriber;
 import static tour.SubscriberHelpers.PrintSubscriber;
 
 /**
- * The QuickTourAdmin code example see: https://mongodb.github.io/mongo-java-driver/3.0/getting-started
+ * The QuickTourAdmin code
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class QuickTourAdmin {

@@ -51,7 +51,7 @@ import static tour.SubscriberHelpers.PrintSubscriber;
 
 
 /**
- * The QuickTour code example see: https://mongodb.github.io/mongo-java-driver-reactivestreams/1.0/getting-started
+ * The QuickTour code example
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class QuickTour {
