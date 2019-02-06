@@ -19,6 +19,7 @@ package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
 import com.mongodb.ClientSessionOptions;
+import com.mongodb.ServerAddress;
 import com.mongodb.TransactionOptions;
 import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.session.ServerSession;
@@ -82,6 +83,16 @@ class ClientSessionImpl implements ClientSession {
                         wrapped.abortTransaction(callback);
                     }
                 }));
+    }
+
+    @Override
+    public ServerAddress getPinnedMongosAddress() {
+        return wrapped.getPinnedMongosAddress();
+    }
+
+    @Override
+    public void setPinnedMongosAddress(final ServerAddress address) {
+        wrapped.setPinnedMongosAddress(address);
     }
 
     @Override
