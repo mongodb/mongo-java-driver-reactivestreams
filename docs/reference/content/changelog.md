@@ -10,6 +10,14 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.11.0
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.11)
+
+  * Updated MongoDB Driver Async to 3.10.0
+  * Support Skipping in GridFS [JAVARS-138](https://jira.mongodb.org/browse/JAVARS-138)
+  * Support running commands as aggregation	[JAVARS-141](https://jira.mongodb.org/browse/JAVARS-141)
+  * The driver now natively supports TLS/SSL without netty [JAVA-3100](https://jira.mongodb.org/browse/JAVA-3100)
+
 ### 1.10.0
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.10)
 
