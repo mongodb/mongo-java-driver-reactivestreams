@@ -8,12 +8,13 @@ type = "index"
 
 Welcome to the MongoDB Reactive Streams Java driver documentation hub.
 
-The Reactive Streams implementation is built upon the callback-based [`MongoDB Async Driver`]({{< asyncDriver >}}) and mirrors its API. 
-For reference documentation please see the asynchronous driver documentation.
+The Reactive Streams Driver is the canonical asynchronous Java driver for MongoDB, providing asynchronous stream processing with back 
+pressure in line with the [Reactive Streams](http://www.reactive-streams.org/) specification. The API mirrors the now-deprecated 
+callback-based [MongoDB Async Driver]({{< asyncDriver >}}). For reference documentation please see the asynchronous driver documentation.
 
-Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java 
-driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java 
-driver will be fully documented in its place   
+Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java
+driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java
+driver will be fully documented in its place
 
 ### Getting Started
 
