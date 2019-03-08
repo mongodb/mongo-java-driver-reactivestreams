@@ -257,15 +257,6 @@ functions:
           ${PREPARE_SHELL}
           echo '{"results": [{ "status": "FAIL", "test_file": "Build", "log_raw": "No test-results.json found was created"  } ]}' > ${PROJECT_DIRECTORY}/test-results.json
 
-  "install dependencies":
-    type: test
-    params:
-      working_dir: "src"
-      script: |
-        ${PREPARE_SHELL}
-        file="${PROJECT_DIRECTORY}/.evergreen/install-dependencies.sh"
-        [ -f ${file} ] && sh ${file} || echo "${file} not available, skipping"
-
   "run static checks":
     - command: shell.exec
       type: test
@@ -311,7 +302,6 @@ pre:
   - func: "fix absolute paths"
   - func: "init test-results"
   - func: "make files executable"
-  - func: "install dependencies"
 
 post:
   # Removed, causing timeouts
