@@ -12,9 +12,11 @@ The Reactive Streams Driver is the canonical asynchronous Java driver for MongoD
 pressure in line with the [Reactive Streams](http://www.reactive-streams.org/) specification. The API mirrors the now-deprecated 
 callback-based [MongoDB Async Driver]({{< asyncDriver >}}). For reference documentation please see the asynchronous driver documentation.
 
+{{% note %}}
 Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java
 driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java
-driver will be fully documented in its place
+driver will be fully documented in its place.
+{{% /note %}}
 
 ### Getting Started
 
