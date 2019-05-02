@@ -18,12 +18,14 @@ package com.mongodb.reactivestreams.client.internal
 
 import com.mongodb.ClientSessionOptions
 import com.mongodb.ReadConcern
+import com.mongodb.ServerAddress
 import com.mongodb.TransactionOptions
 import com.mongodb.async.client.ClientSession
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.session.ServerSession
 import org.bson.BsonBoolean
 import org.bson.BsonDocument
+import org.bson.BsonObjectId
 import org.bson.BsonTimestamp
 import org.reactivestreams.Subscriber
 import spock.lang.Specification
@@ -42,6 +44,8 @@ class ClientSessionImplSpecification extends Specification {
         def subscriber = Stub(Subscriber) {
             onSubscribe(_) >> { args -> args[0].request(1) }
         }
+        def token = new BsonDocument('id', new BsonObjectId())
+        def serverAddress = new ServerAddress('host')
 
         expect:
         session.getOriginator() == originator
@@ -119,6 +123,32 @@ class ClientSessionImplSpecification extends Specification {
 
         then:
         1 * wrapped.startTransaction(expectedTransactionOptions)
+
+        when:
+        session.setRecoveryToken(token)
+
+        then:
+        1 * wrapped.setRecoveryToken(token)
+
+        when:
+        def returnedToken = session.getRecoveryToken()
+
+        then:
+        1 * wrapped.getRecoveryToken() >> token
+        returnedToken == token
+
+        when:
+        session.setPinnedServerAddress(serverAddress)
+
+        then:
+        1 * wrapped.setPinnedServerAddress(serverAddress)
+
+        when:
+        def returnedServerAddress = session.getPinnedServerAddress()
+
+        then:
+        1 * wrapped.getPinnedServerAddress() >> serverAddress
+        returnedServerAddress == serverAddress
 
         when:
         session.commitTransaction().subscribe(subscriber)

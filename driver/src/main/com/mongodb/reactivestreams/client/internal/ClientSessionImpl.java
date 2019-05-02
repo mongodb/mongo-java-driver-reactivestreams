@@ -86,13 +86,23 @@ class ClientSessionImpl implements ClientSession {
     }
 
     @Override
-    public ServerAddress getPinnedMongosAddress() {
-        return wrapped.getPinnedMongosAddress();
+    public ServerAddress getPinnedServerAddress() {
+        return wrapped.getPinnedServerAddress();
     }
 
     @Override
-    public void setPinnedMongosAddress(final ServerAddress address) {
-        wrapped.setPinnedMongosAddress(address);
+    public void setPinnedServerAddress(final ServerAddress serverAddress) {
+        wrapped.setPinnedServerAddress(serverAddress);
+    }
+
+    @Override
+    public BsonDocument getRecoveryToken() {
+        return wrapped.getRecoveryToken();
+    }
+
+    @Override
+    public void setRecoveryToken(final BsonDocument bsonDocument) {
+        wrapped.setRecoveryToken(bsonDocument);
     }
 
     @Override
