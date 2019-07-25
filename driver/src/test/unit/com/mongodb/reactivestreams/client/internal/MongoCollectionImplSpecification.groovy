@@ -782,7 +782,6 @@ class MongoCollectionImplSpecification extends Specification {
 
     def 'should use the underlying updateOne'() {
         given:
-        def update = new Document('new', 1)
         def options = new UpdateOptions()
 
         when:
@@ -814,11 +813,13 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.updateOne(wrappedClientSession, filter, update, options, _)
+
+        where:
+        update << [new Document('new', 1), [new Document('new', 1)]]
     }
 
     def 'should use the underlying updateMany'() {
         given:
-        def update = new Document('new', 1)
         def options = new UpdateOptions()
 
         when:
@@ -850,6 +851,9 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.updateMany(wrappedClientSession, filter, update, options, _)
+
+        where:
+        update << [new Document('new', 1), [new Document('new', 1)]]
     }
 
     def 'should use the underlying findOneAndDelete'() {
@@ -925,7 +929,6 @@ class MongoCollectionImplSpecification extends Specification {
 
     def 'should use the underlying findOneAndUpdate'() {
         given:
-        def update = new Document('new', 1)
         def options = new FindOneAndUpdateOptions()
 
         when:
@@ -957,6 +960,9 @@ class MongoCollectionImplSpecification extends Specification {
 
         then:
         1 * wrapped.findOneAndUpdate(wrappedClientSession, filter, update, options, _)
+
+        where:
+        update << [new Document('new', 1), [new Document('new', 1)]]
     }
 
     def 'should use the underlying drop'() {

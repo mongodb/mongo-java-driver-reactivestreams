@@ -641,6 +641,39 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     }
 
     @Override
+    public Publisher<UpdateResult> updateOne(final Bson filter, final List<? extends Bson> update) {
+        return updateOne(filter, update, new UpdateOptions());
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateOne(final Bson filter, final List<? extends Bson> update, final UpdateOptions options) {
+        return new ObservableToPublisher<UpdateResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<UpdateResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<UpdateResult> callback) {
+                        wrapped.updateOne(filter, update, options, callback);
+                    }
+                }));
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateOne(final ClientSession clientSession, final Bson filter, final List<? extends Bson> update) {
+        return updateOne(clientSession, filter, update, new UpdateOptions());
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateOne(final ClientSession clientSession, final Bson filter, final List<? extends Bson> update,
+                                             final UpdateOptions options) {
+        return new ObservableToPublisher<UpdateResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<UpdateResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<UpdateResult> callback) {
+                        wrapped.updateOne(clientSession.getWrapped(), filter, update, options, callback);
+                    }
+                }));
+    }
+
+    @Override
     public Publisher<UpdateResult> updateMany(final Bson filter, final Bson update) {
         return updateMany(filter, update, new UpdateOptions());
     }
@@ -663,6 +696,39 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
 
     @Override
     public Publisher<UpdateResult> updateMany(final ClientSession clientSession, final Bson filter, final Bson update,
+                                              final UpdateOptions options) {
+        return new ObservableToPublisher<UpdateResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<UpdateResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<UpdateResult> callback) {
+                        wrapped.updateMany(clientSession.getWrapped(), filter, update, options, callback);
+                    }
+                }));
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateMany(final Bson filter, final List<? extends Bson> update) {
+        return updateMany(filter, update, new UpdateOptions());
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateMany(final Bson filter, final List<? extends Bson> update, final UpdateOptions options) {
+        return new ObservableToPublisher<UpdateResult>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<UpdateResult>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<UpdateResult> callback) {
+                        wrapped.updateMany(filter, update, options, callback);
+                    }
+                }));
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateMany(final ClientSession clientSession, final Bson filter, final List<? extends Bson> update) {
+        return updateMany(clientSession, filter, update, new UpdateOptions());
+    }
+
+    @Override
+    public Publisher<UpdateResult> updateMany(final ClientSession clientSession, final Bson filter, final List<? extends Bson> update,
                                               final UpdateOptions options) {
         return new ObservableToPublisher<UpdateResult>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<UpdateResult>>() {
@@ -763,6 +829,41 @@ final class MongoCollectionImpl<TDocument> implements MongoCollection<TDocument>
     @Override
     public Publisher<TDocument> findOneAndUpdate(final ClientSession clientSession, final Bson filter, final Bson update,
                                                  final FindOneAndUpdateOptions options) {
+        return new ObservableToPublisher<TDocument>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TDocument>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TDocument> callback) {
+                        wrapped.findOneAndUpdate(clientSession.getWrapped(), filter, update, options, callback);
+                    }
+                }));
+    }
+
+    @Override
+    public Publisher<TDocument> findOneAndUpdate(final Bson filter, final List<? extends Bson> update) {
+        return findOneAndUpdate(filter, update, new FindOneAndUpdateOptions());
+    }
+
+    @Override
+    public Publisher<TDocument> findOneAndUpdate(final Bson filter, final List<? extends Bson> update,
+                                                 final FindOneAndUpdateOptions options) {
+        return new ObservableToPublisher<TDocument>(com.mongodb.async.client.Observables.observe(
+                new Block<com.mongodb.async.SingleResultCallback<TDocument>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<TDocument> callback) {
+                        wrapped.findOneAndUpdate(filter, update, options, callback);
+                    }
+                }));
+    }
+
+    @Override
+    public Publisher<TDocument> findOneAndUpdate(final ClientSession clientSession, final Bson filter,
+                                                 final List<? extends Bson> update) {
+        return findOneAndUpdate(clientSession, filter, update, new FindOneAndUpdateOptions());
+    }
+
+    @Override
+    public Publisher<TDocument> findOneAndUpdate(final ClientSession clientSession, final Bson filter,
+                                                 final List<? extends Bson> update, final FindOneAndUpdateOptions options) {
         return new ObservableToPublisher<TDocument>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<TDocument>>() {
                     @Override

@@ -66,7 +66,6 @@ public interface MongoCollection<TDocument> {
      */
     MongoNamespace getNamespace();
 
-
     /**
      * Get the class of documents stored in this collection.
      *
@@ -1055,6 +1054,66 @@ public interface MongoCollection<TDocument> {
     Publisher<UpdateResult> updateOne(ClientSession clientSession, Bson filter, Bson update, UpdateOptions options);
 
     /**
+     * Update a single document in the collection according to the specified arguments.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a pipeline describing the update, which may not be null.
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateOne(Bson filter, List<? extends Bson> update);
+
+    /**
+     * Update a single document in the collection according to the specified arguments.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param filter        a document describing the query filter, which may not be null.
+     * @param update        a pipeline describing the update, which may not be null.
+     * @param options the options to apply to the update operation
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateOne(Bson filter, List<? extends Bson> update, UpdateOptions options);
+
+    /**
+     * Update a single document in the collection according to the specified arguments.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param clientSession the client session with which to associate this operation
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a pipeline describing the update, which may not be null.
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateOne(ClientSession clientSession, Bson filter, List<? extends Bson> update);
+
+    /**
+     * Update a single document in the collection according to the specified arguments.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param clientSession the client session with which to associate this operation
+     * @param filter        a document describing the query filter, which may not be null.
+     * @param update        a pipeline describing the update, which may not be null.
+     * @param options the options to apply to the update operation
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateOne(ClientSession clientSession, Bson filter, List<? extends Bson> update, UpdateOptions options);
+
+    /**
      * Update all documents in the collection according to the specified arguments.
      *
      * @param filter a document describing the query filter, which may not be null.
@@ -1105,6 +1164,62 @@ public interface MongoCollection<TDocument> {
      * @since 1.7
      */
     Publisher<UpdateResult> updateMany(ClientSession clientSession, Bson filter, Bson update, UpdateOptions options);
+
+    /**
+     * Update all documents in the collection according to the specified arguments.
+     *
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a pipeline describing the update, which may not be null.
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateMany(Bson filter, List<? extends Bson> update);
+
+    /**
+     * Update all documents in the collection according to the specified arguments.
+     *
+     * @param filter        a document describing the query filter, which may not be null.
+     * @param update        a pipeline describing the update, which may not be null.
+     * @param options the options to apply to the update operation
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateMany(Bson filter, List<? extends Bson> update, UpdateOptions options);
+
+    /**
+     * Update all documents in the collection according to the specified arguments.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a pipeline describing the update, which may not be null.
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateMany(ClientSession clientSession, Bson filter, List<? extends Bson> update);
+
+    /**
+     * Update all documents in the collection according to the specified arguments.
+     *
+     * @param clientSession the client session with which to associate this operation
+     * @param filter        a document describing the query filter, which may not be null.
+     * @param update        a pipeline describing the update, which may not be null.
+     * @param options the options to apply to the update operation
+     * @return a publisher with a single element the UpdateResult
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     * @mongodb.driver.manual tutorial/modify-documents/ Updates
+     * @mongodb.driver.manual reference/operator/update/ Update Operators
+     */
+    Publisher<UpdateResult> updateMany(ClientSession clientSession, Bson filter, List<? extends Bson> update, UpdateOptions options);
 
     /**
      * Atomically find a document and remove it.
@@ -1252,6 +1367,67 @@ public interface MongoCollection<TDocument> {
      * @since 1.7
      */
     Publisher<TDocument> findOneAndUpdate(ClientSession clientSession, Bson filter, Bson update, FindOneAndUpdateOptions options);
+
+    /**
+     * Atomically find a document and update it.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a pipeline describing the update, which may not be null.
+     * @return a publisher with a single element the document that was updated.  Depending on the value of the {@code returnOriginal}
+     * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
+     * query filter, then null will be returned
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     */
+    Publisher<TDocument> findOneAndUpdate(Bson filter, List<? extends Bson> update);
+
+    /**
+     * Atomically find a document and update it.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param filter  a document describing the query filter, which may not be null.
+     * @param update  a pipeline describing the update, which may not be null.
+     * @param options the options to apply to the operation
+     * @return a publisher with a single element the document that was updated.  Depending on the value of the {@code returnOriginal}
+     * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
+     * query filter, then null will be returned
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     */
+    Publisher<TDocument> findOneAndUpdate(Bson filter, List<? extends Bson> update, FindOneAndUpdateOptions options);
+
+    /**
+     * Atomically find a document and update it.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param clientSession the client session with which to associate this operation
+     * @param filter a document describing the query filter, which may not be null.
+     * @param update a pipeline describing the update, which may not be null.
+     * @return a publisher with a single element the document that was updated.  Depending on the value of the {@code returnOriginal}
+     * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
+     * query filter, then null will be returned
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     */
+    Publisher<TDocument> findOneAndUpdate(ClientSession clientSession, Bson filter, List<? extends Bson> update);
+
+    /**
+     * Atomically find a document and update it.
+     *
+     * <p>Note: Supports retryable writes on MongoDB server versions 3.6 or higher when the retryWrites setting is enabled.</p>
+     * @param clientSession the client session with which to associate this operation
+     * @param filter  a document describing the query filter, which may not be null.
+     * @param update  a pipeline describing the update, which may not be null.
+     * @param options the options to apply to the operation
+     * @return a publisher with a single element the document that was updated.  Depending on the value of the {@code returnOriginal}
+     * property, this will either be the document as it was before the update or as it is after the update.  If no documents matched the
+     * query filter, then null will be returned
+     * @since 1.12
+     * @mongodb.server.release 4.2
+     */
+    Publisher<TDocument> findOneAndUpdate(ClientSession clientSession, Bson filter, List<? extends Bson> update,
+                                           FindOneAndUpdateOptions options);
 
     /**
      * Drops this collection from the Database.
