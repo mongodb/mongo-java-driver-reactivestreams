@@ -16,14 +16,12 @@
 
 package com.mongodb.reactivestreams.client.internal;
 
-
 import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 @SuppressWarnings("deprecation")
-class ObservableToPublisher<TResult> implements org.reactivestreams.Publisher<TResult> {
+public class ObservableToPublisher<TResult> implements org.reactivestreams.Publisher<TResult> {
 
     private final com.mongodb.async.client.Observable<TResult> observable;
 
