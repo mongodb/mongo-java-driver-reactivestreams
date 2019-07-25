@@ -17,7 +17,6 @@
 package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.Success;
 import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
 import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
@@ -151,7 +150,7 @@ public final class GridFSAsyncStreamHelper {
             }
 
             @Override
-            public void skip(final long bytesToSkip, final SingleResultCallback<Long> callback) {
+            public void skip(final long bytesToSkip, final com.mongodb.async.SingleResultCallback<Long> callback) {
                 wrapped.skip(bytesToSkip).subscribe(new Subscriber<Long>() {
                     private Long result = null;
 
