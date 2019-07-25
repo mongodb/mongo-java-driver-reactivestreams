@@ -10,6 +10,15 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.12.0
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.12)
+
+  * Updated MongoDB Driver Async to 3.11.0
+  * Add the ability to specify a pipeline to an update command [JAVARS-170](https://jira.mongodb.org/browse/JAVARS-170)
+  * Support 'startAfter' option to the $changeStream stage [JAVARS-147](https://jira.mongodb.org/browse/JAVARS-147)
+  * Support Client-side Field Level Encryption [JAVARS-130](https://jira.mongodb.org/browse/JAVARS-130)
+  * Support mongos pinning for sharded transactions [JAVARS-127](https://jira.mongodb.org/browse/JAVARS-127)
+
 ### 1.11.0
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.11)
 
