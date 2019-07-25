@@ -10,8 +10,7 @@ set -o errexit  # Exit the script with error if any of the commands fail
 
 MONGODB_URI=${MONGODB_URI:-}
 JDK=${JDK:-jdk}
-# We always compile with the latest version of java
-export JAVA_HOME="/opt/java/jdk9"
+export JAVA_HOME="/opt/java/${JDK}"
 
 ############################################
 #            Main Program                  #
@@ -21,4 +20,4 @@ export JAVA_HOME="/opt/java/jdk9"
 echo "Running tests with ${JDK} connecting to $MONGODB_URI"
 
 ./gradlew -version
-./gradlew -PjdkHome=/opt/java/${JDK} -Dorg.mongodb.test.uri=${MONGODB_URI} --stacktrace --info test
+./gradlew -Dorg.mongodb.test.uri=${MONGODB_URI} --stacktrace --info test
