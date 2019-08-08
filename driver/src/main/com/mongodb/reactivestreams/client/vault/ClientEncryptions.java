@@ -17,12 +17,18 @@
 package com.mongodb.reactivestreams.client.vault;
 
 import com.mongodb.ClientEncryptionSettings;
+import com.mongodb.annotations.Beta;
 
 /**
  * Factory for ClientEncryption implementations.
  *
+ * <p>
+ * Note: support for client-side encryption should be considered as beta.  Backwards-breaking changes may be made before the final
+ * release.
+ * </p>
  * @since 1.12
  */
+@Beta
 public final class ClientEncryptions {
 
     /**
