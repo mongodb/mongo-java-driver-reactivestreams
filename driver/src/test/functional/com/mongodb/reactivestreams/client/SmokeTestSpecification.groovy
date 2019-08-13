@@ -71,6 +71,9 @@ class SmokeTestSpecification extends FunctionalSpecification {
         run('find first should return nothing if no documents', collection.find().&first) == []
 
         then:
+        run('find should return an empty list', collection.&find) == []
+
+        then:
         run('Insert a document', collection.&insertOne, document)[0] == Success.SUCCESS
 
         then:

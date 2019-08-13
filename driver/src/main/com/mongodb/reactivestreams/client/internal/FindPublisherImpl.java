@@ -23,6 +23,7 @@ import com.mongodb.reactivestreams.client.FindPublisher;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.util.concurrent.TimeUnit;
 
@@ -40,13 +41,42 @@ final class FindPublisherImpl<TResult> implements FindPublisher<TResult> {
 
     @Override
     public Publisher<TResult> first() {
-        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
-                new Block<com.mongodb.async.SingleResultCallback<TResult>>(){
+        return new Publisher<TResult>() {
             @Override
-            public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
-                wrapped.first(callback);
+            public void subscribe(final Subscriber<? super TResult> subscriber) {
+                new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+                        new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
+                            @Override
+                            public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
+                                wrapped.first(callback);
+                            }
+                        })).subscribe(new Subscriber<TResult>() {
+                    @Override
+                    public void onSubscribe(final Subscription s) {
+                        subscriber.onSubscribe(s);
+                    }
+
+                    @Override
+                    public void onNext(final TResult result) {
+                        subscriber.onNext(result);
+                    }
+
+                    @Override
+                    public void onError(final Throwable t) {
+                        if (t instanceof NullPointerException) {
+                            onComplete();
+                        } else {
+                            subscriber.onError(t);
+                        }
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        subscriber.onComplete();
+                    }
+                });
             }
-        }));
+        };
     }
 
     @Override
