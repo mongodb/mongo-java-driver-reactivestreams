@@ -50,35 +50,35 @@ public final class GridFSAsyncStreamHelper {
         return new AsyncInputStream() {
             @Override
             public Publisher<Integer> read(final ByteBuffer dst) {
-                return new ObservableToPublisher<Integer>(com.mongodb.async.client.Observables.observe(
+                return new SingleResultObservableToPublisher<Integer>(
                         new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
                             @Override
                             public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
                                 wrapper.read(dst, callback);
                             }
-                        }));
+                        });
             }
 
             @Override
             public Publisher<Long> skip(final long bytesToSkip) {
-                return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
+                return new SingleResultObservableToPublisher<Long>(
                         new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                             @Override
                             public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                                 wrapper.skip(bytesToSkip, callback);
                             }
-                        }));
+                        });
             }
 
             @Override
             public Publisher<Success> close() {
-                return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                return new SingleResultObservableToPublisher<Success>(
                         new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                             @Override
                             public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                                 wrapper.close(voidToSuccessCallback(callback));
                             }
-                        }));
+                        });
             }
         };
     }
@@ -96,24 +96,24 @@ public final class GridFSAsyncStreamHelper {
 
             @Override
             public Publisher<Integer> write(final ByteBuffer src) {
-                return new ObservableToPublisher<Integer>(com.mongodb.async.client.Observables.observe(
+                return new SingleResultObservableToPublisher<Integer>(
                         new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
                             @Override
                             public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
                                 wrapper.write(src, callback);
                             }
-                        }));
+                        });
             }
 
             @Override
             public Publisher<Success> close() {
-                return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+                return new SingleResultObservableToPublisher<Success>(
                         new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                             @Override
                             public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                                 wrapper.close(voidToSuccessCallback(callback));
                             }
-                        }));
+                        });
             }
         };
     }

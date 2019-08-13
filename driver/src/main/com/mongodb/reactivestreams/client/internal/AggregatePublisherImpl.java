@@ -72,13 +72,13 @@ final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResul
 
     @Override
     public Publisher<Success> toCollection() {
-        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Success>(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>(){
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.toCollection(voidToSuccessCallback(callback));
                     }
-                }));
+                });
     }
 
     @Override
@@ -107,13 +107,13 @@ final class AggregatePublisherImpl<TResult> implements AggregatePublisher<TResul
 
     @Override
     public Publisher<TResult> first() {
-        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<TResult>(
                 new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
                         wrapped.first(callback);
                     }
-                }));
+                });
     }
 
     @Override

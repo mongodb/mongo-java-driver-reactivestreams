@@ -50,34 +50,34 @@ final class GridFSUploadStreamImpl implements GridFSUploadStream {
 
     @Override
     public Publisher<Integer> write(final ByteBuffer src) {
-        return new ObservableToPublisher<Integer>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Integer>(
                 new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
                         wrapped.write(src, callback);
                     }
-                }));
+                });
     }
 
     @Override
     public Publisher<Success> close() {
-        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Success>(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.close(voidToSuccessCallback(callback));
                     }
-                }));
+                });
     }
 
     @Override
     public Publisher<Success> abort() {
-        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Success>(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.abort(voidToSuccessCallback(callback));
                     }
-                }));
+                });
     }
 }

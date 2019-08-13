@@ -38,13 +38,13 @@ final class GridFSDownloadStreamImpl implements GridFSDownloadStream {
 
     @Override
     public Publisher<GridFSFile> getGridFSFile() {
-        return new ObservableToPublisher<GridFSFile>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<GridFSFile>(
                 new Block<com.mongodb.async.SingleResultCallback<GridFSFile>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<GridFSFile> callback) {
                         wrapped.getGridFSFile(callback);
                     }
-                }));
+                });
     }
 
     @Override
@@ -55,34 +55,34 @@ final class GridFSDownloadStreamImpl implements GridFSDownloadStream {
 
     @Override
     public Publisher<Integer> read(final ByteBuffer dst) {
-        return new ObservableToPublisher<Integer>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Integer>(
                 new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
                         wrapped.read(dst, callback);
                     }
-                }));
+                });
     }
 
     @Override
     public Publisher<Long> skip(final long bytesToSkip) {
-        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.skip(bytesToSkip, callback);
                     }
-                }));
+                });
     }
 
     @Override
     public Publisher<Success> close() {
-        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
+        return new SingleResultObservableToPublisher<Success>(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.close(voidToSuccessCallback(callback));
                     }
-                }));
+                });
     }
 }
