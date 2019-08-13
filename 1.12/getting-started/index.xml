@@ -39,7 +39,7 @@
     &amp;lt;dependency&amp;gt;
         &amp;lt;groupId&amp;gt;org.mongodb&amp;lt;/groupId&amp;gt;
         &amp;lt;artifactId&amp;gt;mongodb-driver-reactivestreams&amp;lt;/artifactId&amp;gt;
-        &amp;lt;version&amp;gt;1.12.0-rc0&amp;lt;/version&amp;gt;
+        &amp;lt;version&amp;gt;1.12.0&amp;lt;/version&amp;gt;
     &amp;lt;/dependency&amp;gt;
 &amp;lt;/dependencies&amp;gt;
 
@@ -48,7 +48,7 @@
 &lt;section class=&#34;gradle hidden&#34;&gt;
 &lt;pre&gt;&lt;code class=&#34;ini&#34;&gt;
   dependencies {
-      compile &#39;org.mongodb:mongodb-driver-reactivestreams:1.12.0-rc0&#39;
+      compile &#39;org.mongodb:mongodb-driver-reactivestreams:1.12.0&#39;
   }
 
 &lt;/code&gt;&lt;/pre&gt;
@@ -60,10 +60,10 @@
     &lt;p&gt;
         &lt;strong&gt;Note:&lt;/strong&gt; &lt;code&gt;mongodb-driver-reactivestreams&lt;/code&gt; requires the following dependencies:
         &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/reactivestreams/reactive-streams/1.0.2&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;reactive-streams&lt;/code&gt;&lt;/a&gt;,
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/3.11.0-rc0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;bson&lt;/code&gt;&lt;/a&gt;,
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/3.11.0-rc0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-core&lt;/code&gt;&lt;/a&gt;
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/3.11.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;bson&lt;/code&gt;&lt;/a&gt;,
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/3.11.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-core&lt;/code&gt;&lt;/a&gt;
         and
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/3.11.0-rc0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-async&lt;/code&gt;&lt;/a&gt;.
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/3.11.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-async&lt;/code&gt;&lt;/a&gt;.
     &lt;/p&gt;
 &lt;/section&gt;
 

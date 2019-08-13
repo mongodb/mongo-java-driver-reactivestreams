@@ -212,7 +212,7 @@ See the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.6/whats-new
     &amp;lt;dependency&amp;gt;
         &amp;lt;groupId&amp;gt;org.mongodb&amp;lt;/groupId&amp;gt;
         &amp;lt;artifactId&amp;gt;mongodb-driver-reactivestreams&amp;lt;/artifactId&amp;gt;
-        &amp;lt;version&amp;gt;1.12.0-rc0&amp;lt;/version&amp;gt;
+        &amp;lt;version&amp;gt;1.12.0&amp;lt;/version&amp;gt;
     &amp;lt;/dependency&amp;gt;
 &amp;lt;/dependencies&amp;gt;
 
@@ -221,7 +221,7 @@ See the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.6/whats-new
 &lt;section class=&#34;gradle hidden&#34;&gt;
 &lt;pre&gt;&lt;code class=&#34;ini&#34;&gt;
   dependencies {
-      compile &#39;org.mongodb:mongodb-driver-reactivestreams:1.12.0-rc0&#39;
+      compile &#39;org.mongodb:mongodb-driver-reactivestreams:1.12.0&#39;
   }
 
 &lt;/code&gt;&lt;/pre&gt;
@@ -233,10 +233,10 @@ See the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.6/whats-new
     &lt;p&gt;
         &lt;strong&gt;Note:&lt;/strong&gt; &lt;code&gt;mongodb-driver-reactivestreams&lt;/code&gt; requires the following dependencies:
         &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/reactivestreams/reactive-streams/1.0.2&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;reactive-streams&lt;/code&gt;&lt;/a&gt;,
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/3.11.0-rc0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;bson&lt;/code&gt;&lt;/a&gt;,
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/3.11.0-rc0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-core&lt;/code&gt;&lt;/a&gt;
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/3.11.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;bson&lt;/code&gt;&lt;/a&gt;,
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/3.11.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-core&lt;/code&gt;&lt;/a&gt;
         and
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/3.11.0-rc0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-async&lt;/code&gt;&lt;/a&gt;.
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/3.11.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-async&lt;/code&gt;&lt;/a&gt;.
     &lt;/p&gt;
 &lt;/section&gt;
 
@@ -309,6 +309,125 @@ $ git checkout -b myNewFeature
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ ./gradlew check
 &lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Quick Tour Primer</title>
+      <link>/mongo-java-driver-reactivestreams/1.12/getting-started/quick-tour-primer/</link>
+      <pubDate>Tue, 17 Mar 2015 15:36:56 +0000</pubDate>
+      
+      <guid>/mongo-java-driver-reactivestreams/1.12/getting-started/quick-tour-primer/</guid>
+      <description>
+
+&lt;h1 id=&#34;quick-tour-primer&#34;&gt;Quick Tour Primer&lt;/h1&gt;
+
+&lt;p&gt;The aim of this guide is to provide background about the Java driver and its asynchronous API before going onto
+looking at how to use the driver and MongoDB.&lt;/p&gt;
+
+&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
+&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
+&lt;p&gt;See the &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.12/mongo-java-driver-reactivestreams/1.12/getting-started/installation-guide/&#34;&gt;installation guide&lt;/a&gt;
+for instructions on how to install the MongoDB Reactive Streams Java Driver.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&#34;reactive-streams&#34;&gt;Reactive Streams&lt;/h2&gt;
+
+&lt;p&gt;This library is an implementation of the &lt;a href=&#34;http://www.reactive-streams.org&#34;&gt;reactive streams&lt;/a&gt; specification and the reactive stream API
+consists of the following components:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Publisher&lt;/li&gt;
+&lt;li&gt;Subscriber&lt;/li&gt;
+&lt;li&gt;Subscription&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;A &lt;code&gt;Publisher&lt;/code&gt; is a provider of a potentially unbounded number of sequenced elements, published according to the demand received from it&amp;rsquo;s &lt;code&gt;Subscriber(s)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;In response to a call to &lt;code&gt;Publisher.subscribe(Subscriber)&lt;/code&gt; the possible invocation sequences for methods on the &lt;code&gt;Subscriber&lt;/code&gt; are given by the following protocol:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;onSubscribe onNext* (onError | onComplete)?
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This means that &lt;code&gt;onSubscribe&lt;/code&gt; is always signalled, followed by a possibly unbounded number of &lt;code&gt;onNext&lt;/code&gt; signals (as requested by &lt;code&gt;Subscriber&lt;/code&gt;)
+followed by an &lt;code&gt;onError&lt;/code&gt; signal if there is a failure, or an &lt;code&gt;onComplete&lt;/code&gt; signal when no more elements are available—all as long as
+the &lt;code&gt;Subscription&lt;/code&gt; is not cancelled.&lt;/p&gt;
+
+&lt;p&gt;For more information about reactive streams go to: &lt;a href=&#34;http://www.reactive-streams.org&#34;&gt;http://www.reactive-streams.org&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;from-async-callbacks-to-subscribers&#34;&gt;From Async Callbacks to Subscribers&lt;/h2&gt;
+
+&lt;p&gt;The MongoDB Reactive Streams Java Driver is built upon the MongoDB Async driver which is callback driven.
+The API mirrors the Async driver API and any methods that cause network IO return a &lt;code&gt;Publisher&amp;lt;T&amp;gt;&lt;/code&gt;,
+where &lt;code&gt;T&lt;/code&gt; is the type of response for the operation.&lt;br /&gt;
+The exception to that rule is for methods in the async driver that return a &lt;code&gt;Void&lt;/code&gt; value in the callback.
+In &lt;a href=&#34;http://www.reactive-streams.org&#34;&gt;reactive streams&lt;/a&gt; this is forbidden, so in those circumstances we
+return a &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.12/mongo-java-driver-reactivestreams/1.12/javadoc?com/mongodb/reactivestreams/client/Success.html
+&#34;&gt;&lt;code&gt;Success&lt;/code&gt;&lt;/a&gt; on the operation.&lt;/p&gt;
+
+&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
+&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
+&lt;p&gt;All &lt;a href=&#34;http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Publisher.html&#34;&gt;&lt;code&gt;Publishers&lt;/code&gt;&lt;/a&gt; returned
+from the API are cold, meaning that no I/O happens until they are subscribed to and the subscription makes a request. So just creating a
+&lt;code&gt;Publisher&lt;/code&gt; won&amp;rsquo;t cause any network IO. It&amp;rsquo;s not until &lt;code&gt;Subscription.request()&lt;/code&gt; is called that the driver executes the operation.&lt;/p&gt;
+
+&lt;p&gt;Publishers in this implementation are unicast. Each &lt;a href=&#34;http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Subscription.html&#34;&gt;&lt;code&gt;Subscription&lt;/code&gt;&lt;/a&gt;
+to a &lt;code&gt;Publisher&lt;/code&gt; relates to a single MongoDB operation and its &lt;a href=&#34;http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Subscriber.html&#34;&gt;&amp;lsquo;Subscriber&amp;rsquo;&lt;/a&gt;&lt;br /&gt;
+will receive its own specific set of results.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&#34;subscribers-used-in-the-quick-tour&#34;&gt;Subscribers used in the Quick Tour&lt;/h2&gt;
+
+&lt;p&gt;For the Quick Tour we have implemented a couple of different Subscribers and although this is an artificial scenario for reactive streams we
+do block on the results of one example before starting the next, so as to ensure the state of the database.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;ObservableSubscriber&lt;/p&gt;
+
+&lt;p&gt;The base subscriber class is the &lt;a href=&#34;https://github.com/mongodb/mongo-java-driver-reactivestreams/blob/1.12.x/examples/tour/src/main/tour/SubscriberHelpers.java
+&#34;&gt;&lt;code&gt;ObservableSubscriber&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/a&gt;, a Subscriber
+that stores the results of the &lt;code&gt;Publisher&amp;lt;T&amp;gt;&lt;/code&gt;. It also contains an &lt;code&gt;await()&lt;/code&gt; method so we can block for results to ensure the state of
+the database before going on to the next example.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;OperationSubscriber&lt;/p&gt;
+
+&lt;p&gt;An implementation of the &lt;code&gt;ObservableSubscriber&lt;/code&gt; that immediately calls &lt;code&gt;Subscription.request&lt;/code&gt; when it&amp;rsquo;s subscribed to.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;PrintSubscriber&lt;/p&gt;
+
+&lt;p&gt;An implementation of the &lt;code&gt;OperationSubscriber&lt;/code&gt; that prints a message &lt;code&gt;Subscriber.onComplete&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;PrintDocumentSubscriber&lt;/p&gt;
+
+&lt;p&gt;An implementation of the &lt;code&gt;OperationSubscriber&lt;/code&gt; that prints the json version of a &lt;code&gt;Document&lt;/code&gt; when &lt;code&gt;Subscriber.onNext(Document document)&lt;/code&gt; is called.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;blocking-and-non-blocking-examples&#34;&gt;Blocking and non blocking examples&lt;/h2&gt;
+
+&lt;p&gt;As our subscribers contain a latch that is only released when the &lt;code&gt;onComplete&lt;/code&gt; method of the &lt;code&gt;Subscriber&lt;/code&gt; is called, we can use that latch
+to block on by calling the &lt;code&gt;await&lt;/code&gt; method.  Below are two examples using our auto-requesting &lt;code&gt;PrintDocumentSubscriber&lt;/code&gt;.&lt;br /&gt;
+The first is non-blocking and the second blocks waiting for the &lt;code&gt;Publisher&lt;/code&gt; to complete:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;// Create a publisher
+Publisher&amp;lt;Document&amp;gt; publisher = collection.find();
+
+// Non blocking
+publisher.subscribe(new PrintDocumentSubscriber());
+
+Subscriber&amp;lt;Document&amp;gt; subscriber = new PrintDocumentSubscriber();
+publisher.subscribe(subscriber);
+subscriber.await(); // Block for the publisher to complete
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;publishers-subscribers-and-subscriptions&#34;&gt;Publishers, Subscribers and Subscriptions&lt;/h2&gt;
+
+&lt;p&gt;In general &lt;code&gt;Publishers&lt;/code&gt;, &lt;code&gt;Subscribers&lt;/code&gt; and &lt;code&gt;Subscriptions&lt;/code&gt; are a low level API and it&amp;rsquo;s expected that users and libraries will build more
+expressive APIs upon them rather than solely use these interfaces.  As a library solely implementing these interfaces, users will benefit
+from this growing ecosystem, which is a core design principle of reactive streams.&lt;/p&gt;
 </description>
     </item>
     
@@ -511,158 +630,6 @@ method.  Here we call the &lt;a href=&#34;{{ docsref &amp;quot;reference/command
 
 &lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;database.runCommand(new Document(&amp;quot;buildInfo&amp;quot;, 1)).subscribe(new PrintDocumentSubscriber());
 &lt;/code&gt;&lt;/pre&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Quick Tour Primer</title>
-      <link>/mongo-java-driver-reactivestreams/1.12/getting-started/quick-tour-primer/</link>
-      <pubDate>Tue, 17 Mar 2015 15:36:56 +0000</pubDate>
-      
-      <guid>/mongo-java-driver-reactivestreams/1.12/getting-started/quick-tour-primer/</guid>
-      <description>
-
-&lt;h1 id=&#34;quick-tour-primer&#34;&gt;Quick Tour Primer&lt;/h1&gt;
-
-&lt;p&gt;The aim of this guide is to provide background about the Java driver and its asynchronous API before going onto
-looking at how to use the driver and MongoDB.&lt;/p&gt;
-
-&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
-&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
-&lt;p&gt;See the &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.12/mongo-java-driver-reactivestreams/1.12/getting-started/installation-guide/&#34;&gt;installation guide&lt;/a&gt;
-for instructions on how to install the MongoDB Reactive Streams Java Driver.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&#34;reactive-streams&#34;&gt;Reactive Streams&lt;/h2&gt;
-
-&lt;p&gt;This library is an implementation of the &lt;a href=&#34;http://www.reactive-streams.org&#34;&gt;reactive streams&lt;/a&gt; specification and the reactive stream API
-consists of the following components:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Publisher&lt;/li&gt;
-&lt;li&gt;Subscriber&lt;/li&gt;
-&lt;li&gt;Subscription&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;A &lt;code&gt;Publisher&lt;/code&gt; is a provider of a potentially unbounded number of sequenced elements, published according to the demand received from it&amp;rsquo;s &lt;code&gt;Subscriber(s)&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;In response to a call to &lt;code&gt;Publisher.subscribe(Subscriber)&lt;/code&gt; the possible invocation sequences for methods on the &lt;code&gt;Subscriber&lt;/code&gt; are given by the following protocol:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;onSubscribe onNext* (onError | onComplete)?
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;This means that &lt;code&gt;onSubscribe&lt;/code&gt; is always signalled, followed by a possibly unbounded number of &lt;code&gt;onNext&lt;/code&gt; signals (as requested by &lt;code&gt;Subscriber&lt;/code&gt;)
-followed by an &lt;code&gt;onError&lt;/code&gt; signal if there is a failure, or an &lt;code&gt;onComplete&lt;/code&gt; signal when no more elements are available—all as long as
-the &lt;code&gt;Subscription&lt;/code&gt; is not cancelled.&lt;/p&gt;
-
-&lt;p&gt;For more information about reactive streams go to: &lt;a href=&#34;http://www.reactive-streams.org&#34;&gt;http://www.reactive-streams.org&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&#34;from-async-callbacks-to-subscribers&#34;&gt;From Async Callbacks to Subscribers&lt;/h2&gt;
-
-&lt;p&gt;The MongoDB Reactive Streams Java Driver is built upon the MongoDB Async driver which is callback driven.
-The API mirrors the Async driver API and any methods that cause network IO return a &lt;code&gt;Publisher&amp;lt;T&amp;gt;&lt;/code&gt;,
-where &lt;code&gt;T&lt;/code&gt; is the type of response for the operation.&lt;br /&gt;
-The exception to that rule is for methods in the async driver that return a &lt;code&gt;Void&lt;/code&gt; value in the callback.
-In &lt;a href=&#34;http://www.reactive-streams.org&#34;&gt;reactive streams&lt;/a&gt; this is forbidden, so in those circumstances we
-return a &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.12/mongo-java-driver-reactivestreams/1.12/javadoc?com/mongodb/reactivestreams/client/Success.html
-&#34;&gt;&lt;code&gt;Success&lt;/code&gt;&lt;/a&gt; on the operation.&lt;/p&gt;
-
-&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
-&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
-&lt;p&gt;All &lt;a href=&#34;http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Publisher.html&#34;&gt;&lt;code&gt;Publishers&lt;/code&gt;&lt;/a&gt; returned
-from the API are cold, meaning that no I/O happens until they are subscribed to and the subscription makes a request. So just creating a
-&lt;code&gt;Publisher&lt;/code&gt; won&amp;rsquo;t cause any network IO. It&amp;rsquo;s not until &lt;code&gt;Subscription.request()&lt;/code&gt; is called that the driver executes the operation.&lt;/p&gt;
-
-&lt;p&gt;Publishers in this implementation are unicast. Each &lt;a href=&#34;http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Subscription.html&#34;&gt;&lt;code&gt;Subscription&lt;/code&gt;&lt;/a&gt;
-to a &lt;code&gt;Publisher&lt;/code&gt; relates to a single MongoDB operation and its &lt;a href=&#34;http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/?org/reactivestreams/Subscriber.html&#34;&gt;&amp;lsquo;Subscriber&amp;rsquo;&lt;/a&gt;&lt;br /&gt;
-will receive its own specific set of results.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&#34;subscribers-used-in-the-quick-tour&#34;&gt;Subscribers used in the Quick Tour&lt;/h2&gt;
-
-&lt;p&gt;For the Quick Tour we have implemented a couple of different Subscribers and although this is an artificial scenario for reactive streams we
-do block on the results of one example before starting the next, so as to ensure the state of the database.&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;ObservableSubscriber&lt;/p&gt;
-
-&lt;p&gt;The base subscriber class is the &lt;a href=&#34;https://github.com/mongodb/mongo-java-driver-reactivestreams/blob/1.12.x/examples/tour/src/main/tour/SubscriberHelpers.java
-&#34;&gt;&lt;code&gt;ObservableSubscriber&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/a&gt;, a Subscriber
-that stores the results of the &lt;code&gt;Publisher&amp;lt;T&amp;gt;&lt;/code&gt;. It also contains an &lt;code&gt;await()&lt;/code&gt; method so we can block for results to ensure the state of
-the database before going on to the next example.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;OperationSubscriber&lt;/p&gt;
-
-&lt;p&gt;An implementation of the &lt;code&gt;ObservableSubscriber&lt;/code&gt; that immediately calls &lt;code&gt;Subscription.request&lt;/code&gt; when it&amp;rsquo;s subscribed to.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;PrintSubscriber&lt;/p&gt;
-
-&lt;p&gt;An implementation of the &lt;code&gt;OperationSubscriber&lt;/code&gt; that prints a message &lt;code&gt;Subscriber.onComplete&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;PrintDocumentSubscriber&lt;/p&gt;
-
-&lt;p&gt;An implementation of the &lt;code&gt;OperationSubscriber&lt;/code&gt; that prints the json version of a &lt;code&gt;Document&lt;/code&gt; when &lt;code&gt;Subscriber.onNext(Document document)&lt;/code&gt; is called.&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;blocking-and-non-blocking-examples&#34;&gt;Blocking and non blocking examples&lt;/h2&gt;
-
-&lt;p&gt;As our subscribers contain a latch that is only released when the &lt;code&gt;onComplete&lt;/code&gt; method of the &lt;code&gt;Subscriber&lt;/code&gt; is called, we can use that latch
-to block on by calling the &lt;code&gt;await&lt;/code&gt; method.  Below are two examples using our auto-requesting &lt;code&gt;PrintDocumentSubscriber&lt;/code&gt;.&lt;br /&gt;
-The first is non-blocking and the second blocks waiting for the &lt;code&gt;Publisher&lt;/code&gt; to complete:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;// Create a publisher
-Publisher&amp;lt;Document&amp;gt; publisher = collection.find();
-
-// Non blocking
-publisher.subscribe(new PrintDocumentSubscriber());
-
-Subscriber&amp;lt;Document&amp;gt; subscriber = new PrintDocumentSubscriber();
-publisher.subscribe(subscriber);
-subscriber.await(); // Block for the publisher to complete
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;publishers-subscribers-and-subscriptions&#34;&gt;Publishers, Subscribers and Subscriptions&lt;/h2&gt;
-
-&lt;p&gt;In general &lt;code&gt;Publishers&lt;/code&gt;, &lt;code&gt;Subscribers&lt;/code&gt; and &lt;code&gt;Subscriptions&lt;/code&gt; are a low level API and it&amp;rsquo;s expected that users and libraries will build more
-expressive APIs upon them rather than solely use these interfaces.  As a library solely implementing these interfaces, users will benefit
-from this growing ecosystem, which is a core design principle of reactive streams.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Reactive Streams Driver</title>
-      <link>/mongo-java-driver-reactivestreams/1.12/</link>
-      <pubDate>Tue, 17 Mar 2015 15:36:56 +0000</pubDate>
-      
-      <guid>/mongo-java-driver-reactivestreams/1.12/</guid>
-      <description>
-
-&lt;h2 id=&#34;mongodb-reactive-streams-java-driver-documentation&#34;&gt;MongoDB Reactive Streams Java Driver Documentation&lt;/h2&gt;
-
-&lt;p&gt;Welcome to the MongoDB Reactive Streams Java driver documentation hub.&lt;/p&gt;
-
-&lt;p&gt;The Reactive Streams Driver is the canonical asynchronous Java driver for MongoDB, providing asynchronous stream processing with back
-pressure in line with the &lt;a href=&#34;http://www.reactive-streams.org/&#34;&gt;Reactive Streams&lt;/a&gt; specification. The API mirrors the now-deprecated
-callback-based &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/driver-async
-&#34;&gt;MongoDB Async Driver&lt;/a&gt;. For reference documentation please see the asynchronous driver documentation.&lt;/p&gt;
-
-&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
-&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
-&lt;p&gt;Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java
-driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java
-driver will be fully documented in its place.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&#34;getting-started&#34;&gt;Getting Started&lt;/h3&gt;
-
-&lt;p&gt;The &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.12/mongo-java-driver-reactivestreams/1.12/getting-started/&#34;&gt;Getting Started&lt;/a&gt; guide contains installation instructions
-and a simple tutorial to get up  and running quickly.&lt;/p&gt;
 </description>
     </item>
     
@@ -1102,6 +1069,39 @@ executed one at a time.&lt;/p&gt;
 
 &lt;/div&gt;
 &lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Reactive Streams Driver</title>
+      <link>/mongo-java-driver-reactivestreams/1.12/</link>
+      <pubDate>Tue, 17 Mar 2015 15:36:56 +0000</pubDate>
+      
+      <guid>/mongo-java-driver-reactivestreams/1.12/</guid>
+      <description>
+
+&lt;h2 id=&#34;mongodb-reactive-streams-java-driver-documentation&#34;&gt;MongoDB Reactive Streams Java Driver Documentation&lt;/h2&gt;
+
+&lt;p&gt;Welcome to the MongoDB Reactive Streams Java driver documentation hub.&lt;/p&gt;
+
+&lt;p&gt;The Reactive Streams Driver is the canonical asynchronous Java driver for MongoDB, providing asynchronous stream processing with back
+pressure in line with the &lt;a href=&#34;http://www.reactive-streams.org/&#34;&gt;Reactive Streams&lt;/a&gt; specification. The API mirrors the now-deprecated
+callback-based &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/driver-async
+&#34;&gt;MongoDB Async Driver&lt;/a&gt;. For reference documentation please see the asynchronous driver documentation.&lt;/p&gt;
+
+&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
+&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
+&lt;p&gt;Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java
+driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java
+driver will be fully documented in its place.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&#34;getting-started&#34;&gt;Getting Started&lt;/h3&gt;
+
+&lt;p&gt;The &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.12/mongo-java-driver-reactivestreams/1.12/getting-started/&#34;&gt;Getting Started&lt;/a&gt; guide contains installation instructions
+and a simple tutorial to get up  and running quickly.&lt;/p&gt;
 </description>
     </item>
     
