@@ -89,13 +89,13 @@ final class ChangeStreamPublisherImpl<TResult> implements ChangeStreamPublisher<
 
     @Override
     public Publisher<ChangeStreamDocument<TResult>> first() {
-        return new SingleResultObservableToPublisher<ChangeStreamDocument<TResult>>(
+        return new ObservableToPublisher<ChangeStreamDocument<TResult>>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<ChangeStreamDocument<TResult>>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<ChangeStreamDocument<TResult>> callback) {
                         wrapped.first(callback);
                     }
-                });
+                }));
     }
 
     @Override

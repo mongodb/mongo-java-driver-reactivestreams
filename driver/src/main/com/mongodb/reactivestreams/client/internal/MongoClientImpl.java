@@ -149,7 +149,7 @@ public final class MongoClientImpl implements MongoClient {
 
     @Override
     public Publisher<ClientSession> startSession(final ClientSessionOptions options) {
-        return new SingleResultObservableToPublisher<ClientSession>(
+        return new ObservableToPublisher<ClientSession>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<ClientSession>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<ClientSession> clientSessionSingleResultCallback) {
@@ -164,6 +164,6 @@ public final class MongoClientImpl implements MongoClient {
                             }
                         });
                     }
-                });
+                }));
     }
 }

@@ -23,6 +23,8 @@ import com.mongodb.WriteConcern;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.reactivestreams.client.Success;
+import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
+import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
 import com.mongodb.reactivestreams.client.gridfs.GridFSFindPublisher;
@@ -166,62 +168,60 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final String filename, 
+    public Publisher<ObjectId> uploadFromStream(final String filename,
                                                 final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(filename, source, new GridFSUploadOptions());
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final String filename, 
-                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source, 
-                                                final GridFSUploadOptions options) {
-        return new SingleResultObservableToPublisher<ObjectId>(
+    public Publisher<ObjectId> uploadFromStream(final String filename, final AsyncInputStream source, final GridFSUploadOptions options) {
+        return new ObservableToPublisher<ObjectId>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<ObjectId>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<ObjectId> callback) {
                         wrapped.uploadFromStream(filename, toCallbackAsyncInputStream(source), options, callback);
                     }
-                });
+                }));
     }
 
     @Override
-    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename, 
+    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename,
                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(id, filename, source, new GridFSUploadOptions());
     }
 
     @Override
-    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename, 
+    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename,
                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source,
                                                final GridFSUploadOptions options) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.uploadFromStream(id, filename, toCallbackAsyncInputStream(source), options,
                                 voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename, 
+    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename,
                                                 final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(clientSession, filename, source, new GridFSUploadOptions());
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename, 
+    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename,
                                                 final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source,
                                                 final GridFSUploadOptions options) {
-        return new SingleResultObservableToPublisher<ObjectId>(
+        return new ObservableToPublisher<ObjectId>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<ObjectId>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<ObjectId> callback) {
                         wrapped.uploadFromStream(clientSession.getWrapped(), filename, toCallbackAsyncInputStream(source), options,
                                 callback);
                     }
-                });
+                }));
     }
 
     @Override
@@ -232,16 +232,15 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public Publisher<Success> uploadFromStream(final ClientSession clientSession, final BsonValue id, final String filename,
-                                               final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source, 
-                                               final GridFSUploadOptions options) {
-        return new SingleResultObservableToPublisher<Success>(
+                                               final AsyncInputStream source, final GridFSUploadOptions options) {
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.uploadFromStream(clientSession.getWrapped(), id, filename, toCallbackAsyncInputStream(source), options,
                                 voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
@@ -260,7 +259,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream
     openDownloadStream(final String filename, final GridFSDownloadOptions options) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(filename, options));
     }
@@ -272,46 +271,44 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream
     openDownloadStream(final ClientSession clientSession, final BsonValue id) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), id));
     }
 
     @Override
-    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream
     openDownloadStream(final ClientSession clientSession, final String filename) {
         return openDownloadStream(clientSession, filename, new GridFSDownloadOptions());
     }
 
     @Override
-    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream
     openDownloadStream(final ClientSession clientSession, final String filename, final GridFSDownloadOptions options) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), filename, options));
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ObjectId id,
-                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
-        return new SingleResultObservableToPublisher<Long>(
+    public Publisher<Long> downloadToStream(final ObjectId id, final AsyncOutputStream destination) {
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.downloadToStream(id, toCallbackAsyncOutputStream(destination), callback);
                     }
-                });
+                }));
     }
 
 
     @Override
-    public Publisher<Long> downloadToStream(final BsonValue id,
-                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
-        return new SingleResultObservableToPublisher<Long>(
+    public Publisher<Long> downloadToStream(final BsonValue id, final AsyncOutputStream destination) {
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.downloadToStream(id, toCallbackAsyncOutputStream(destination), callback);
                     }
-                });
+                }));
     }
 
     @Override
@@ -324,37 +321,35 @@ public final class GridFSBucketImpl implements GridFSBucket {
     public Publisher<Long> downloadToStream(final String filename,
                                             final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination,
                                             final GridFSDownloadOptions options) {
-        return new SingleResultObservableToPublisher<Long>(
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.downloadToStream(filename, toCallbackAsyncOutputStream(destination), options, callback);
                     }
-                });
+                }));
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final ObjectId id,
-                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
-        return new SingleResultObservableToPublisher<Long>(
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final ObjectId id, final AsyncOutputStream destination) {
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.downloadToStream(clientSession.getWrapped(), id, toCallbackAsyncOutputStream(destination), callback);
                     }
-                });
+                }));
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final BsonValue id,
-                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
-        return new SingleResultObservableToPublisher<Long>(
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final BsonValue id, final AsyncOutputStream destination) {
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.downloadToStream(clientSession.getWrapped(), id, toCallbackAsyncOutputStream(destination), callback);
                     }
-                });
+                }));
     }
 
     @Override
@@ -367,14 +362,14 @@ public final class GridFSBucketImpl implements GridFSBucket {
     public Publisher<Long> downloadToStream(final ClientSession clientSession, final String filename,
                                             final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination,
                                             final GridFSDownloadOptions options) {
-        return new SingleResultObservableToPublisher<Long>(
+        return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
                         wrapped.downloadToStream(clientSession.getWrapped(), filename, toCallbackAsyncOutputStream(destination), options,
                                 callback);
                     }
-                });
+                }));
     }
 
     @Override
@@ -466,7 +461,7 @@ public final class GridFSBucketImpl implements GridFSBucket {
         return executeDownloadToPublisher(openDownloadStream(clientSession, filename, options));
     }
 
-    private GridFSDownloadPublisher 
+    private GridFSDownloadPublisher
     executeDownloadToPublisher(final com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream gridFSDownloadStream) {
         return new GridFSDownloadPublisherImpl(gridFSDownloadStream);
     }
@@ -499,112 +494,112 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public Publisher<Success> delete(final ObjectId id) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.delete(id, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> delete(final BsonValue id) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.delete(id, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> delete(final ClientSession clientSession, final ObjectId id) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.delete(clientSession.getWrapped(), id, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> delete(final ClientSession clientSession, final BsonValue id) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.delete(clientSession.getWrapped(), id, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> rename(final ObjectId id, final String newFilename) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.rename(id, newFilename, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> rename(final BsonValue id, final String newFilename) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.rename(id, newFilename, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> rename(final ClientSession clientSession, final ObjectId id, final String newFilename) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.rename(clientSession.getWrapped(), id, newFilename, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> rename(final ClientSession clientSession, final BsonValue id, final String newFilename) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.rename(clientSession.getWrapped(), id, newFilename, voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> drop() {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.drop(voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Success> drop(final ClientSession clientSession) {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.drop(clientSession.getWrapped(), voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
 }

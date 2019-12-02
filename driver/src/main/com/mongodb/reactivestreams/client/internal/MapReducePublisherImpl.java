@@ -126,13 +126,13 @@ final class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResul
 
     @Override
     public Publisher<Success> toCollection() {
-        return new SingleResultObservableToPublisher<Success>(
+        return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
                         wrapped.toCollection(voidToSuccessCallback(callback));
                     }
-                });
+                }));
     }
 
     @Override
@@ -149,13 +149,13 @@ final class MapReducePublisherImpl<TResult> implements MapReducePublisher<TResul
 
     @Override
     public Publisher<TResult> first() {
-        return new SingleResultObservableToPublisher<TResult>(
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<TResult>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
                         wrapped.first(callback);
                     }
-                });
+                }));
     }
 
     @Override

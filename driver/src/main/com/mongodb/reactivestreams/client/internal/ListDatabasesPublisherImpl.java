@@ -63,13 +63,13 @@ final class ListDatabasesPublisherImpl<TResult> implements ListDatabasesPublishe
 
     @Override
     public Publisher<TResult> first() {
-        return new SingleResultObservableToPublisher<TResult>(
+        return new ObservableToPublisher<TResult>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<TResult>>(){
             @Override
             public void apply(final com.mongodb.async.SingleResultCallback<TResult> callback) {
                 wrapped.first(callback);
             }
-        });
+        }));
     }
 
     @Override

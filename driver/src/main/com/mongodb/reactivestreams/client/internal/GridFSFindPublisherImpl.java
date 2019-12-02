@@ -39,13 +39,13 @@ final class GridFSFindPublisherImpl implements GridFSFindPublisher {
 
     @Override
     public Publisher<GridFSFile> first() {
-        return new SingleResultObservableToPublisher<GridFSFile>(
+        return new ObservableToPublisher<GridFSFile>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<GridFSFile>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<GridFSFile> callback) {
                         wrapped.first(callback);
                     }
-                });
+                }));
     }
 
     @Override

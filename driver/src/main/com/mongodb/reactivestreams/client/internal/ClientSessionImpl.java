@@ -65,24 +65,24 @@ class ClientSessionImpl implements ClientSession {
 
     @Override
     public Publisher<Void> commitTransaction() {
-        return new SingleResultObservableToPublisher<Void>(
+        return new ObservableToPublisher<Void>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Void>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Void> callback) {
                         wrapped.commitTransaction(callback);
                     }
-                });
+                }));
     }
 
     @Override
     public Publisher<Void> abortTransaction() {
-        return new SingleResultObservableToPublisher<Void>(
+        return new ObservableToPublisher<Void>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Void>>() {
                     @Override
                     public void apply(final com.mongodb.async.SingleResultCallback<Void> callback) {
                         wrapped.abortTransaction(callback);
                     }
-                });
+                }));
     }
 
     @Override
