@@ -18,7 +18,6 @@ package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
 import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream;
 import org.bson.BsonValue;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
@@ -30,7 +29,7 @@ import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidTo
 
 
 @SuppressWarnings("deprecation")
-final class GridFSUploadStreamImpl implements GridFSUploadStream {
+final class GridFSUploadStreamImpl implements com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream {
 
     private final com.mongodb.async.client.gridfs.GridFSUploadStream wrapped;
 

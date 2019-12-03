@@ -23,17 +23,18 @@ import com.mongodb.WriteConcern;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
-import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
-import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream;
+import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
 import com.mongodb.reactivestreams.client.gridfs.GridFSFindPublisher;
-import com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream;
+import com.mongodb.reactivestreams.client.gridfs.GridFSUploadPublisher;
 import com.mongodb.reactivestreams.client.ClientSession;
+import org.bson.BsonObjectId;
 import org.bson.BsonValue;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
+
+import java.nio.ByteBuffer;
 
 import static com.mongodb.assertions.Assertions.notNull;
 import static com.mongodb.reactivestreams.client.internal.GridFSAsyncStreamHelper.toCallbackAsyncInputStream;
@@ -117,54 +118,63 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final String filename) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final String filename) {
         return openUploadStream(filename, new GridFSUploadOptions());
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final String filename, final GridFSUploadOptions options) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final String filename, final GridFSUploadOptions options) {
         return new GridFSUploadStreamImpl(wrapped.openUploadStream(filename, options));
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final BsonValue id, final String filename) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final BsonValue id, final String filename) {
         return openUploadStream(id, filename, new GridFSUploadOptions());
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final BsonValue id, final String filename, final GridFSUploadOptions options) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final BsonValue id, final String filename, final GridFSUploadOptions options) {
         return new GridFSUploadStreamImpl(wrapped.openUploadStream(id, filename, options));
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final ClientSession clientSession, final String filename) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final ClientSession clientSession, final String filename) {
         return openUploadStream(clientSession, filename, new GridFSUploadOptions());
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final ClientSession clientSession, final String filename,
-                                               final GridFSUploadOptions options) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final ClientSession clientSession, final String filename, final GridFSUploadOptions options) {
         return new GridFSUploadStreamImpl(wrapped.openUploadStream(clientSession.getWrapped(), filename, options));
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final ClientSession clientSession, final BsonValue id, final String filename) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final ClientSession clientSession, final BsonValue id, final String filename) {
         return openUploadStream(clientSession, id, filename, new GridFSUploadOptions());
     }
 
     @Override
-    public GridFSUploadStream openUploadStream(final ClientSession clientSession, final BsonValue id, final String filename,
-                                               final GridFSUploadOptions options) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream
+    openUploadStream(final ClientSession clientSession, final BsonValue id, final String filename, final GridFSUploadOptions options) {
         return new GridFSUploadStreamImpl(wrapped.openUploadStream(clientSession.getWrapped(), id, filename, options));
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final String filename, final AsyncInputStream source) {
+    public Publisher<ObjectId> uploadFromStream(final String filename, 
+                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(filename, source, new GridFSUploadOptions());
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final String filename, final AsyncInputStream source, final GridFSUploadOptions options) {
+    public Publisher<ObjectId> uploadFromStream(final String filename, 
+                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source, 
+                                                final GridFSUploadOptions options) {
         return new SingleResultObservableToPublisher<ObjectId>(
                 new Block<com.mongodb.async.SingleResultCallback<ObjectId>>() {
                     @Override
@@ -175,12 +185,14 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename, final AsyncInputStream source) {
+    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename, 
+                                               final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(id, filename, source, new GridFSUploadOptions());
     }
 
     @Override
-    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename, final AsyncInputStream source,
+    public Publisher<Success> uploadFromStream(final BsonValue id, final String filename, 
+                                               final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source,
                                                final GridFSUploadOptions options) {
         return new SingleResultObservableToPublisher<Success>(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
@@ -193,12 +205,14 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename, final AsyncInputStream source) {
+    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename, 
+                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(clientSession, filename, source, new GridFSUploadOptions());
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename, final AsyncInputStream source,
+    public Publisher<ObjectId> uploadFromStream(final ClientSession clientSession, final String filename, 
+                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source,
                                                 final GridFSUploadOptions options) {
         return new SingleResultObservableToPublisher<ObjectId>(
                 new Block<com.mongodb.async.SingleResultCallback<ObjectId>>() {
@@ -212,13 +226,14 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public Publisher<Success> uploadFromStream(final ClientSession clientSession, final BsonValue id, final String filename,
-                                               final AsyncInputStream source) {
+                                               final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source) {
         return uploadFromStream(clientSession, id, filename, source, new GridFSUploadOptions());
     }
 
     @Override
     public Publisher<Success> uploadFromStream(final ClientSession clientSession, final BsonValue id, final String filename,
-                                               final AsyncInputStream source, final GridFSUploadOptions options) {
+                                               final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source, 
+                                               final GridFSUploadOptions options) {
         return new SingleResultObservableToPublisher<Success>(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
@@ -230,48 +245,53 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final ObjectId id) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream openDownloadStream(final ObjectId id) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(id));
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final BsonValue id) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream openDownloadStream(final BsonValue id) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(id));
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final String filename) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream openDownloadStream(final String filename) {
         return openDownloadStream(filename, new GridFSDownloadOptions());
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final String filename, final GridFSDownloadOptions options) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    openDownloadStream(final String filename, final GridFSDownloadOptions options) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(filename, options));
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final ObjectId id) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream
+    openDownloadStream(final ClientSession clientSession, final ObjectId id) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), id));
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final BsonValue id) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    openDownloadStream(final ClientSession clientSession, final BsonValue id) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), id));
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final String filename) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    openDownloadStream(final ClientSession clientSession, final String filename) {
         return openDownloadStream(clientSession, filename, new GridFSDownloadOptions());
     }
 
     @Override
-    public GridFSDownloadStream openDownloadStream(final ClientSession clientSession, final String filename,
-                                                   final GridFSDownloadOptions options) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream 
+    openDownloadStream(final ClientSession clientSession, final String filename, final GridFSDownloadOptions options) {
         return new GridFSDownloadStreamImpl(wrapped.openDownloadStream(clientSession.getWrapped(), filename, options));
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ObjectId id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final ObjectId id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -283,7 +303,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
 
     @Override
-    public Publisher<Long> downloadToStream(final BsonValue id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final BsonValue id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -294,12 +315,14 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final String filename, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final String filename,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return downloadToStream(filename, destination, new GridFSDownloadOptions());
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final String filename, final AsyncOutputStream destination,
+    public Publisher<Long> downloadToStream(final String filename,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination,
                                             final GridFSDownloadOptions options) {
         return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
@@ -311,7 +334,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final ObjectId id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final ObjectId id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -322,7 +346,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final BsonValue id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final BsonValue id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -334,12 +359,13 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public Publisher<Long> downloadToStream(final ClientSession clientSession, final String filename,
-                                            final AsyncOutputStream destination) {
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return downloadToStream(clientSession, filename, destination, new GridFSDownloadOptions());
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final String filename, final AsyncOutputStream destination,
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final String filename,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination,
                                             final GridFSDownloadOptions options) {
         return new SingleResultObservableToPublisher<Long>(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
@@ -349,6 +375,106 @@ public final class GridFSBucketImpl implements GridFSBucket {
                                 callback);
                     }
                 });
+    }
+
+    @Override
+    public GridFSUploadPublisher<ObjectId> uploadFromPublisher(final String filename, final Publisher<ByteBuffer> source) {
+        return uploadFromPublisher(filename, source, new GridFSUploadOptions());
+    }
+
+    @Override
+    public GridFSUploadPublisher<ObjectId> uploadFromPublisher(final String filename, final Publisher<ByteBuffer> source,
+                                                   final GridFSUploadOptions options) {
+        return executeUploadFromPublisher(openUploadStream(new BsonObjectId(), filename, options), source).withObjectId();
+    }
+
+    @Override
+    public GridFSUploadPublisher<Success> uploadFromPublisher(final BsonValue id, final String filename,
+                                                              final Publisher<ByteBuffer> source) {
+        return uploadFromPublisher(id, filename, source, new GridFSUploadOptions());
+    }
+
+    @Override
+    public GridFSUploadPublisher<Success> uploadFromPublisher(final BsonValue id, final String filename,
+                                                              final Publisher<ByteBuffer> source, final GridFSUploadOptions options) {
+        return executeUploadFromPublisher(openUploadStream(id, filename, options), source);
+    }
+
+    @Override
+    public GridFSUploadPublisher<ObjectId> uploadFromPublisher(final ClientSession clientSession, final String filename,
+                                                               final Publisher<ByteBuffer> source) {
+        return uploadFromPublisher(clientSession, filename, source, new GridFSUploadOptions());
+    }
+
+    @Override
+    public GridFSUploadPublisher<ObjectId> uploadFromPublisher(final ClientSession clientSession, final String filename,
+                                                               final Publisher<ByteBuffer> source, final GridFSUploadOptions options) {
+        return executeUploadFromPublisher(openUploadStream(clientSession, new BsonObjectId(), filename, options), source)
+                .withObjectId();
+    }
+
+    @Override
+    public GridFSUploadPublisher<Success> uploadFromPublisher(final ClientSession clientSession, final BsonValue id, final String filename,
+                                                              final Publisher<ByteBuffer> source) {
+        return uploadFromPublisher(clientSession, id, filename, source, new GridFSUploadOptions());
+    }
+
+    @Override
+    public GridFSUploadPublisher<Success> uploadFromPublisher(final ClientSession clientSession, final BsonValue id, final String filename,
+                                                              final Publisher<ByteBuffer> source, final GridFSUploadOptions options) {
+        return executeUploadFromPublisher(openUploadStream(clientSession, id, filename, options), source);
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final ObjectId id) {
+        return executeDownloadToPublisher(openDownloadStream(id));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final BsonValue id) {
+        return executeDownloadToPublisher(openDownloadStream(id));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final String filename) {
+        return executeDownloadToPublisher(openDownloadStream(filename));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final String filename, final GridFSDownloadOptions options) {
+        return executeDownloadToPublisher(openDownloadStream(filename, options));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final ClientSession clientSession, final ObjectId id) {
+        return executeDownloadToPublisher(openDownloadStream(clientSession, id));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final ClientSession clientSession, final BsonValue id) {
+        return executeDownloadToPublisher(openDownloadStream(clientSession, id));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final ClientSession clientSession, final String filename) {
+        return executeDownloadToPublisher(openDownloadStream(clientSession, filename));
+    }
+
+    @Override
+    public GridFSDownloadPublisher downloadToPublisher(final ClientSession clientSession, final String filename,
+                                                     final GridFSDownloadOptions options) {
+        return executeDownloadToPublisher(openDownloadStream(clientSession, filename, options));
+    }
+
+    private GridFSDownloadPublisher 
+    executeDownloadToPublisher(final com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream gridFSDownloadStream) {
+        return new GridFSDownloadPublisherImpl(gridFSDownloadStream);
+    }
+
+    private GridFSUploadPublisherImpl
+    executeUploadFromPublisher(final com.mongodb.reactivestreams.client.gridfs.GridFSUploadStream gridFSUploadStream,
+                               final Publisher<ByteBuffer> source) {
+        return new GridFSUploadPublisherImpl(gridFSUploadStream, source);
     }
 
     @Override

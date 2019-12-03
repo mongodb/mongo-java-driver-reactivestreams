@@ -25,6 +25,7 @@ class GridFSBucketSpecification extends Specification {
         given:
         def wrapped = (WrappedGridFSBucket.methods*.name).sort()
         def local = (GridFSBucket.methods*.name).sort()
+        local.removeAll { it == 'downloadToPublisher' || it == 'uploadFromPublisher' }
 
         expect:
         wrapped == local

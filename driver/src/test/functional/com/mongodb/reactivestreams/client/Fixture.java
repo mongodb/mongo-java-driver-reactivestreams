@@ -16,14 +16,17 @@
 
 package com.mongodb.reactivestreams.client;
 
+import com.mongodb.Block;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoNamespace;
 import com.mongodb.MongoTimeoutException;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerVersion;
+import com.mongodb.reactivestreams.client.internal.ObservableToPublisher;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -38,6 +41,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 /**
  * Helper class for asynchronous tests.
  */
+@SuppressWarnings("deprecation")
 public final class Fixture {
     public static final String DEFAULT_URI = "mongodb://localhost:27017";
     public static final String MONGODB_URI_SYSTEM_PROPERTY_NAME = "org.mongodb.test.uri";
@@ -130,6 +134,16 @@ public final class Fixture {
     public static boolean isReplicaSet() {
         getMongoClient();
         return clusterType == ClusterType.REPLICA_SET;
+    }
+
+    public static <T> Publisher<T> createPublisher(final T... values) {
+        return new ObservableToPublisher<T>(com.mongodb.async.client.Observables.observeAndFlatten(
+                new Block<com.mongodb.async.SingleResultCallback<List<T>>>() {
+                    @Override
+                    public void apply(final com.mongodb.async.SingleResultCallback<List<T>> cb) {
+                        cb.onResult(Arrays.asList(values), null);
+                    }
+                }));
     }
 
     @SuppressWarnings("unchecked")

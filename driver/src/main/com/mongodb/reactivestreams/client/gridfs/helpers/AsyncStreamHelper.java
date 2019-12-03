@@ -16,8 +16,6 @@
 
 package com.mongodb.reactivestreams.client.gridfs.helpers;
 
-import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
-import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
 import com.mongodb.reactivestreams.client.internal.GridFSAsyncStreamHelper;
 
 import java.io.InputStream;
@@ -26,7 +24,8 @@ import java.nio.ByteBuffer;
 
 
 /**
- * A general helper class that creates {@link AsyncInputStream} or {@link AsyncOutputStream} instances.
+ * A general helper class that creates {@link com.mongodb.reactivestreams.client.gridfs.AsyncInputStream} or
+ * {@link com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream} instances.
  *
  * Provides support for:
  * <ul>
@@ -37,72 +36,74 @@ import java.nio.ByteBuffer;
  * </ul>
  *
  * @since 1.3
+ * @deprecated there is no replacement for this class
  */
 @SuppressWarnings("deprecation")
+@Deprecated
 public final class AsyncStreamHelper {
 
     /**
-     * Converts a {@code byte[]} into a {@link AsyncInputStream}
+     * Converts a {@code byte[]} into a {@link com.mongodb.reactivestreams.client.gridfs.AsyncInputStream}
      *
      * @param srcBytes the data source
      * @return the AsyncInputStream
      */
-    public static AsyncInputStream toAsyncInputStream(final byte[] srcBytes) {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncInputStream toAsyncInputStream(final byte[] srcBytes) {
         return GridFSAsyncStreamHelper.toAsyncInputStream(com.mongodb.async.client.gridfs.helpers.AsyncStreamHelper
                 .toAsyncInputStream(srcBytes));
     }
 
     /**
-     * Converts a {@code byte[]} into a {@link AsyncOutputStream}
+     * Converts a {@code byte[]} into a {@link com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream}
      *
      * @param dstBytes the data destination
      * @return the AsyncOutputStream
      */
-    public static AsyncOutputStream toAsyncOutputStream(final byte[] dstBytes) {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream toAsyncOutputStream(final byte[] dstBytes) {
         return GridFSAsyncStreamHelper.toAsyncOutputStream(com.mongodb.async.client.gridfs.helpers.AsyncStreamHelper
                 .toAsyncOutputStream(dstBytes));
     }
 
     /**
-     * Converts a {@link ByteBuffer} into a {@link AsyncInputStream}
+     * Converts a {@link ByteBuffer} into a {@link com.mongodb.reactivestreams.client.gridfs.AsyncInputStream}
      *
      * @param srcByteBuffer the data source
      * @return the AsyncInputStream
      */
-    public static AsyncInputStream toAsyncInputStream(final ByteBuffer srcByteBuffer) {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncInputStream toAsyncInputStream(final ByteBuffer srcByteBuffer) {
         return GridFSAsyncStreamHelper.toAsyncInputStream(com.mongodb.async.client.gridfs.helpers.AsyncStreamHelper
                 .toAsyncInputStream(srcByteBuffer));
     }
 
     /**
-     * Converts a {@link ByteBuffer} into a {@link AsyncOutputStream}
+     * Converts a {@link ByteBuffer} into a {@link com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream}
      *
      * @param dstByteBuffer the data destination
      * @return the AsyncOutputStream
      */
-    public static AsyncOutputStream toAsyncOutputStream(final ByteBuffer dstByteBuffer) {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream toAsyncOutputStream(final ByteBuffer dstByteBuffer) {
         return GridFSAsyncStreamHelper.toAsyncOutputStream(com.mongodb.async.client.gridfs.helpers.AsyncStreamHelper
                 .toAsyncOutputStream(dstByteBuffer));
     }
 
     /**
-     * Converts a {@link InputStream} into a {@link AsyncInputStream}
+     * Converts a {@link InputStream} into a {@link com.mongodb.reactivestreams.client.gridfs.AsyncInputStream}
      *
      * @param inputStream the InputStream
      * @return the AsyncInputStream
      */
-    public static AsyncInputStream toAsyncInputStream(final InputStream inputStream) {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncInputStream toAsyncInputStream(final InputStream inputStream) {
         return GridFSAsyncStreamHelper.toAsyncInputStream(com.mongodb.async.client.gridfs.helpers.AsyncStreamHelper
                 .toAsyncInputStream(inputStream));
     }
 
     /**
-     * Converts a {@link OutputStream} into a {@link AsyncOutputStream}
+     * Converts a {@link OutputStream} into a {@link com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream}
      *
      * @param outputStream the OutputStream
      * @return the AsyncOutputStream
      */
-    public static AsyncOutputStream toAsyncOutputStream(final OutputStream outputStream) {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream toAsyncOutputStream(final OutputStream outputStream) {
         return GridFSAsyncStreamHelper.toAsyncOutputStream(com.mongodb.async.client.gridfs.helpers.AsyncStreamHelper
                 .toAsyncOutputStream(outputStream));
     }

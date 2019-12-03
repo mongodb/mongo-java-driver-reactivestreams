@@ -18,8 +18,6 @@ package com.mongodb.reactivestreams.client.internal;
 
 import com.mongodb.Block;
 import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
-import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -45,42 +43,43 @@ public final class GridFSAsyncStreamHelper {
      * @param wrapper the callback AsyncInputStream
      * @return the Publisher AsyncInputStream
      */
-    public static AsyncInputStream toAsyncInputStream(final com.mongodb.async.client.gridfs.AsyncInputStream wrapper) {
-        notNull("wrapper", wrapper);
-        return new AsyncInputStream() {
-            @Override
-            public Publisher<Integer> read(final ByteBuffer dst) {
-                return new SingleResultObservableToPublisher<Integer>(
-                        new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
-                            @Override
-                            public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
-                                wrapper.read(dst, callback);
-                            }
-                        });
-            }
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncInputStream
+        toAsyncInputStream(final com.mongodb.async.client.gridfs.AsyncInputStream wrapper) {
+            notNull("wrapper", wrapper);
+            return new com.mongodb.reactivestreams.client.gridfs.AsyncInputStream() {
+                @Override
+                public Publisher<Integer> read(final ByteBuffer dst) {
+                    return new SingleResultObservableToPublisher<Integer>(
+                            new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
+                                @Override
+                                public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
+                                    wrapper.read(dst, callback);
+                                }
+                            });
+                }
 
-            @Override
-            public Publisher<Long> skip(final long bytesToSkip) {
-                return new SingleResultObservableToPublisher<Long>(
-                        new Block<com.mongodb.async.SingleResultCallback<Long>>() {
-                            @Override
-                            public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
-                                wrapper.skip(bytesToSkip, callback);
-                            }
-                        });
-            }
+                @Override
+                public Publisher<Long> skip(final long bytesToSkip) {
+                    return new SingleResultObservableToPublisher<Long>(
+                            new Block<com.mongodb.async.SingleResultCallback<Long>>() {
+                                @Override
+                                public void apply(final com.mongodb.async.SingleResultCallback<Long> callback) {
+                                    wrapper.skip(bytesToSkip, callback);
+                                }
+                            });
+                }
 
-            @Override
-            public Publisher<Success> close() {
-                return new SingleResultObservableToPublisher<Success>(
-                        new Block<com.mongodb.async.SingleResultCallback<Success>>() {
-                            @Override
-                            public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
-                                wrapper.close(voidToSuccessCallback(callback));
-                            }
-                        });
-            }
-        };
+                @Override
+                public Publisher<Success> close() {
+                    return new SingleResultObservableToPublisher<Success>(
+                            new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                                @Override
+                                public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                                    wrapper.close(voidToSuccessCallback(callback));
+                                }
+                            });
+                }
+            };
     }
 
     /**
@@ -90,175 +89,178 @@ public final class GridFSAsyncStreamHelper {
      * @param wrapper the callback AsyncOutputStream
      * @return the Publisher AsyncOutputStream
      */
-    public static AsyncOutputStream toAsyncOutputStream(final com.mongodb.async.client.gridfs.AsyncOutputStream wrapper) {
-        notNull("wrapper", wrapper);
-        return new AsyncOutputStream() {
+    public static com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream
+        toAsyncOutputStream(final com.mongodb.async.client.gridfs.AsyncOutputStream wrapper) {
+            notNull("wrapper", wrapper);
+            return new com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream() {
 
-            @Override
-            public Publisher<Integer> write(final ByteBuffer src) {
-                return new SingleResultObservableToPublisher<Integer>(
-                        new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
-                            @Override
-                            public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
-                                wrapper.write(src, callback);
-                            }
-                        });
-            }
+                @Override
+                public Publisher<Integer> write(final ByteBuffer src) {
+                    return new SingleResultObservableToPublisher<Integer>(
+                            new Block<com.mongodb.async.SingleResultCallback<Integer>>() {
+                                @Override
+                                public void apply(final com.mongodb.async.SingleResultCallback<Integer> callback) {
+                                    wrapper.write(src, callback);
+                                }
+                            });
+                }
 
-            @Override
-            public Publisher<Success> close() {
-                return new SingleResultObservableToPublisher<Success>(
-                        new Block<com.mongodb.async.SingleResultCallback<Success>>() {
-                            @Override
-                            public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
-                                wrapper.close(voidToSuccessCallback(callback));
-                            }
-                        });
-            }
-        };
+                @Override
+                public Publisher<Success> close() {
+                    return new SingleResultObservableToPublisher<Success>(
+                            new Block<com.mongodb.async.SingleResultCallback<Success>>() {
+                                @Override
+                                public void apply(final com.mongodb.async.SingleResultCallback<Success> callback) {
+                                    wrapper.close(voidToSuccessCallback(callback));
+                                }
+                            });
+                }
+            };
     }
 
-    static com.mongodb.async.client.gridfs.AsyncInputStream toCallbackAsyncInputStream(final AsyncInputStream wrapped) {
-        notNull("wrapped", wrapped);
-        return new com.mongodb.async.client.gridfs.AsyncInputStream() {
+    static com.mongodb.async.client.gridfs.AsyncInputStream
+        toCallbackAsyncInputStream(final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream wrapped) {
+            notNull("wrapped", wrapped);
+            return new com.mongodb.async.client.gridfs.AsyncInputStream() {
 
-            @Override
-            public void read(final ByteBuffer dst, final com.mongodb.async.SingleResultCallback<Integer> callback) {
-                wrapped.read(dst).subscribe(new Subscriber<Integer>() {
-                    private Integer result = null;
+                @Override
+                public void read(final ByteBuffer dst, final com.mongodb.async.SingleResultCallback<Integer> callback) {
+                    wrapped.read(dst).subscribe(new Subscriber<Integer>() {
+                        private Integer result = null;
 
-                    @Override
-                    public void onSubscribe(final Subscription s) {
-                        s.request(1);
-                    }
+                        @Override
+                        public void onSubscribe(final Subscription s) {
+                            s.request(1);
+                        }
 
-                    @Override
-                    public void onNext(final Integer integer) {
-                        result = integer;
-                    }
+                        @Override
+                        public void onNext(final Integer integer) {
+                            result = integer;
+                        }
 
-                    @Override
-                    public void onError(final Throwable t) {
-                        callback.onResult(null, t);
-                    }
+                        @Override
+                        public void onError(final Throwable t) {
+                            callback.onResult(null, t);
+                        }
 
-                    @Override
-                    public void onComplete() {
-                        callback.onResult(result, null);
-                    }
-                });
-            }
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(result, null);
+                        }
+                    });
+                }
 
-            @Override
-            public void skip(final long bytesToSkip, final com.mongodb.async.SingleResultCallback<Long> callback) {
-                wrapped.skip(bytesToSkip).subscribe(new Subscriber<Long>() {
-                    private Long result = null;
+                @Override
+                public void skip(final long bytesToSkip, final com.mongodb.async.SingleResultCallback<Long> callback) {
+                    wrapped.skip(bytesToSkip).subscribe(new Subscriber<Long>() {
+                        private Long result = null;
 
-                    @Override
-                    public void onSubscribe(final Subscription s) {
-                        s.request(1);
-                    }
+                        @Override
+                        public void onSubscribe(final Subscription s) {
+                            s.request(1);
+                        }
 
-                    @Override
-                    public void onNext(final Long skipped) {
-                        result = skipped;
-                    }
+                        @Override
+                        public void onNext(final Long skipped) {
+                            result = skipped;
+                        }
 
-                    @Override
-                    public void onError(final Throwable t) {
-                        callback.onResult(null, t);
-                    }
+                        @Override
+                        public void onError(final Throwable t) {
+                            callback.onResult(null, t);
+                        }
 
-                    @Override
-                    public void onComplete() {
-                        callback.onResult(result, null);
-                    }
-                });
-            }
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(result, null);
+                        }
+                    });
+                }
 
-            @Override
-            public void close(final com.mongodb.async.SingleResultCallback<Void> callback) {
-                wrapped.close().subscribe(new Subscriber<Success>() {
+                @Override
+                public void close(final com.mongodb.async.SingleResultCallback<Void> callback) {
+                    wrapped.close().subscribe(new Subscriber<Success>() {
 
-                    @Override
-                    public void onSubscribe(final Subscription s) {
-                        s.request(1);
-                    }
+                        @Override
+                        public void onSubscribe(final Subscription s) {
+                            s.request(1);
+                        }
 
-                    @Override
-                    public void onNext(final Success success) {
-                    }
+                        @Override
+                        public void onNext(final Success success) {
+                        }
 
-                    @Override
-                    public void onError(final Throwable t) {
-                        callback.onResult(null, t);
-                    }
+                        @Override
+                        public void onError(final Throwable t) {
+                            callback.onResult(null, t);
+                        }
 
-                    @Override
-                    public void onComplete() {
-                        callback.onResult(null, null);
-                    }
-                });
-            }
-        };
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(null, null);
+                        }
+                    });
+                }
+            };
     }
 
-    static com.mongodb.async.client.gridfs.AsyncOutputStream toCallbackAsyncOutputStream(final AsyncOutputStream wrapped) {
-        notNull("wrapped", wrapped);
-        return new com.mongodb.async.client.gridfs.AsyncOutputStream() {
+    static com.mongodb.async.client.gridfs.AsyncOutputStream
+        toCallbackAsyncOutputStream(final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream wrapped) {
+            notNull("wrapped", wrapped);
+            return new com.mongodb.async.client.gridfs.AsyncOutputStream() {
 
-            @Override
-            public void write(final ByteBuffer src, final com.mongodb.async.SingleResultCallback<Integer> callback) {
-                wrapped.write(src).subscribe(new Subscriber<Integer>() {
-                    private Integer result = null;
+                @Override
+                public void write(final ByteBuffer src, final com.mongodb.async.SingleResultCallback<Integer> callback) {
+                    wrapped.write(src).subscribe(new Subscriber<Integer>() {
+                        private Integer result = null;
 
-                    @Override
-                    public void onSubscribe(final Subscription s) {
-                        s.request(1);
-                    }
+                        @Override
+                        public void onSubscribe(final Subscription s) {
+                            s.request(1);
+                        }
 
-                    @Override
-                    public void onNext(final Integer integer) {
-                        result = integer;
-                    }
+                        @Override
+                        public void onNext(final Integer integer) {
+                            result = integer;
+                        }
 
-                    @Override
-                    public void onError(final Throwable t) {
-                        callback.onResult(null, t);
-                    }
+                        @Override
+                        public void onError(final Throwable t) {
+                            callback.onResult(null, t);
+                        }
 
-                    @Override
-                    public void onComplete() {
-                        callback.onResult(result, null);
-                    }
-                });
-            }
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(result, null);
+                        }
+                    });
+                }
 
-            @Override
-            public void close(final com.mongodb.async.SingleResultCallback<Void> callback) {
-                wrapped.close().subscribe(new Subscriber<Success>() {
+                @Override
+                public void close(final com.mongodb.async.SingleResultCallback<Void> callback) {
+                    wrapped.close().subscribe(new Subscriber<Success>() {
 
-                    @Override
-                    public void onSubscribe(final Subscription s) {
-                        s.request(1);
-                    }
+                        @Override
+                        public void onSubscribe(final Subscription s) {
+                            s.request(1);
+                        }
 
-                    @Override
-                    public void onNext(final Success success) {
-                    }
+                        @Override
+                        public void onNext(final Success success) {
+                        }
 
-                    @Override
-                    public void onError(final Throwable t) {
-                        callback.onResult(null, t);
-                    }
+                        @Override
+                        public void onError(final Throwable t) {
+                            callback.onResult(null, t);
+                        }
 
-                    @Override
-                    public void onComplete() {
-                        callback.onResult(null, null);
-                    }
-                });
-            }
-        };
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(null, null);
+                        }
+                    });
+                }
+            };
     }
 
     private GridFSAsyncStreamHelper() {

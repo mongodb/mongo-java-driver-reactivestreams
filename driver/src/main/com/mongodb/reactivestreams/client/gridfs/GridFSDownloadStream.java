@@ -25,7 +25,9 @@ import org.reactivestreams.Publisher;
  * <p>Provides the {@code GridFSFile} for the file to being downloaded as well as the {@code read} methods of a {@link AsyncInputStream}</p>
  *
  * @since 1.3
+ * @deprecated use {@link GridFSDownloadPublisher } instead
  */
+@Deprecated
 public interface GridFSDownloadStream extends AsyncInputStream {
 
     /**

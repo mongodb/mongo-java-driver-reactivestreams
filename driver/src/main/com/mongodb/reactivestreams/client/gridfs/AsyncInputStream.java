@@ -26,7 +26,9 @@ import java.nio.ByteBuffer;
  *
  * <p>See the {@link com.mongodb.async.client.gridfs.helpers} package for adapters that create an {@code AsyncInputStream}</p>
  * @since 1.3
+ * @deprecated replaced by the more idiomatic {@code Publisher<ByteBuffer>} instead
  */
+@Deprecated
 public interface AsyncInputStream {
 
     /**

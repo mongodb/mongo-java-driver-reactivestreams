@@ -16,6 +16,7 @@
 
 package com.mongodb.reactivestreams.client.gridfs;
 
+import com.mongodb.Block;
 import com.mongodb.MongoGridFSException;
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
@@ -26,6 +27,7 @@ import com.mongodb.reactivestreams.client.DatabaseTestCase;
 import com.mongodb.reactivestreams.client.JsonPoweredTestHelper;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.Success;
+import com.mongodb.reactivestreams.client.internal.ObservableToPublisher;
 import org.bson.BsonArray;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
@@ -47,6 +49,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,8 +59,6 @@ import java.util.List;
 import static com.mongodb.reactivestreams.client.Fixture.ObservableSubscriber;
 import static com.mongodb.reactivestreams.client.Fixture.getDefaultDatabaseName;
 import static com.mongodb.reactivestreams.client.Fixture.initializeCollection;
-import static com.mongodb.reactivestreams.client.gridfs.helpers.AsyncStreamHelper.toAsyncInputStream;
-import static com.mongodb.reactivestreams.client.gridfs.helpers.AsyncStreamHelper.toAsyncOutputStream;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -63,20 +66,24 @@ import static org.junit.Assert.assertNull;
 
 // See https://github.com/10gen/specifications/tree/master/source/gridfs/tests
 @RunWith(Parameterized.class)
+@SuppressWarnings("deprecation")
 public class GridFSTest extends DatabaseTestCase {
     private final String filename;
     private final String description;
     private final BsonDocument data;
     private final BsonDocument definition;
+    private final boolean publisherApi;
     private MongoCollection<BsonDocument> filesCollection;
     private MongoCollection<BsonDocument> chunksCollection;
     private GridFSBucket gridFSBucket;
 
-    public GridFSTest(final String filename, final String description, final BsonDocument data, final BsonDocument definition) {
+    public GridFSTest(final String filename, final String description, final BsonDocument data, final BsonDocument definition,
+                      final boolean publisherApi) {
         this.filename = filename;
         this.description = description;
         this.data = data;
         this.definition = definition;
+        this.publisherApi = publisherApi;
     }
 
     @Before
@@ -117,7 +124,9 @@ public class GridFSTest extends DatabaseTestCase {
             BsonDocument testDocument = JsonPoweredTestHelper.getTestDocument(file);
             for (BsonValue test : testDocument.getArray("tests")) {
                 data.add(new Object[]{file.getName(), test.asDocument().getString("description").getValue(),
-                        testDocument.getDocument("data"), test.asDocument()});
+                        testDocument.getDocument("data"), test.asDocument(), false});
+                data.add(new Object[]{file.getName(), test.asDocument().getString("description").getValue() + " - Publisher API",
+                        testDocument.getDocument("data"), test.asDocument(), true});
             }
         }
         return data;
@@ -242,12 +251,24 @@ public class GridFSTest extends DatabaseTestCase {
     private void doDownload(final BsonDocument arguments, final BsonDocument assertion) {
         Throwable error = null;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        WritableByteChannel channel = Channels.newChannel(outputStream);
 
         try {
-            ObservableSubscriber<Long> subscriber = new ObservableSubscriber<Long>();
-            gridFSBucket.downloadToStream(arguments.getObjectId("id").getValue(), toAsyncOutputStream(outputStream)).subscribe(subscriber);
-            subscriber.get(30, SECONDS);
+            if (publisherApi) {
+                ObservableSubscriber<ByteBuffer> subscriber = new ObservableSubscriber<ByteBuffer>();
+                gridFSBucket.downloadToPublisher(arguments.getObjectId("id").getValue()).subscribe(subscriber);
+                for (ByteBuffer buffer : subscriber.get(30, SECONDS)) {
+                    channel.write(buffer);
+                }
+            } else {
+                ObservableSubscriber<Long> subscriber = new ObservableSubscriber<Long>();
+                gridFSBucket.downloadToStream(arguments.getObjectId("id").getValue(),
+                        com.mongodb.reactivestreams.client.gridfs.helpers.AsyncStreamHelper.toAsyncOutputStream(outputStream))
+                        .subscribe(subscriber);
+                subscriber.get(30, SECONDS);
+            }
             outputStream.close();
+            channel.close();
         } catch (Throwable e) {
             error = e;
         }
@@ -264,6 +285,7 @@ public class GridFSTest extends DatabaseTestCase {
     private void doDownloadByName(final BsonDocument arguments, final BsonDocument assertion) {
         Throwable error = null;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        WritableByteChannel channel = Channels.newChannel(outputStream);
 
         try {
             GridFSDownloadOptions options = new GridFSDownloadOptions();
@@ -272,11 +294,21 @@ public class GridFSTest extends DatabaseTestCase {
                 options.revision(revision);
             }
 
-            ObservableSubscriber<Long> subscriber = new ObservableSubscriber<Long>();
-            gridFSBucket.downloadToStream(arguments.getString("filename").getValue(), toAsyncOutputStream(outputStream),
-                    options).subscribe(subscriber);
-            subscriber.get(30, SECONDS);
+            if (publisherApi) {
+                ObservableSubscriber<ByteBuffer> subscriber = new ObservableSubscriber<ByteBuffer>();
+                gridFSBucket.downloadToPublisher(arguments.getString("filename").getValue(), options).subscribe(subscriber);
+                for (ByteBuffer buffer : subscriber.get(30, SECONDS)) {
+                    channel.write(buffer);
+                }
+            } else {
+                ObservableSubscriber<Long> subscriber = new ObservableSubscriber<Long>();
+                gridFSBucket.downloadToStream(arguments.getString("filename").getValue(),
+                        com.mongodb.reactivestreams.client.gridfs.helpers.AsyncStreamHelper.toAsyncOutputStream(outputStream),
+                        options).subscribe(subscriber);
+                subscriber.get(30, SECONDS);
+            }
             outputStream.close();
+            channel.close();
         } catch (Throwable e) {
             error = e;
         }
@@ -292,10 +324,9 @@ public class GridFSTest extends DatabaseTestCase {
     private void doUpload(final BsonDocument rawArguments, final BsonDocument assertion) throws Throwable {
         Throwable error = null;
         ObjectId objectId = null;
-        BsonDocument arguments = parseHexDocument(rawArguments, "source");
+        final BsonDocument arguments = parseHexDocument(rawArguments, "source");
         try {
             String filename = arguments.getString("filename").getValue();
-            InputStream inputStream = new ByteArrayInputStream(arguments.getBinary("source").getData());
             GridFSUploadOptions options = new GridFSUploadOptions();
             BsonDocument rawOptions = arguments.getDocument("options", new BsonDocument());
             if (rawOptions.containsKey("chunkSizeBytes")) {
@@ -308,8 +339,23 @@ public class GridFSTest extends DatabaseTestCase {
             if (rawOptions.containsKey("disableMD5")) {
                 gridFSUploadBucket = gridFSUploadBucket.withDisableMD5(rawOptions.getBoolean("disableMD5").getValue());
             }
+
             ObservableSubscriber<ObjectId> subscriber = new ObservableSubscriber<ObjectId>();
-            gridFSUploadBucket.uploadFromStream(filename, toAsyncInputStream(inputStream), options).subscribe(subscriber);
+            if (publisherApi) {
+                gridFSUploadBucket.uploadFromPublisher(filename, new ObservableToPublisher<ByteBuffer>(
+                        com.mongodb.async.client.Observables.observe(new Block<com.mongodb.async.SingleResultCallback<ByteBuffer>>() {
+                            @Override
+                            public void apply(final com.mongodb.async.SingleResultCallback<ByteBuffer> callback) {
+                                callback.onResult(ByteBuffer.wrap(arguments.getBinary("source").getData()), null);
+                            }
+                        })), options).subscribe(subscriber);
+            } else {
+                InputStream inputStream = new ByteArrayInputStream(arguments.getBinary("source").getData());
+                gridFSUploadBucket.uploadFromStream(filename,
+                        com.mongodb.reactivestreams.client.gridfs.helpers.AsyncStreamHelper.toAsyncInputStream(inputStream),
+                        options).subscribe(subscriber);
+                objectId = subscriber.get(30, SECONDS).get(0);
+            }
             objectId = subscriber.get(30, SECONDS).get(0);
         } catch (Throwable e) {
             error = e;

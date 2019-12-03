@@ -19,7 +19,6 @@ package com.mongodb.reactivestreams.client.internal;
 import com.mongodb.Block;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream;
 import org.reactivestreams.Publisher;
 
 import java.nio.ByteBuffer;
@@ -29,7 +28,7 @@ import static com.mongodb.reactivestreams.client.internal.PublisherHelper.voidTo
 
 
 @SuppressWarnings("deprecation")
-final class GridFSDownloadStreamImpl implements GridFSDownloadStream {
+final class GridFSDownloadStreamImpl implements com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream {
     private final com.mongodb.async.client.gridfs.GridFSDownloadStream wrapped;
 
     GridFSDownloadStreamImpl(final com.mongodb.async.client.gridfs.GridFSDownloadStream wrapped) {
@@ -48,7 +47,7 @@ final class GridFSDownloadStreamImpl implements GridFSDownloadStream {
     }
 
     @Override
-    public GridFSDownloadStream batchSize(final int batchSize) {
+    public com.mongodb.reactivestreams.client.gridfs.GridFSDownloadStream batchSize(final int batchSize) {
         wrapped.batchSize(batchSize);
         return this;
     }
