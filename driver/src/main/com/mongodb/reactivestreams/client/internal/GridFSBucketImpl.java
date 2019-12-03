@@ -22,14 +22,12 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.reactivestreams.client.gridfs.AsyncInputStream;
-import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
 import com.mongodb.reactivestreams.client.gridfs.GridFSFindPublisher;
 import com.mongodb.reactivestreams.client.gridfs.GridFSUploadPublisher;
-import com.mongodb.reactivestreams.client.ClientSession;
 import org.bson.BsonObjectId;
 import org.bson.BsonValue;
 import org.bson.conversions.Bson;
@@ -174,7 +172,9 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<ObjectId> uploadFromStream(final String filename, final AsyncInputStream source, final GridFSUploadOptions options) {
+    public Publisher<ObjectId> uploadFromStream(final String filename,
+                                                final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source,
+                                                final GridFSUploadOptions options) {
         return new ObservableToPublisher<ObjectId>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<ObjectId>>() {
                     @Override
@@ -232,7 +232,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
     @Override
     public Publisher<Success> uploadFromStream(final ClientSession clientSession, final BsonValue id, final String filename,
-                                               final AsyncInputStream source, final GridFSUploadOptions options) {
+                                               final com.mongodb.reactivestreams.client.gridfs.AsyncInputStream source,
+                                               final GridFSUploadOptions options) {
         return new ObservableToPublisher<Success>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Success>>() {
                     @Override
@@ -289,7 +290,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ObjectId id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final ObjectId id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -301,7 +303,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
 
 
     @Override
-    public Publisher<Long> downloadToStream(final BsonValue id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final BsonValue id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -331,7 +334,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final ObjectId id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final ObjectId id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
@@ -342,7 +346,8 @@ public final class GridFSBucketImpl implements GridFSBucket {
     }
 
     @Override
-    public Publisher<Long> downloadToStream(final ClientSession clientSession, final BsonValue id, final AsyncOutputStream destination) {
+    public Publisher<Long> downloadToStream(final ClientSession clientSession, final BsonValue id,
+                                            final com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream destination) {
         return new ObservableToPublisher<Long>(com.mongodb.async.client.Observables.observe(
                 new Block<com.mongodb.async.SingleResultCallback<Long>>() {
                     @Override
