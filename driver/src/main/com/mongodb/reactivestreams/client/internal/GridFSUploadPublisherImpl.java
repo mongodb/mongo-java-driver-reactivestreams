@@ -56,6 +56,7 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
 
         /* protected by `this` */
         private long requested = 0;
+        private boolean hasCompleted;
         private Action currentAction = Action.WAITING;
         private Subscription sourceSubscription;
         /* protected by `this` */
@@ -90,7 +91,10 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
             @Override
             public void onComplete() {
                 synchronized (GridFSUploadSubscription.this) {
-                    currentAction = Action.COMPLETE;
+                    hasCompleted = true;
+                    if (currentAction == Action.WAITING) {
+                        currentAction = Action.COMPLETE;
+                    }
                 }
             }
 
@@ -123,6 +127,9 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
                         sourceSubscriber.onNext(byteBuffer);
                     } else {
                         synchronized (GridFSUploadSubscription.this) {
+                            if (hasCompleted) {
+                                currentAction = Action.COMPLETE;
+                            }
                             if (currentAction != Action.COMPLETE && currentAction != Action.TERMINATE && currentAction != Action.FINISHED) {
                                 currentAction = Action.WAITING;
                             }
