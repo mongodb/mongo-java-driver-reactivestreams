@@ -923,7 +923,7 @@ collection.find(eq(&quot;i&quot;, 71)).first().subscribe(new PrintDocumentSubscr
 
 <p><div class="admonition note">
 <h5 class="admonition-title">Note</h5>
-<p>Use the <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Filters.html">Filters</a>, <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Sorts.html">Sorts</a> and <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Projections.html">Projections</a>
+<p>Use the <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Filters.html">Filters</a>, <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Sorts.html">Sorts</a> and <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Projections.html">Projections</a>
 helpers for simple and concise ways of building up queries.</p>
 
 </div>
@@ -948,7 +948,7 @@ collection.find(gt(&quot;i&quot;, 50)).subscribe(new PrintDocumentSubscriber());
 
 <h2 id="sorting-documents">Sorting documents</h2>
 
-<p>We can also use the <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Sorts.html
+<p>We can also use the <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Sorts.html
 ">Sorts</a> helpers to sort documents.
 We add a sort to a find query by calling the <code>sort()</code> method on a <code>FindPublisher</code>.  Below we use the <a href="{{ &lt; coreapiref &quot;com/mongodb/client/model/Filters.html#exists-java.lang.String-&quot;&gt;}}"><code>exists()</code></a> helper and sort
 <a href="{{ &lt; coreapiref &quot;com/mongodb/client/model/Sorts.html#exists-java.lang.String-&quot;&gt;}}"><code>descending(&quot;i&quot;)</code></a> helper to sort our documents:</p>
@@ -958,7 +958,7 @@ We add a sort to a find query by calling the <code>sort()</code> method on a <co
 
 <h2 id="projecting-fields">Projecting fields</h2>
 
-<p>Sometimes we don&rsquo;t need all the data contained in a document. The <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Projections.html
+<p>Sometimes we don&rsquo;t need all the data contained in a document. The <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Projections.html
 ">Projections</a>
 helpers can be used to build the projection parameter for the find operation and limit the fields returned.<br />
 Below we&rsquo;ll sort the collection, exclude the <code>_id</code> field and output the first matching document:</p>
@@ -988,7 +988,7 @@ is less than <code>100</code>.</p>
           .subscribe(new PrintSubscriber&lt;UpdateResult&gt;(&quot;Update Result: %s&quot;));
 </code></pre>
 
-<p>The update methods return an <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/result/UpdateResult.html
+<p>The update methods return an <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/result/UpdateResult.html
 "><code>UpdateResult</code></a>,
 which provides information about the operation including the number of documents modified by the update.</p>
 
@@ -1010,7 +1010,7 @@ Here we delete all documents where <code>i</code> is greater or equal to <code>1
           .subscribe(new PrintSubscriber&lt;DeleteResult&gt;(&quot;Delete Result: %s&quot;));
 </code></pre>
 
-<p>The delete methods return a <a href="http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/result/DeleteResult.html
+<p>The delete methods return a <a href="http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/result/DeleteResult.html
 "><code>DeleteResult</code></a>,
 which provides information about the operation including the number of documents deleted.</p>
 

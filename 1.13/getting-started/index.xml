@@ -200,7 +200,7 @@ subscriber.await();
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;As of MongoDB 2.6, text indexes are now integrated into the main query
-language and enabled by default (here we use the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Filters.html#text-java.lang.String-
+language and enabled by default (here we use the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Filters.html#text-java.lang.String-
 &#34;&gt;&lt;code&gt;Filters.text&lt;/code&gt;&lt;/a&gt; helper):&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;// Insert some documents
@@ -559,7 +559,7 @@ collection.find(eq(&amp;quot;i&amp;quot;, 71)).first().subscribe(new PrintDocume
 
 &lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
 &lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
-&lt;p&gt;Use the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Filters.html&#34;&gt;Filters&lt;/a&gt;, &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Sorts.html&#34;&gt;Sorts&lt;/a&gt; and &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Projections.html&#34;&gt;Projections&lt;/a&gt;
+&lt;p&gt;Use the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Filters.html&#34;&gt;Filters&lt;/a&gt;, &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Sorts.html&#34;&gt;Sorts&lt;/a&gt; and &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Projections.html&#34;&gt;Projections&lt;/a&gt;
 helpers for simple and concise ways of building up queries.&lt;/p&gt;
 
 &lt;/div&gt;
@@ -584,7 +584,7 @@ collection.find(gt(&amp;quot;i&amp;quot;, 50)).subscribe(new PrintDocumentSubscr
 
 &lt;h2 id=&#34;sorting-documents&#34;&gt;Sorting documents&lt;/h2&gt;
 
-&lt;p&gt;We can also use the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Sorts.html
+&lt;p&gt;We can also use the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Sorts.html
 &#34;&gt;Sorts&lt;/a&gt; helpers to sort documents.
 We add a sort to a find query by calling the &lt;code&gt;sort()&lt;/code&gt; method on a &lt;code&gt;FindPublisher&lt;/code&gt;.  Below we use the &lt;a href=&#34;{{ &amp;lt; coreapiref &amp;quot;com/mongodb/client/model/Filters.html#exists-java.lang.String-&amp;quot;&amp;gt;}}&#34;&gt;&lt;code&gt;exists()&lt;/code&gt;&lt;/a&gt; helper and sort
 &lt;a href=&#34;{{ &amp;lt; coreapiref &amp;quot;com/mongodb/client/model/Sorts.html#exists-java.lang.String-&amp;quot;&amp;gt;}}&#34;&gt;&lt;code&gt;descending(&amp;quot;i&amp;quot;)&lt;/code&gt;&lt;/a&gt; helper to sort our documents:&lt;/p&gt;
@@ -594,7 +594,7 @@ We add a sort to a find query by calling the &lt;code&gt;sort()&lt;/code&gt; met
 
 &lt;h2 id=&#34;projecting-fields&#34;&gt;Projecting fields&lt;/h2&gt;
 
-&lt;p&gt;Sometimes we don&amp;rsquo;t need all the data contained in a document. The &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/model/Projections.html
+&lt;p&gt;Sometimes we don&amp;rsquo;t need all the data contained in a document. The &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/model/Projections.html
 &#34;&gt;Projections&lt;/a&gt;
 helpers can be used to build the projection parameter for the find operation and limit the fields returned.&lt;br /&gt;
 Below we&amp;rsquo;ll sort the collection, exclude the &lt;code&gt;_id&lt;/code&gt; field and output the first matching document:&lt;/p&gt;
@@ -624,7 +624,7 @@ is less than &lt;code&gt;100&lt;/code&gt;.&lt;/p&gt;
           .subscribe(new PrintSubscriber&amp;lt;UpdateResult&amp;gt;(&amp;quot;Update Result: %s&amp;quot;));
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The update methods return an &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/result/UpdateResult.html
+&lt;p&gt;The update methods return an &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/result/UpdateResult.html
 &#34;&gt;&lt;code&gt;UpdateResult&lt;/code&gt;&lt;/a&gt;,
 which provides information about the operation including the number of documents modified by the update.&lt;/p&gt;
 
@@ -646,7 +646,7 @@ Here we delete all documents where &lt;code&gt;i&lt;/code&gt; is greater or equa
           .subscribe(new PrintSubscriber&amp;lt;DeleteResult&amp;gt;(&amp;quot;Delete Result: %s&amp;quot;));
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The delete methods return a &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.11/javadoc/?com/mongodb/client/result/DeleteResult.html
+&lt;p&gt;The delete methods return a &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/javadoc/?com/mongodb/client/result/DeleteResult.html
 &#34;&gt;&lt;code&gt;DeleteResult&lt;/code&gt;&lt;/a&gt;,
 which provides information about the operation including the number of documents deleted.&lt;/p&gt;
 
