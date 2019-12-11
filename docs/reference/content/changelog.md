@@ -10,6 +10,13 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.13.0
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.13)
+
+  * Updated MongoDB Driver Async to 3.12.0
+  * Refine binary stream interchange in GridFS [JAVARS-222](https://jira.mongodb.org/browse/JAVARS-222)
+  * Reintroduced plain String query hint [JAVARS-221](https://jira.mongodb.org/browse/JAVARS-221)
+
 ### 1.12.0
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.12)
 

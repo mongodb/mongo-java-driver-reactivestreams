@@ -1,10 +1,10 @@
 githubUser = "mongodb"
 githubRepo = "mongo-java-driver-reactivestreams"
-githubBranch = "1.12.x"
-currentVersion = "1.12"
+githubBranch = "1.13.x"
+currentVersion = "1.13"
 highlightTheme = "idea.css"
 apiUrl = "/javadoc"
 asyncDriverUrl = "http://mongodb.github.io/mongo-java-driver/3.11/driver-async"
 coreApiUrl = "http://mongodb.github.io/mongo-java-driver/3.11/javadoc/"
-mongoDriverVersion = "3.11.0"                        # Update in installation-guide.md
-reactiveStreamsVersion = "1.0.2"                     # Update in installation-guide.md
+mongoDriverVersion = "3.12.0"                        # Update in installation-guide.md
+reactiveStreamsVersion ="1.0.3"                      # Update in installation-guide.md
