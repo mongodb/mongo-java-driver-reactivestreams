@@ -55,8 +55,8 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
         private final Subscriber<? super Success> outerSubscriber;
 
         /* protected by `this` */
-        private long requested = 0;
         private boolean hasCompleted;
+        private boolean unsubscribed;
         private Action currentAction = Action.WAITING;
         private Subscription sourceSubscription;
         /* protected by `this` */
@@ -130,6 +130,9 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
                             if (hasCompleted) {
                                 currentAction = Action.COMPLETE;
                             }
+                            if (unsubscribed) {
+                                currentAction = Action.TERMINATE;
+                            }
                             if (currentAction != Action.COMPLETE && currentAction != Action.TERMINATE && currentAction != Action.FINISHED) {
                                 currentAction = Action.WAITING;
                             }
@@ -142,14 +145,27 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
 
         @Override
         public void request(final long n) {
+            boolean isUnsubscribed;
             synchronized (this) {
-                requested += n;
+                isUnsubscribed = unsubscribed;
+                if (!isUnsubscribed && n < 1) {
+                    currentAction = Action.FINISHED;
+                }
+            }
+            if (!isUnsubscribed && n < 1) {
+                outerSubscriber.onError(new IllegalArgumentException("3.9 While the Subscription is not cancelled, "
+                        + "Subscription.request(long n) MUST throw a java.lang.IllegalArgumentException if the "
+                        + "argument is <= 0."));
+                return;
             }
             tryProcess();
         }
 
         @Override
         public void cancel() {
+            synchronized (this) {
+                unsubscribed = true;
+            }
             terminate();
         }
 
@@ -158,16 +174,12 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
             synchronized (this) {
                 switch (currentAction) {
                     case WAITING:
-                        if (requested == 0) {
-                            nextStep = NextStep.DO_NOTHING;
-                        } else if (sourceSubscription == null) {
+                        if (sourceSubscription == null) {
                             nextStep = NextStep.SUBSCRIBE;
-                            currentAction = Action.IN_PROGRESS;
                         } else {
-                            requested--;
                             nextStep = NextStep.WRITE;
-                            currentAction = Action.IN_PROGRESS;
                         }
+                        currentAction = Action.IN_PROGRESS;
                         break;
                     case COMPLETE:
                         nextStep = NextStep.COMPLETE;

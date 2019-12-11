@@ -27,8 +27,10 @@ import org.bson.BsonString
 import org.bson.Document
 import org.bson.UuidRepresentation
 import org.bson.codecs.UuidCodec
+import org.bson.types.ObjectId
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 import spock.lang.Unroll
 
 import java.nio.ByteBuffer
@@ -110,13 +112,12 @@ class GridFSPublisherSpecification extends FunctionalSpecification {
         given:
         def contentSize = 1024 * 500
         def chunkSize = 10
-        def contentBytes = new byte[contentSize / 2];
+        def contentBytes = new byte[contentSize];
         new SecureRandom().nextBytes(contentBytes);
         def options = new GridFSUploadOptions().chunkSizeBytes(chunkSize)
 
         when:
-        def fileId = run(gridFSBucket.&uploadFromPublisher, 'myFile', createPublisher(ByteBuffer.wrap(contentBytes),
-                ByteBuffer.wrap(contentBytes)), options)
+        def fileId = run(gridFSBucket.&uploadFromPublisher, 'myFile', createPublisher(ByteBuffer.wrap(contentBytes)), options)
 
         then:
         run(filesCollection.&countDocuments) == 1
@@ -126,7 +127,36 @@ class GridFSPublisherSpecification extends FunctionalSpecification {
         def data = runAndCollect(gridFSBucket.&downloadToPublisher, fileId)
 
         then:
-        concatByteBuffers(data) == concatByteBuffers([ByteBuffer.wrap(contentBytes), ByteBuffer.wrap(contentBytes)])
+        concatByteBuffers(data) == contentBytes
+    }
+
+    def 'should respect the outer subscription request amount'() {
+        given:
+        def contentBytes = multiChunkString.getBytes()
+        def options = new GridFSUploadOptions().chunkSizeBytes(contentBytes.length)
+
+        when:
+        def publisher = gridFSBucket.uploadFromPublisher('myFile',
+        createPublisher(ByteBuffer.wrap(contentBytes), ByteBuffer.wrap(contentBytes),
+                ByteBuffer.wrap(contentBytes)), options)
+
+        def subscriber = new ObservableSubscriber()
+        publisher.subscribe(subscriber)
+        def fileId = subscriber.await(1, 60, SECONDS).getReceived().get(0)
+
+        then:
+        run(filesCollection.&countDocuments) == 1
+        run(chunksCollection.&countDocuments) == 3
+
+        when:
+        subscriber = new ObservableSubscriber()
+        publisher = gridFSBucket.downloadToPublisher(fileId as ObjectId).bufferSizeBytes(contentBytes.length * 3)
+        publisher.subscribe(subscriber)
+        def data = subscriber.await(1, 30, SECONDS).getReceived().get(0)
+
+        then:
+        data.array() == concatByteBuffers([ByteBuffer.wrap(contentBytes), ByteBuffer.wrap(contentBytes),
+                                                      ByteBuffer.wrap(contentBytes)])
     }
 
     def 'should round trip with data larger than the internal bufferSize'() {
@@ -358,7 +388,7 @@ class GridFSPublisherSpecification extends FunctionalSpecification {
         fileAsDocument.getDocument('metadata').getBinary('uuid').getType() == 4 as byte
     }
 
-    def 'should handle missing file name data when downloading #description'() {
+    def 'should handle missing file name data when downloading'() {
         given:
         def contentBytes = multiChunkString.getBytes()
 
@@ -378,43 +408,81 @@ class GridFSPublisherSpecification extends FunctionalSpecification {
     }
 
     def 'should cleanup when unsubscribing'() {
-        when:
-        def contentBytes = multiChunkString as byte[]
+        given:
+        def contentSize = 1024 * 1024
+        def contentBytes = new byte[contentSize]
+        new SecureRandom().nextBytes(contentBytes)
+        def options = new GridFSUploadOptions().chunkSizeBytes(1024)
+        def data = (0..1024).collect { ByteBuffer.wrap(contentBytes) }
+        def subscriber = new Subscriber<ObjectId>() {
+            Subscription subscription
+            @Override
+            void onSubscribe(final Subscription s) {
+                subscription = s
+            }
 
-        then:
-        run(filesCollection.&countDocuments) == 0
+            @Override
+            void onNext(final ObjectId o) {
+            }
+
+            @Override
+            void onError(final Throwable t) {
+            }
+
+            @Override
+            void onComplete() {
+            }
+        }
 
         when:
-        def subscriber = new ObservableSubscriber()
-        gridFSBucket.uploadFromPublisher('myFile', createPublisher(ByteBuffer.wrap(contentBytes), ByteBuffer.wrap(contentBytes)))
+        gridFSBucket.uploadFromPublisher('myFile', createPublisher(*data), options)
             .subscribe(subscriber)
-        subscriber.getSubscription().request(1)
+        subscriber.subscription.request(1)
 
         then:
-        !subscriber.isCompleted()
-
-        then:
+        retry(10) { run(chunksCollection.&countDocuments) > 0 }
         run(filesCollection.&countDocuments) == 0
-        tryMultipleTimes({ run(chunksCollection.&countDocuments) }, 5)
+
+        when:
+        subscriber.subscription.cancel()
 
         then:
-        subscriber.getSubscription().cancel()
-
-        then:
+        retry(50) { run(chunksCollection.&countDocuments) == 0 }
         run(filesCollection.&countDocuments) == 0
-        tryMultipleTimes({ run(chunksCollection.&countDocuments) }, 0)
     }
 
-    def tryMultipleTimes(closure, expected) {
-        def counter = 0
-        while (counter < 5) {
-            if (closure.call() == expected) {
-                return true
-            }
-            sleep(500)
-            counter++
+    def 'should error if requested is less than 1'() {
+        given:
+        def contentBytes = multiChunkString.getBytes()
+        when:
+        def publisher = gridFSBucket.uploadFromPublisher('myFile', createPublisher(ByteBuffer.wrap(contentBytes)))
+
+        def subscriber = new ObservableSubscriber()
+        publisher.subscribe(subscriber)
+        subscriber.await(0, 10, SECONDS)
+
+        then:
+        thrown(IllegalArgumentException)
+
+        when:
+        subscriber = new ObservableSubscriber()
+        publisher = gridFSBucket.downloadToPublisher(new ObjectId())
+        publisher.subscribe(subscriber)
+        subscriber.await(0, 30, SECONDS).getReceived().get(0)
+
+        then:
+        thrown(IllegalArgumentException)
+    }
+
+    def retry(Integer times, Closure<Boolean> closure) {
+        def result = closure.call()
+        if (!result && times > 0) {
+            sleep(250)
+            retry(times - 1, closure)
+        } else {
+            assert result
+            return result
         }
-        assert closure.call() == expected
     }
 
     def run(operation, ... args) {

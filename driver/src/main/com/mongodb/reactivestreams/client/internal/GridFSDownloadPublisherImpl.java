@@ -57,6 +57,7 @@ public class GridFSDownloadPublisherImpl implements GridFSDownloadPublisher {
         private GridFSFile gridFSFile;
         private long sizeRead = 0;
         private long requested = 0;
+        private boolean unsubscribed;
         private int currentBatchSize = 0;
         private Action currentAction = Action.WAITING;
         /* protected by `this` */
@@ -127,6 +128,7 @@ public class GridFSDownloadPublisherImpl implements GridFSDownloadPublisher {
                     synchronized (GridFSDownloadSubscription.this) {
                         hasTerminated = currentAction == Action.TERMINATE || currentAction == Action.FINISHED;
                         if (!hasTerminated) {
+                            requested--;
                             currentAction = Action.WAITING;
                             if (sizeRead == gridFSFile.getLength()) {
                                 currentAction = Action.COMPLETE;
@@ -144,14 +146,29 @@ public class GridFSDownloadPublisherImpl implements GridFSDownloadPublisher {
 
         @Override
         public void request(final long n) {
+            boolean isUnsubscribed;
             synchronized (this) {
-                requested += n;
+                isUnsubscribed = unsubscribed;
+                if (!isUnsubscribed && n < 1) {
+                    currentAction = Action.FINISHED;
+                } else {
+                    requested += n;
+                }
+            }
+            if (!isUnsubscribed && n < 1) {
+                outerSubscriber.onError(new IllegalArgumentException("3.9 While the Subscription is not cancelled, "
+                        + "Subscription.request(long n) MUST throw a java.lang.IllegalArgumentException if the "
+                        + "argument is <= 0."));
+                return;
             }
             tryProcess();
         }
 
         @Override
         public void cancel() {
+            synchronized (this) {
+                unsubscribed = true;
+            }
             terminate();
         }
         
@@ -169,7 +186,6 @@ public class GridFSDownloadPublisherImpl implements GridFSDownloadPublisher {
                             nextStep = NextStep.COMPLETE;
                             currentAction = Action.FINISHED;
                         } else {
-                            requested--;
                             nextStep = NextStep.READ;
                             currentAction = Action.IN_PROGRESS;
                         }
