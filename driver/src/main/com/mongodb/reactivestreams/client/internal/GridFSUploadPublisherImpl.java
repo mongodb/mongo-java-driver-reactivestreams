@@ -77,6 +77,9 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
 
             @Override
             public void onNext(final ByteBuffer byteBuffer) {
+                synchronized (GridFSUploadSubscription.this) {
+                    currentAction = Action.IN_PROGRESS;
+                }
                 gridFSUploadStream.write(byteBuffer).subscribe(new GridFSUploadStreamSubscriber(byteBuffer));
             }
 
@@ -92,8 +95,9 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
             public void onComplete() {
                 synchronized (GridFSUploadSubscription.this) {
                     hasCompleted = true;
-                    if (currentAction == Action.WAITING) {
+                    if (currentAction == Action.REQUESTING_MORE) {
                         currentAction = Action.COMPLETE;
+                        tryProcess();
                     }
                 }
             }
@@ -177,9 +181,9 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
                         if (sourceSubscription == null) {
                             nextStep = NextStep.SUBSCRIBE;
                         } else {
-                            nextStep = NextStep.WRITE;
+                            nextStep = NextStep.REQUEST_MORE;
                         }
-                        currentAction = Action.IN_PROGRESS;
+                        currentAction = Action.REQUESTING_MORE;
                         break;
                     case COMPLETE:
                         nextStep = NextStep.COMPLETE;
@@ -201,7 +205,7 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
                 case SUBSCRIBE:
                     source.subscribe(sourceSubscriber);
                     break;
-                case WRITE:
+                case REQUEST_MORE:
                     synchronized (this) {
                         sourceSubscription.request(1);
                     }
@@ -306,6 +310,7 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
 
     enum Action {
         WAITING,
+        REQUESTING_MORE,
         IN_PROGRESS,
         TERMINATE,
         COMPLETE,
@@ -314,7 +319,7 @@ public class GridFSUploadPublisherImpl implements GridFSUploadPublisher<Success>
 
     enum NextStep {
         SUBSCRIBE,
-        WRITE,
+        REQUEST_MORE,
         COMPLETE,
         TERMINATE,
         DO_NOTHING
