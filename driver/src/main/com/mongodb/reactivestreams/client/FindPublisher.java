@@ -205,7 +205,7 @@ public interface FindPublisher<TResult> extends Publisher<TResult> {
     FindPublisher<TResult> max(Bson max);
 
     /**
-     * Sets the minimum inclusive lower bound for a specific index. A null value means no max is set.
+     * Sets the minimum inclusive lower bound for a specific index. A null value means no min is set.
      *
      * @param min the min
      * @return this
