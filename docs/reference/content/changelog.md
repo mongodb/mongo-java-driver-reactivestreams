@@ -10,6 +10,12 @@ title = "Changelog"
 
 Changes between released versions
 
+### 1.13.1
+[Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.13)
+  * Updated MongoDB Driver Async to 3.12.2
+  * Fix GridFSDownloadPublisher larger than 2GB files [JAVARS-227](https://jira.mongodb.org/browse/JAVARS-227)
+  * Fix GridFSBucket.uploadFromPublisher completion when more the one element given in stream [JAVARS-224](https://jira.mongodb.org/browse/JAVARS-224)
+
 ### 1.13.0
 [Full change list](https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.13)
 
