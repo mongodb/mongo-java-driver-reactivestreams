@@ -25,7 +25,6 @@ dependencies {
     compile 'org.mongodb:mongodb-driver-async:3.12.2'
     compile 'org.reactivestreams:reactive-streams:1.0.3'
 
-    testCompile 'io.reactivex.rxjava3:rxjava:3.0.0'
     testCompile 'org.reactivestreams:reactive-streams-tck:1.0.3'
 }
 
@@ -45,10 +44,6 @@ buildConfig {
 jar {
     manifest {
         instruction 'Build-Version', getGitVersion()
-        instruction 'Import-Package',
-                'org.bson.*',
-                'com.mongodb.crypt.capi.*;resolution:=optional',
-                'com.mongodb.*'
     }
 }
 
