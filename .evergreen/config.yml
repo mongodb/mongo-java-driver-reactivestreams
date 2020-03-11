@@ -331,7 +331,7 @@ tasks:
       commands:
         - func: "bootstrap mongo-orchestration"
           vars:
-            VERSION: "3.4"
+            VERSION: "4.0"
             TOPOLOGY: "server"
         - func: "run tck tests"
 
@@ -376,10 +376,6 @@ axes:
         display_name: "JDK8"
         variables:
            JDK: "jdk8"
-      - id: "jdk7"
-        display_name: "JDK7"
-        variables:
-           JDK: "jdk7"
 
 buildvariants:
 
