@@ -357,9 +357,9 @@ axes:
   - id: "os"
     display_name: "OS"
     values:
-      - id: "rhel62"
-        display_name: "RHEL 6.2"
-        run_on: "rhel62-test"
+      - id: "ubuntu"
+        display_name: "Ubuntu 18.04"
+        run_on: ubuntu1804-test
 
   - id: "topology"
     display_name: "Topology"
@@ -386,7 +386,7 @@ buildvariants:
 - name: "static-checks"
   display_name: "Static Checks"
   run_on:
-    - "rhel62-test"
+    - ubuntu1804-test
   tasks:
     - name: "static-checks-task"
 
@@ -400,13 +400,13 @@ buildvariants:
 - name: "tck-tests"
   display_name: "TCK tests"
   run_on:
-    - "rhel62-test"
+    - ubuntu1804-test
   tasks:
     - name: "tck-tests-task"
 
 - name: "publish-snapshots"
   display_name: "Publish Snapshots"
   run_on:
-    - "rhel62-test"
+    - ubuntu1804-test
   tasks:
     - name: "publish-snapshots-task"
