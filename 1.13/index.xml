@@ -21,6 +21,13 @@
 
 &lt;p&gt;Changes between released versions&lt;/p&gt;
 
+&lt;h3 id=&#34;1-13-1&#34;&gt;1.13.1&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.13&#34;&gt;Full change list&lt;/a&gt;
+  * Updated MongoDB Driver Async to 3.12.2
+  * Fix GridFSDownloadPublisher larger than 2GB files &lt;a href=&#34;https://jira.mongodb.org/browse/JAVARS-227&#34;&gt;JAVARS-227&lt;/a&gt;
+  * Fix GridFSBucket.uploadFromPublisher completion when more the one element given in stream &lt;a href=&#34;https://jira.mongodb.org/browse/JAVARS-224&#34;&gt;JAVARS-224&lt;/a&gt;&lt;/p&gt;
+
 &lt;h3 id=&#34;1-13-0&#34;&gt;1.13.0&lt;/h3&gt;
 
 &lt;p&gt;&lt;a href=&#34;https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVARS%20AND%20fixVersion%20%3D%201.13&#34;&gt;Full change list&lt;/a&gt;&lt;/p&gt;
@@ -222,7 +229,7 @@ See the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.6/whats-new
     &amp;lt;dependency&amp;gt;
         &amp;lt;groupId&amp;gt;org.mongodb&amp;lt;/groupId&amp;gt;
         &amp;lt;artifactId&amp;gt;mongodb-driver-reactivestreams&amp;lt;/artifactId&amp;gt;
-        &amp;lt;version&amp;gt;1.13.0&amp;lt;/version&amp;gt;
+        &amp;lt;version&amp;gt;1.13.1&amp;lt;/version&amp;gt;
     &amp;lt;/dependency&amp;gt;
 &amp;lt;/dependencies&amp;gt;
 
@@ -231,7 +238,7 @@ See the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.6/whats-new
 &lt;section class=&#34;gradle hidden&#34;&gt;
 &lt;pre&gt;&lt;code class=&#34;ini&#34;&gt;
   dependencies {
-      compile &#39;org.mongodb:mongodb-driver-reactivestreams:1.13.0&#39;
+      compile &#39;org.mongodb:mongodb-driver-reactivestreams:1.13.1&#39;
   }
 
 &lt;/code&gt;&lt;/pre&gt;
@@ -243,10 +250,10 @@ See the &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.6/whats-new
     &lt;p&gt;
         &lt;strong&gt;Note:&lt;/strong&gt; &lt;code&gt;mongodb-driver-reactivestreams&lt;/code&gt; requires the following dependencies:
         &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/reactivestreams/reactive-streams/1.0.3&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;reactive-streams&lt;/code&gt;&lt;/a&gt;,
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/3.12.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;bson&lt;/code&gt;&lt;/a&gt;,
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/3.12.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-core&lt;/code&gt;&lt;/a&gt;
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/bson/3.12.2&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;bson&lt;/code&gt;&lt;/a&gt;,
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-core/3.12.2&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-core&lt;/code&gt;&lt;/a&gt;
         and
-        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/3.12.0&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-async&lt;/code&gt;&lt;/a&gt;.
+        &lt;a href=&#34;https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongodb-driver-async/3.12.2&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;mongodb-driver-async&lt;/code&gt;&lt;/a&gt;.
     &lt;/p&gt;
 &lt;/section&gt;
 
@@ -642,39 +649,6 @@ method.  Here we call the &lt;a href=&#34;{{ docsref &amp;quot;reference/command
 
 &lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;database.runCommand(new Document(&amp;quot;buildInfo&amp;quot;, 1)).subscribe(new PrintDocumentSubscriber());
 &lt;/code&gt;&lt;/pre&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Reactive Streams Driver</title>
-      <link>/mongo-java-driver-reactivestreams/1.13/</link>
-      <pubDate>Tue, 17 Mar 2015 15:36:56 +0000</pubDate>
-      
-      <guid>/mongo-java-driver-reactivestreams/1.13/</guid>
-      <description>
-
-&lt;h2 id=&#34;mongodb-reactive-streams-java-driver-documentation&#34;&gt;MongoDB Reactive Streams Java Driver Documentation&lt;/h2&gt;
-
-&lt;p&gt;Welcome to the MongoDB Reactive Streams Java driver documentation hub.&lt;/p&gt;
-
-&lt;p&gt;The Reactive Streams Driver is the canonical asynchronous Java driver for MongoDB, providing asynchronous stream processing with back
-pressure in line with the &lt;a href=&#34;http://www.reactive-streams.org/&#34;&gt;Reactive Streams&lt;/a&gt; specification. The API mirrors the now-deprecated
-callback-based &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/driver-async
-&#34;&gt;MongoDB Async Driver&lt;/a&gt;. For reference documentation please see the asynchronous driver documentation.&lt;/p&gt;
-
-&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
-&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
-&lt;p&gt;Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java
-driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java
-driver will be fully documented in its place.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&#34;getting-started&#34;&gt;Getting Started&lt;/h3&gt;
-
-&lt;p&gt;The &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.13/mongo-java-driver-reactivestreams/1.13/getting-started/&#34;&gt;Getting Started&lt;/a&gt; guide contains installation instructions
-and a simple tutorial to get up  and running quickly.&lt;/p&gt;
 </description>
     </item>
     
@@ -1114,6 +1088,39 @@ executed one at a time.&lt;/p&gt;
 
 &lt;/div&gt;
 &lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Reactive Streams Driver</title>
+      <link>/mongo-java-driver-reactivestreams/1.13/</link>
+      <pubDate>Tue, 17 Mar 2015 15:36:56 +0000</pubDate>
+      
+      <guid>/mongo-java-driver-reactivestreams/1.13/</guid>
+      <description>
+
+&lt;h2 id=&#34;mongodb-reactive-streams-java-driver-documentation&#34;&gt;MongoDB Reactive Streams Java Driver Documentation&lt;/h2&gt;
+
+&lt;p&gt;Welcome to the MongoDB Reactive Streams Java driver documentation hub.&lt;/p&gt;
+
+&lt;p&gt;The Reactive Streams Driver is the canonical asynchronous Java driver for MongoDB, providing asynchronous stream processing with back
+pressure in line with the &lt;a href=&#34;http://www.reactive-streams.org/&#34;&gt;Reactive Streams&lt;/a&gt; specification. The API mirrors the now-deprecated
+callback-based &lt;a href=&#34;http://mongodb.github.io/mongo-java-driver/3.12/driver-async
+&#34;&gt;MongoDB Async Driver&lt;/a&gt;. For reference documentation please see the asynchronous driver documentation.&lt;/p&gt;
+
+&lt;p&gt;&lt;div class=&#34;admonition note&#34;&gt;
+&lt;h5 class=&#34;admonition-title&#34;&gt;Note&lt;/h5&gt;
+&lt;p&gt;Note that while the callback-based asynchronous driver is now deprecated, the MongoDB Reactive Streams Java
+driver will continue to be supported. Once the callback-based driver has been removed, the MongoDB Reactive Streams Java
+driver will be fully documented in its place.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&#34;getting-started&#34;&gt;Getting Started&lt;/h3&gt;
+
+&lt;p&gt;The &lt;a href=&#34;/mongo-java-driver-reactivestreams/1.13/mongo-java-driver-reactivestreams/1.13/getting-started/&#34;&gt;Getting Started&lt;/a&gt; guide contains installation instructions
+and a simple tutorial to get up  and running quickly.&lt;/p&gt;
 </description>
     </item>
     
