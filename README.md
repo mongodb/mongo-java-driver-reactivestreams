@@ -1,5 +1,8 @@
 ## MongoDB Reactive Streams Java Driver ##
 
+Development of the MongoDB Reactive Streams Java Driver has moved to https://github.com/mongodb/mongo-java-driver,
+in the module https://github.com/mongodb/mongo-java-driver/tree/master/driver-reactive-streams.
+
 A [reactive streams](http://www.reactive-streams.org/) implementation of the Mongo Java Driver.
 
 [![Build Status](https://travis-ci.org/mongodb/mongo-java-driver-reactivestreams.svg?branch=master)]
