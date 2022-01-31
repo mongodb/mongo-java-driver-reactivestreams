@@ -1,3 +1,4 @@
-## MongoDB Reactive Streams Java Driver ##
+# End of Life Notice
+The MongoDB Reactive Streams Java Driver is now officially end-of-life (EOL). No further development, bugfixes, enhancements, documentation changes or maintenance will be provided by this project and pull requests will no longer be accepted.
 
-Since 4.0 the MongoDB Reactive Streams Java Driver codebase has moved to the [same repository](https://https://github.com/mongodb/mongo-java-driver) and now lives alongside the rest of the Java codebase.
+This codebase has moved into the [MongoDB Java Driver](https://https://github.com/mongodb/mongo-java-driver) and users are encouraged to migrate there. 
