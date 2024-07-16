@@ -1,4 +1,7 @@
-# End of Life Notice
-The MongoDB Reactive Streams Java Driver is now officially end-of-life (EOL). No further development, bugfixes, enhancements, documentation changes or maintenance will be provided by this project and pull requests will no longer be accepted.
+# Notice
 
-This codebase has moved into the [MongoDB Java Driver](https://https://github.com/mongodb/mongo-java-driver) and users are encouraged to migrate there. 
+This repository has been archived, and code for the Java Reactive Streams Driver has been moved to the [MongoDB JVM Drivers repository](https://github.com/mongodb/mongo-java-driver).
+
+To access the MongoDB Reactive Streams Driver documentation, please refer to our official documentation [here](https://www.mongodb.com/docs/languages/java/reactive-streams-driver/current/).
+
+For the most recent release of the MongoDB Reactive Streams driver, please refer to [Maven](https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-reactivestreams).
